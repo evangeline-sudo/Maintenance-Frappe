@@ -1,0 +1,168 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"W01\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Maintenance Management</b></span>\",\"col\":12}},{\"id\":\"W02\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"W03\",\"type\":\"card\",\"data\":{\"card_name\":\"Equipment\",\"col\":4}},{\"id\":\"W04\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters & Configuration\",\"col\":4}}]",
+ "creation": "2026-09-09 15:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "tool",
+ "idx": 0,
+ "indicator_color": "blue",
+ "is_hidden": 0,
+ "label": "Maintenance",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Transactions",
+   "link_count": 0,
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Request",
+   "link_count": 0,
+   "link_to": "Maintenance Request",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Equipment",
+   "link_count": 0,
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Equipment",
+   "link_count": 0,
+   "link_to": "Equipment",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Equipment Category",
+   "link_count": 0,
+   "link_to": "Equipment Category",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Masters & Configuration",
+   "link_count": 0,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Issue Category",
+   "link_count": 0,
+   "link_to": "Issue Category",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Team",
+   "link_count": 0,
+   "link_to": "Maintenance Team",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Responsible Person",
+   "link_count": 0,
+   "link_to": "Responsible Person",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Unit Head Approval Configuration",
+   "link_count": 0,
+   "link_to": "Unit Head Approval Configuration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Location",
+   "link_count": 0,
+   "link_to": "Maintenance Location",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Cause",
+   "link_count": 0,
+   "link_to": "Maintenance Cause",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Resolution Type",
+   "link_count": 0,
+   "link_to": "Maintenance Resolution Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Product Type Value",
+   "link_count": 0,
+   "link_to": "Product Type Value",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-09-09 15:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Maintenance-Frappe",
+ "name": "Maintenance",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [],
+ "title": "Maintenance"
+}
+
