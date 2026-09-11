@@ -1,0 +1,517 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-09-09 15:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+    "field_order": [
+    "request_info_section",
+    "naming_series",
+    "request_date",
+    "employee",
+    "employee_name",
+    "unit",
+    "department",
+    "maintenance_type",
+    "column_break_req",
+    "request_type",
+  "equipment",
+  "issue_category",
+  "priority",
+  "location",
+  "status",
+  "attachments",
+  "section_break_desc",
+  "description",
+  "approval_section",
+  "approval_required",
+  "approval_status",
+  "unit_head",
+  "approval_date",
+  "column_break_appr",
+  "approval_remarks",
+  "assignment_section",
+  "assigned_team",
+  "responsible_person",
+  "assignment_date",
+  "expected_completion_date",
+  "column_break_assign",
+  "assignment_remarks",
+  "processing_section",
+  "work_start_date",
+  "work_completion_date",
+  "failure_cause",
+  "technician_remarks",
+  "diagnosis",
+  "work_details",
+  "parts_used_section",
+  "parts_used",
+  "work_logs_section",
+  "work_logs",
+  "resolution_section",
+  "resolution_type",
+  "resolution_date",
+  "reopen_count",
+  "column_break_resol",
+  "closure_remarks",
+  "resolution_details",
+  "verification_section",
+  "verification_status",
+  "verified_by",
+  "verification_date",
+  "column_break_verif",
+  "verification_remarks",
+  "sla_section",
+  "sla_due_date",
+  "actual_response_time",
+  "actual_resolution_time",
+  "history_section",
+  "status_history"
+ ],
+ "fields": [
+  {
+   "fieldname": "request_info_section",
+   "fieldtype": "Section Break",
+   "label": "Request Information"
+  },
+  {
+   "default": "MR-.YYYY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "MR-.YYYY.-.#####",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "request_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Request Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Unit"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+    {
+     "fieldname": "maintenance_type",
+     "fieldtype": "Select",
+     "in_list_view": 1,
+     "in_standard_filter": 1,
+     "label": "Maintenance Type",
+     "options": "IT\nNon-IT\nProfessional/Specialized"
+    },
+  {
+   "fieldname": "column_break_req",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "request_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Request Type",
+   "options": "Breakdown\nRepair\nService\nInspection\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "equipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Equipment",
+   "options": "Equipment"
+  },
+  {
+   "fieldname": "issue_category",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Issue Category",
+   "options": "Issue Category",
+   "reqd": 1
+  },
+  {
+   "default": "Medium",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nCritical",
+   "reqd": 1
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Location",
+   "options": "Maintenance Location"
+  },
+  {
+   "default": "Submitted",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Submitted\nPending Approval\nApproved\nAssigned\nIn Progress\nResolved\nClosed\nRejected",
+   "reqd": 1
+  },
+  {
+   "fieldname": "attachments",
+   "fieldtype": "Attach",
+   "label": "Attachments"
+  },
+  {
+   "fieldname": "section_break_desc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "approval_section",
+   "fieldtype": "Section Break",
+   "label": "Approval Information"
+  },
+  {
+   "default": "0",
+   "fieldname": "approval_required",
+   "fieldtype": "Check",
+   "label": "Approval Required",
+   "read_only": 1
+  },
+  {
+   "default": "Not Required",
+   "fieldname": "approval_status",
+   "fieldtype": "Select",
+   "label": "Approval Status",
+   "options": "Not Required\nPending\nApproved\nRejected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "unit_head",
+   "fieldtype": "Link",
+   "label": "Unit Head",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approval_date",
+   "fieldtype": "Datetime",
+   "label": "Approval Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_appr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approval_remarks",
+   "fieldtype": "Small Text",
+   "label": "Approval Remarks"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "assignment_section",
+   "fieldtype": "Section Break",
+   "label": "Assignment Information"
+  },
+  {
+   "fieldname": "assigned_team",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Assigned Team",
+   "options": "Maintenance Team"
+  },
+  {
+   "fieldname": "responsible_person",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Responsible Person / Technician",
+   "options": "Responsible Person"
+  },
+  {
+   "fieldname": "assignment_date",
+   "fieldtype": "Datetime",
+   "label": "Assignment Date"
+  },
+  {
+   "fieldname": "expected_completion_date",
+   "fieldtype": "Date",
+   "label": "Expected Completion Date"
+  },
+  {
+   "fieldname": "column_break_assign",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assignment_remarks",
+   "fieldtype": "Small Text",
+   "label": "Assignment Remarks"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "processing_section",
+   "fieldtype": "Section Break",
+   "label": "Maintenance Processing Information"
+  },
+  {
+   "fieldname": "work_start_date",
+   "fieldtype": "Datetime",
+   "label": "Work Start Date"
+  },
+  {
+   "fieldname": "work_completion_date",
+   "fieldtype": "Datetime",
+   "label": "Work Completion Date"
+  },
+  {
+   "fieldname": "failure_cause",
+   "fieldtype": "Link",
+   "label": "Failure Cause",
+   "options": "Maintenance Cause"
+  },
+  {
+   "fieldname": "technician_remarks",
+   "fieldtype": "Small Text",
+   "label": "Technician Remarks"
+  },
+  {
+   "fieldname": "diagnosis",
+   "fieldtype": "Text Editor",
+   "label": "Diagnosis"
+  },
+  {
+   "fieldname": "work_details",
+   "fieldtype": "Text Editor",
+   "label": "Work Details"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "parts_used_section",
+   "fieldtype": "Section Break",
+   "label": "Parts / Materials Used"
+  },
+  {
+   "fieldname": "parts_used",
+   "fieldtype": "Table",
+   "label": "Parts Used",
+   "options": "Maintenance Request Part"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "work_logs_section",
+   "fieldtype": "Section Break",
+   "label": "Maintenance Work Logs"
+  },
+  {
+   "fieldname": "work_logs",
+   "fieldtype": "Table",
+   "label": "Work Logs",
+   "options": "Maintenance Work Log"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "resolution_section",
+   "fieldtype": "Section Break",
+   "label": "Resolution Information"
+  },
+  {
+   "fieldname": "resolution_type",
+   "fieldtype": "Link",
+   "label": "Resolution Type",
+   "options": "Maintenance Resolution Type"
+  },
+  {
+   "fieldname": "resolution_date",
+   "fieldtype": "Datetime",
+   "label": "Resolution Date"
+  },
+  {
+   "default": "0",
+   "fieldname": "reopen_count",
+   "fieldtype": "Int",
+   "label": "Reopen Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_resol",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "closure_remarks",
+   "fieldtype": "Small Text",
+   "label": "Closure Remarks"
+  },
+  {
+   "fieldname": "resolution_details",
+   "fieldtype": "Text Editor",
+   "label": "Resolution Details"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "verification_section",
+   "fieldtype": "Section Break",
+   "label": "Verification Information"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "verification_status",
+   "fieldtype": "Select",
+   "label": "Verification Status",
+   "options": "Pending\nAccepted\nRework Required"
+  },
+  {
+   "fieldname": "verified_by",
+   "fieldtype": "Link",
+   "label": "Verified By",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "verification_date",
+   "fieldtype": "Datetime",
+   "label": "Verification Date"
+  },
+  {
+   "fieldname": "column_break_verif",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "verification_remarks",
+   "fieldtype": "Small Text",
+   "label": "Verification Remarks"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sla_section",
+   "fieldtype": "Section Break",
+   "label": "SLA & Performance Information"
+  },
+  {
+   "fieldname": "sla_due_date",
+   "fieldtype": "Datetime",
+   "label": "SLA Due Date"
+  },
+  {
+   "fieldname": "actual_response_time",
+   "fieldtype": "Float",
+   "label": "Actual Response Time (Hours)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "actual_resolution_time",
+   "fieldtype": "Float",
+   "label": "Actual Resolution Time (Hours)",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "history_section",
+   "fieldtype": "Section Break",
+   "label": "Status History"
+  },
+  {
+   "fieldname": "status_history",
+   "fieldtype": "Table",
+   "label": "Status History",
+   "options": "Maintenance Status History",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-09 15:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "M-Maintenance",
+ "name": "Maintenance Request",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "All"
+  }
+ ],
+ "quick_entry": 0,
+ "search_fields": "name,employee,equipment,issue_category,status,priority",
+ "show_name_in_global_search": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
+
