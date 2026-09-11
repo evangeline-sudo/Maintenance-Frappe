@@ -1,4 +1,4 @@
-### Maintenance-Frappe
+### Maintenance
 
 The Maintenance module is used to manage maintenance requests raised by employees for equipment, facilities, or other maintenance-related issues. It supports the configuration of maintenance-related master data, equipment details, request information, approval requirements, Admin assignment, maintenance processing, resolution, and closure.
 
