@@ -153,7 +153,7 @@
  ],
  "modified": "2026-09-09 15:00:00.000000",
  "modified_by": "Administrator",
- "module": "Maintenance-Frappe",
+    "module": "M-Maintenance",
  "name": "Maintenance",
  "number_cards": [],
  "owner": "Administrator",

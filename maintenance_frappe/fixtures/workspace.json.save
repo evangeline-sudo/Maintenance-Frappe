@@ -1,6 +1,6 @@
 [
  {
-  "app": "maintenance_frappe",
+  "app": null,
   "charts": [],
   "content": "[{\"id\":\"W01\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Maintenance Management</b></span>\",\"col\":12}},{\"id\":\"W02\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"W03\",\"type\":\"card\",\"data\":{\"card_name\":\"Equipment\",\"col\":4}},{\"id\":\"W04\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters & Configuration\",\"col\":4}}]",
   "custom_blocks": [],
@@ -228,7 +228,7 @@
    }
   ],
   "modified": "2026-09-09 15:00:00",
-    "module": "M-Maintenance",
+  "module": "M-Maintenance",
   "name": "Maintenance",
   "number_cards": [],
   "parent_page": "",
@@ -239,6 +239,17 @@
   "sequence_id": 1.0,
   "shortcuts": [],
   "title": "Maintenance",
-  "type": "Workspace"
+  "type": null
  }
+]
+[
+  {
+    "doctype": "Workspace",
+    "name": "Maintenance",
+    "label": "Maintenance",
+    "title": "Maintenance",
+    "type": "Workspace",
+    "icon": "tool",
+    "is_standard": 1
+  }
 ]

@@ -60,6 +60,16 @@ frappe.ui.form.on('Maintenance Request', {
 		}
 	},
 
+	equipment: function(frm) {
+		if (frm.doc.equipment) {
+			frappe.db.get_value('Equipment', frm.doc.equipment, 'maintenance_type', function(r) {
+				if (r && r.maintenance_type) {
+					frm.set_value('maintenance_type', r.maintenance_type);
+				}
+			});
+		}
+	},
+
 	set_field_states: function(frm) {
 		if (frm.doc.status === 'Closed' || frm.doc.status === 'Rejected') {
 			frm.disable_save();

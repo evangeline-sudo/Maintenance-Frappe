@@ -90,6 +90,13 @@
    "label": "Product Type",
    "options": "Product Type Value"
   },
+    {
+     "fieldname": "maintenance_type",
+     "fieldtype": "Select",
+     "label": "Maintenance Type",
+     "options": "IT\nNon-IT\nProfessional/Specialized",
+     "in_standard_filter": 1
+    },
   {
    "fieldname": "asset_id",
    "fieldtype": "Data",
@@ -180,7 +187,7 @@
  "links": [],
  "modified": "2026-09-09 15:00:00.000000",
  "modified_by": "Administrator",
- "module": "Maintenance-Frappe",
+ "module": "M-Maintenance",
  "name": "Equipment",
  "naming_rule": "By fieldname",
  "owner": "Administrator",

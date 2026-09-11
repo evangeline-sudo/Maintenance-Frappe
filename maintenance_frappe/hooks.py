@@ -1,5 +1,5 @@
 app_name = "maintenance_frappe"
-app_title = "Maintenance-Frappe"
+app_title = "M-Maintenance"
 app_publisher = "Evangeline "
 app_description = "To Maintain Software and Hardware "
 app_email = "evangelinerajeswari@gmail.com"
@@ -15,7 +15,7 @@ app_license = "mit"
 # 	{
 # 		"name": "maintenance_frappe",
 # 		"logo": "/assets/maintenance_frappe/logo.png",
-# 		"title": "Maintenance-Frappe",
+# 		"title": "M-Maintenance",
 # 		"route": "/maintenance_frappe",
 # 		"has_permission": "maintenance_frappe.api.permission.has_app_permission"
 # 	}

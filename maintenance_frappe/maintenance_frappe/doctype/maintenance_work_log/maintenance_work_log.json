@@ -98,7 +98,7 @@
  "links": [],
  "modified": "2026-09-09 15:00:00.000000",
  "modified_by": "Administrator",
- "module": "Maintenance-Frappe",
+ "module": "M-Maintenance",
  "name": "Maintenance Work Log",
  "naming_rule": "Random",
  "owner": "Administrator",
