@@ -11,15 +11,15 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "maintenance_frappe",
-# 		"logo": "/assets/maintenance_frappe/logo.png",
-# 		"title": "Maintenance-Frappe",
-# 		"route": "/maintenance_frappe",
-# 		"has_permission": "maintenance_frappe.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "maintenance_frappe",
+		"logo": "/assets/maintenance_frappe/logo.png",
+		"title": "Maintenance-Frappe",
+		"route": "/app/maintenance-request",
+		"has_permission": "maintenance_frappe.permissions.maintenance_request.has_app_permission"
+	}
+]
 
 # Includes in <head>
 # ------------------
@@ -132,13 +132,13 @@ app_license = "mit"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Maintenance Request": "maintenance_frappe.permissions.maintenance_request.has_permission",
+}
+
+has_permission = {
+	"Maintenance Request": "maintenance_frappe.permissions.maintenance_request.has_permission",
+}
 
 # Document Events
 # ---------------
