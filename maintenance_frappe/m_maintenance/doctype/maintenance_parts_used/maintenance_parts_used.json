@@ -8,30 +8,50 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "status",
-  "date_time",
-  "changed_by",
+  "item",
+  "item_name",
+  "quantity",
+  "uom",
+  "rate",
+  "amount",
   "notes"
  ],
  "fields": [
   {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Submitted\nPending Approval\nApproved\nAssigned\nIn Progress\nResolved\nClosed",
-   "reqd": 1
-  },
-  {
-   "fieldname": "date_time",
-   "fieldtype": "Datetime",
-   "label": "Date & Time",
-   "reqd": 1
-  },
-  {
-   "fieldname": "changed_by",
+   "fieldname": "item",
    "fieldtype": "Link",
-   "label": "Changed By",
-   "options": "User"
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Read Only",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "label": "Quantity",
+   "reqd": 1
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Rate"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "read_only": 1
   },
   {
    "fieldname": "notes",
@@ -44,7 +64,7 @@
  "modified": "2026-09-11T00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Maintenance Frappe",
- "name": "Maintenance Status History",
+ "name": "Maintenance Parts Used",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",
