@@ -133,7 +133,7 @@ add_to_apps_screen = [
 # Permissions evaluated in scripted ways
 
 permission_query_conditions = {
-	"Maintenance Request": "maintenance_frappe.permissions.maintenance_request.has_permission",
+	"Maintenance Request": "maintenance_frappe.permissions.maintenance_request.get_permission_query_conditions",
 }
 
 has_permission = {
