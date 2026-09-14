@@ -13,7 +13,7 @@ def has_permission(doc, perm_type, user):
 	# Admin has all permissions
 	if "Administrator" in frappe.get_roles(user):
 		return True
-
+		
 	# Employee can only see their own requests
 	if "Employee" in frappe.get_roles(user):
 		if perm_type == "read":
