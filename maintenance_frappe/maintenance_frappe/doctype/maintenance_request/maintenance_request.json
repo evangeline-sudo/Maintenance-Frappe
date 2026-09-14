@@ -10,6 +10,7 @@
  "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
+ "submittable": 1,
  "field_order": [
   "ownership_type",
   "maintenance_type",
@@ -67,12 +68,7 @@
   "section_closure",
   "closed_date",
   "closing_remarks",
-  "verified_by",
-  "section_timestamps",
-  "created_on",
-  "created_by",
-  "modified_on",
-  "modified_by"
+  "verified_by"
  ],
  "fields": [
   {
@@ -410,37 +406,6 @@
    "fieldtype": "Link",
    "label": "Verified By (Supervisor/Unit Head)",
    "options": "User"
-  },
-  {
-   "fieldname": "section_timestamps",
-   "fieldtype": "Section Break",
-   "label": "Timestamps"
-  },
-  {
-   "fieldname": "created_on",
-   "fieldtype": "Datetime",
-   "label": "Created On",
-   "read_only": 1
-  },
-  {
-   "fieldname": "created_by",
-   "fieldtype": "Link",
-   "label": "Created By",
-   "options": "User",
-   "read_only": 1
-  },
-  {
-   "fieldname": "modified_on",
-   "fieldtype": "Datetime",
-   "label": "Modified On",
-   "read_only": 1
-  },
-  {
-   "fieldname": "modified_by",
-   "fieldtype": "Link",
-   "label": "Modified By",
-   "options": "User",
-   "read_only": 1
   }
  ],
  "image_field": "",
@@ -490,7 +455,7 @@
    "report": 1,
    "role": "Unit Head",
    "share": 0,
-   "submit": 0,
+   "submit": 1,
    "write": 1
   },
   {
@@ -516,7 +481,7 @@
    "report": 1,
    "role": "Supervisor",
    "share": 0,
-   "submit": 0,
+   "submit": 1,
    "write": 1
   }
  ],
