@@ -1,5 +1,5 @@
 app_name = "maintenance_frappe"
-app_title = "M-Maintenance"
+app_title = "Maintenance-Frappe"
 app_publisher = "Evangeline "
 app_description = "To Maintain Software and Hardware "
 app_email = "evangelinerajeswari@gmail.com"
@@ -11,15 +11,15 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "maintenance_frappe",
-# 		"logo": "/assets/maintenance_frappe/logo.png",
-# 		"title": "M-Maintenance",
-# 		"route": "/maintenance_frappe",
-# 		"has_permission": "maintenance_frappe.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "maintenance_frappe",
+		"logo": "/assets/maintenance_frappe/logo.png",
+		"title": "Maintenance-Frappe",
+		"route": "/app/maintenance-request",
+		"has_permission": "maintenance_frappe.permissions.maintenance_request.has_app_permission"
+	}
+]
 
 # Includes in <head>
 # ------------------
@@ -132,13 +132,13 @@ app_license = "mit"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Maintenance Request": "maintenance_frappe.permissions.maintenance_request.has_permission",
+}
+
+has_permission = {
+	"Maintenance Request": "maintenance_frappe.permissions.maintenance_request.has_permission",
+}
 
 # Document Events
 # ---------------
@@ -261,29 +261,4 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-
-# Fixtures
-# --------
-fixtures = [
-	{
-		"dt": "Role",
-		"filters": [
-			[
-				"name",
-				"in",
-				[
-					"Maintenance User",
-					"Maintenance Manager",
-					"Maintenance Technician",
-					"Unit Head",
-				],
-			]
-		],
-	},
-	{
-		"dt": "Workspace",
-		"filters": [["name", "in", ["Maintenance"]]],
-	},
-]
-
 
