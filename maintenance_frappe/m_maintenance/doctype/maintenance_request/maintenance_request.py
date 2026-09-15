@@ -14,8 +14,6 @@ class MaintenanceRequest(Document):
 
 	def before_insert(self):
 		"""Set default values before insert"""
-		self.created_on = datetime.now()
-		self.created_by = frappe.session.user
 		if not self.ownership_type:
 			self.ownership_type = "Organizational Asset"
 
@@ -25,18 +23,104 @@ class MaintenanceRequest(Document):
 		# Auto-determine if Unit Head approval is required
 		self.check_approval_requirement()
 
-	def on_update(self):
-		"""On update, track modifications"""
-		self.modified_on = datetime.now()
-		self.modified_by = frappe.session.user
-
 	def validate(self):
 		"""Validate the document"""
 		self.validate_employee()
 		self.validate_maintenance_type()
 		self.validate_ownership_type()
 		self.validate_asset_details()
+		self.auto_create_issue_category()
+		self.auto_handle_equipment()
+		self.check_approved_status()
 		self.calculate_total_costs()
+
+	def auto_create_issue_category(self):
+		"""Automatically create Issue Category if it does not exist"""
+		if self.issue_category and not frappe.db.exists("Issue Category", self.issue_category):
+			eq_cat = self.equipment_category if frappe.db.exists("Equipment Category", self.equipment_category) else None
+			issue_cat = frappe.get_doc({
+				"doctype": "Issue Category",
+				"issue_category_name": self.issue_category,
+				"equipment_category": eq_cat,
+				"is_active": 1
+			})
+			issue_cat.insert(ignore_permissions=True)
+
+	def auto_handle_equipment(self):
+		"""Automatically create or link Equipment record based on details"""
+		if self.equipment and frappe.db.exists("Equipment", self.equipment):
+			eq_doc = frappe.get_doc("Equipment", self.equipment)
+			if not self.equipment_name:
+				self.equipment_name = eq_doc.equipment_name
+			if not self.equipment_serial:
+				self.equipment_serial = eq_doc.serial_number
+			return
+
+		# Check if equipment already exists in DB by serial or name
+		existing_eq = None
+		if self.equipment_serial:
+			existing_eq = frappe.db.get_value("Equipment", {"serial_number": self.equipment_serial}, "name") \
+				or frappe.db.get_value("Equipment", {"equipment_id": self.equipment_serial}, "name")
+		if not existing_eq and self.equipment_name:
+			existing_eq = frappe.db.get_value("Equipment", {"equipment_name": self.equipment_name, "department": self.department or ""}, "name") \
+				or frappe.db.get_value("Equipment", {"equipment_name": self.equipment_name}, "name")
+
+		if existing_eq:
+			self.equipment = existing_eq
+		elif self.equipment_name or self.equipment_serial:
+			eq_id = self.equipment_serial or self.equipment_name
+			eq_cat = self.equipment_category if frappe.db.exists("Equipment Category", self.equipment_category) else None
+			if not eq_cat and self.equipment_category:
+				try:
+					new_eq_cat = frappe.get_doc({
+						"doctype": "Equipment Category",
+						"category_name": self.equipment_category,
+						"is_active": 1
+					})
+					new_eq_cat.insert(ignore_permissions=True)
+					eq_cat = new_eq_cat.name
+				except Exception:
+					eq_cat = None
+
+			new_eq = frappe.get_doc({
+				"doctype": "Equipment",
+				"equipment_id": eq_id,
+				"equipment_name": self.equipment_name or self.equipment_serial or "Equipment",
+				"equipment_category": eq_cat,
+				"maintenance_type": self.maintenance_type,
+				"serial_number": self.equipment_serial,
+				"department": self.department,
+				"unit": self.unit,
+				"status": "Active"
+			})
+			new_eq.insert(ignore_permissions=True)
+			self.equipment = new_eq.name
+
+	def check_approved_status(self):
+		"""Ensure status is set to Approved when approval_status is Approved"""
+		if self.approval_status == "Approved" and self.status in ["Submitted", "Pending Approval"]:
+			self.status = "Approved"
+
+	def create_work_order(self):
+		"""Creates a Work Order from an approved Maintenance Request"""
+		wo = frappe.get_doc({
+			"doctype": "Work Order",
+			"maintenance_request": self.name,
+			"equipment": self.equipment,
+			"equipment_name": self.equipment_name,
+			"department": self.department,
+			"location": self.location,
+			"maintenance_type": self.maintenance_type,
+			"priority": self.priority,
+			"assigned_team": getattr(self, "assigned_team", None),
+			"assigned_technician": self.assigned_to,
+			"problem_description": self.description,
+			"status": "Scheduled"
+		})
+		wo.insert(ignore_permissions=True)
+		self.update_status("Assigned", f"Converted to Work Order {wo.name}")
+		self.save(ignore_permissions=True)
+		return wo.name
 
 	def validate_employee(self):
 		"""Validate that employee exists and get department"""

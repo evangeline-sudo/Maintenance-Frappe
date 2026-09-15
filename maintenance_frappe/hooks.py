@@ -155,23 +155,12 @@ has_permission = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"maintenance_frappe.tasks.all"
-# 	],
-# 	"daily": [
-# 		"maintenance_frappe.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"maintenance_frappe.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"maintenance_frappe.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"maintenance_frappe.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"maintenance_frappe.api.maintenance.process_preventive_maintenance_due",
+		"maintenance_frappe.api.maintenance.check_contract_expiries_and_stock"
+	]
+}
 
 # Testing
 # -------
