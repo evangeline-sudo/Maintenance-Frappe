@@ -1,0 +1,128 @@
+{
+ "allow_rename": 1,
+ "autoname": "format:WARR-{#####}",
+ "creation": "2026-09-15 21:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "equipment",
+  "warranty_provider",
+  "warranty_number",
+  "start_date",
+  "end_date",
+  "warranty_status",
+  "covered_services",
+  "claim_number",
+  "claim_date",
+  "claim_status",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "equipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Equipment / Asset",
+   "options": "Equipment",
+   "reqd": 1
+  },
+  {
+   "fieldname": "warranty_provider",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Warranty Provider",
+   "reqd": 1
+  },
+  {
+   "fieldname": "warranty_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Warranty Number"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "End Date",
+   "reqd": 1
+  },
+  {
+   "default": "Active",
+   "fieldname": "warranty_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Warranty Status",
+   "options": "Active\nExpired\nClaimed"
+  },
+  {
+   "fieldname": "covered_services",
+   "fieldtype": "Small Text",
+   "label": "Covered Services"
+  },
+  {
+   "fieldname": "claim_number",
+   "fieldtype": "Data",
+   "label": "Claim Number"
+  },
+  {
+   "fieldname": "claim_date",
+   "fieldtype": "Date",
+   "label": "Claim Date"
+  },
+  {
+   "default": "N/A",
+   "fieldname": "claim_status",
+   "fieldtype": "Select",
+   "label": "Claim Status",
+   "options": "N/A\nSubmitted\nApproved\nRejected\nResolved"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Text",
+   "label": "Remarks"
+  }
+ ],
+ "module": "M-Maintenance",
+ "name": "Asset Warranty",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "All"
+  }
+ ]
+}

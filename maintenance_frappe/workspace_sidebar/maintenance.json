@@ -1,0 +1,57 @@
+{
+ "name": "Maintenance",
+ "owner": "Administrator",
+ "creation": "2026-09-15 11:47:22.623169",
+ "modified": "2026-09-15 11:48:44.534688",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Maintenance",
+ "header_icon": "tool",
+ "module": "M-Maintenance",
+ "standard": 1,
+ "app": "maintenance_frappe",
+ "doctype": "Workspace Sidebar",
+ "items": [
+  {
+   "label": "1. Requests & Work Orders",
+   "link_type": "DocType",
+   "link_to": "Maintenance Request",
+   "type": "Link",
+   "child": 0,
+   "indent": 0
+  },
+  {
+   "label": "2. Preventive Maintenance & Assets",
+   "link_type": "DocType",
+   "link_to": "Preventive Maintenance Plan",
+   "type": "Link",
+   "child": 0,
+   "indent": 0
+  },
+  {
+   "label": "3. Inventory & Contracts",
+   "link_type": "DocType",
+   "link_to": "Maintenance Spare Part",
+   "type": "Link",
+   "child": 0,
+   "indent": 0
+  },
+  {
+   "label": "4. Downtime & RCA",
+   "link_type": "DocType",
+   "link_to": "Asset Downtime",
+   "type": "Link",
+   "child": 0,
+   "indent": 0
+  },
+  {
+   "label": "5. Maintenance Dashboard & Reports",
+   "link_type": "Workspace",
+   "link_to": "Maintenance",
+   "type": "Link",
+   "child": 0,
+   "indent": 0
+  }
+ ]
+}

@@ -1,0 +1,53 @@
+{
+ "creation": "2026-09-15 21:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "istable": 1,
+ "field_order": [
+  "tool",
+  "tool_name",
+  "hours_used",
+  "hourly_cost",
+  "total_cost"
+ ],
+ "fields": [
+  {
+   "fieldname": "tool",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Tool",
+   "options": "Maintenance Tool",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tool_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tool Name"
+  },
+  {
+   "default": "1",
+   "fieldname": "hours_used",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Hours Used"
+  },
+  {
+   "fieldname": "hourly_cost",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Hourly Rate"
+  },
+  {
+   "fieldname": "total_cost",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Cost",
+   "read_only": 1
+  }
+ ],
+ "module": "M-Maintenance",
+ "name": "Work Order Tool",
+ "permissions": []
+}
