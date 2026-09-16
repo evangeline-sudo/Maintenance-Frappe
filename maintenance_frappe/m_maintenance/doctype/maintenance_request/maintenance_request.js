@@ -1,5 +1,14 @@
-// Copyright (c) 2026, Evangeline and contributors
-// For license information, please see license.txt
+const CATEGORY_MAINTENANCE_TYPE_MAP = {
+	'IT Equipment': ['IT'],
+	'Electrical Equipment': ['Non-IT'],
+	'Vehicle': ['Non-IT'],
+	'Machine': ['Non-IT'],
+	'Furniture': ['Non-IT'],
+	'Building/Facility': ['Non-IT'],
+	'Office Equipment': ['Non-IT'],
+	'Medical Equipment': ['Professional-Specialized'],
+	'Other': ['Non-IT']
+};
 
 frappe.ui.form.on('Maintenance Request', {
 	setup: function(frm) {
@@ -50,12 +59,14 @@ frappe.ui.form.on('Maintenance Request', {
 
 	refresh: function(frm) {
 		frm.trigger('setup_queries');
+		frm.trigger('update_maintenance_type_options');
 		frm.trigger('setup_workflow_buttons');
 		frm.trigger('set_field_states');
 		frm.trigger('set_section_visibilities');
 	},
 
 	onload: function(frm) {
+		frm.trigger('update_maintenance_type_options');
 		frm.trigger('set_section_visibilities');
 	},
 
@@ -69,6 +80,19 @@ frappe.ui.form.on('Maintenance Request', {
 
 	equipment_category: function(frm) {
 		frm.trigger('setup_queries');
+		frm.trigger('update_maintenance_type_options');
+	},
+
+	update_maintenance_type_options: function(frm) {
+		if (frm.doc.equipment_category) {
+			let allowed_types = CATEGORY_MAINTENANCE_TYPE_MAP[frm.doc.equipment_category] || ['Non-IT'];
+			frm.set_df_property('maintenance_type', 'options', allowed_types);
+			if (!frm.doc.maintenance_type || !allowed_types.includes(frm.doc.maintenance_type)) {
+				frm.set_value('maintenance_type', allowed_types[0]);
+			}
+		} else {
+			frm.set_df_property('maintenance_type', 'options', ['IT', 'Non-IT', 'Professional-Specialized']);
+		}
 	},
 
 	department: function(frm) {
@@ -131,7 +155,7 @@ frappe.ui.form.on('Maintenance Request', {
 	},
 
 	set_field_states: function(frm) {
-		if (frm.doc.status === 'Closed' || frm.doc.status === 'Rejected') {
+		if (frm.doc.approval_status === 'Rejected') {
 			frm.disable_save();
 		}
 	},
