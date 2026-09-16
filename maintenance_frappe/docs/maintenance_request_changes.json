@@ -1,72 +1,72 @@
 [
-  {
-    "doctype": "Maintenance Request",
-    "changes": [
-      {
-        "date": "2026-09-14",
-        "change_id": "MR-001",
-        "title": "Enable Submittable DocType and Fix Status Default",
-        "description": "Fixed validation errors when modifying Maintenance Request DocType",
-        "changes_made": [
-          {
-            "field": "submittable",
-            "old_value": null,
-            "new_value": 1,
-            "reason": "Enable submit workflow for Maintenance Request. Permissions were defined for submit action but DocType was not marked as submittable."
-          },
-          {
-            "field": "status",
-            "property": "default",
-            "old_value": "In Progress",
-            "new_value": "Submitted",
-            "reason": "Fixed validation error: default value must be in the list of options. Changed to 'Submitted' which is the first logical status when a request is created."
-          },
-          {
-            "field": "permissions",
-            "changes": [
-              {
-                "role": "Employee",
-                "submit": 1,
-                "reason": "Employees can submit their own maintenance requests"
-              },
-              {
-                "role": "Administrator",
-                "submit": 1,
-                "amend": 1,
-                "cancel": 1,
-                "reason": "Admins have full control including amend and cancel"
-              },
-              {
-                "role": "Unit Head",
-                "submit": 1,
-                "reason": "Unit Heads can approve/submit maintenance requests"
-              },
-              {
-                "role": "Technician",
-                "submit": 0,
-                "reason": "Technicians can only read/write, not submit (for assignment workflow)"
-              },
-              {
-                "role": "Supervisor",
-                "submit": 1,
-                "reason": "Supervisors can verify and submit maintenance requests"
-              }
-            ]
-          },
-          {
-            "field": "removed_fields",
-            "reason": "Removed system-managed timestamp fields (created_on, created_by, modified_on, modified_by) as Frappe manages these automatically"
-          }
-        ],
-        "errors_fixed": [
-          "ValidationError: Cannot set Assign Submit if not Submittable",
-          "ValidationError: Default value for status must be in the list of options",
-          "ValidationError: Fieldname modified_by is restricted"
-        ],
-        "status": "completed",
-        "applied_by": "Administrator"
-      }
-    ]
-  }
+ {
+  "doctype": "Maintenance Request",
+  "changes": [
+   {
+    "date": "2026-09-14",
+    "change_id": "MR-001",
+    "title": "Enable Submittable DocType and Fix Status Default",
+    "description": "Fixed validation errors when modifying Maintenance Request DocType",
+    "changes_made": [
+     {
+      "field": "submittable",
+      "old_value": null,
+      "new_value": 1,
+      "reason": "Enable submit workflow for Maintenance Request. Permissions were defined for submit action but DocType was not marked as submittable."
+     },
+     {
+      "field": "status",
+      "property": "default",
+      "old_value": "In Progress",
+      "new_value": "Submitted",
+      "reason": "Fixed validation error: default value must be in the list of options. Changed to 'Submitted' which is the first logical status when a request is created."
+     },
+     {
+      "field": "permissions",
+      "changes": [
+       {
+        "role": "Employee",
+        "submit": 1,
+        "reason": "Employees can submit their own maintenance requests"
+       },
+       {
+        "role": "Administrator",
+        "submit": 1,
+        "amend": 1,
+        "cancel": 1,
+        "reason": "Admins have full control including amend and cancel"
+       },
+       {
+        "role": "Unit Head",
+        "submit": 1,
+        "reason": "Unit Heads can approve/submit maintenance requests"
+       },
+       {
+        "role": "Technician",
+        "submit": 0,
+        "reason": "Technicians can only read/write, not submit (for assignment workflow)"
+       },
+       {
+        "role": "Supervisor",
+        "submit": 1,
+        "reason": "Supervisors can verify and submit maintenance requests"
+       }
+      ]
+     },
+     {
+      "field": "removed_fields",
+      "reason": "Removed system-managed timestamp fields (created_on, created_by, modified_on, modified_by) as Frappe manages these automatically"
+     }
+    ],
+    "errors_fixed": [
+     "ValidationError: Cannot set Assign Submit if not Submittable",
+     "ValidationError: Default value for status must be in the list of options",
+     "ValidationError: Fieldname modified_by is restricted"
+    ],
+    "status": "completed",
+    "applied_by": "Administrator"
+   }
+  ],
+  "module": "Maintenance Management"
+ }
 ]
-

@@ -222,7 +222,7 @@
    "label": "Closing Remarks"
   }
  ],
- "module": "M-Maintenance",
+ "module": "Maintenance Management",
  "name": "Work Order",
  "permissions": [
   {

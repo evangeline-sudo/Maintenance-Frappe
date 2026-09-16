@@ -87,7 +87,7 @@
    "label": "Description"
   }
  ],
- "module": "M-Maintenance",
+ "module": "Maintenance Management",
  "name": "Maintenance Spare Part",
  "permissions": [
   {

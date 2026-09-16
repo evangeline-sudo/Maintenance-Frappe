@@ -12,10 +12,17 @@ class MaintenanceRequest(Document):
 	across IT, Electrical, Vehicle, Machine, Furniture, Facility, Medical Equipment, etc.
 	"""
 
+	def _set_defaults(self):
+		super()._set_defaults()
+		self.auto_create_issue_category()
+		self.auto_handle_equipment()
+
 	def before_insert(self):
-		"""Set default values before insert"""
+		"""Set default values and auto-create linked entities before link validation"""
 		if not self.ownership_type:
 			self.ownership_type = "Organizational Asset"
+		self.auto_create_issue_category()
+		self.auto_handle_equipment()
 
 	def on_submit(self):
 		"""On submit, add initial status history entry"""
@@ -23,14 +30,17 @@ class MaintenanceRequest(Document):
 		# Auto-determine if Unit Head approval is required
 		self.check_approval_requirement()
 
+	def before_validate(self):
+		"""Pre-validation hook: create missing issue categories and equipment before link validation"""
+		self.auto_create_issue_category()
+		self.auto_handle_equipment()
+
 	def validate(self):
 		"""Validate the document"""
 		self.validate_employee()
 		self.validate_maintenance_type()
 		self.validate_ownership_type()
 		self.validate_asset_details()
-		self.auto_create_issue_category()
-		self.auto_handle_equipment()
 		self.check_approved_status()
 		self.calculate_total_costs()
 
@@ -87,7 +97,7 @@ class MaintenanceRequest(Document):
 				"equipment_id": eq_id,
 				"equipment_name": self.equipment_name or self.equipment_serial or "Equipment",
 				"equipment_category": eq_cat,
-				"maintenance_type": self.maintenance_type,
+				"maintenance_type": self.maintenance_type if self.maintenance_type in ["IT", "Non-IT", "Professional/Specialized"] else "Non-IT",
 				"serial_number": self.equipment_serial,
 				"department": self.department,
 				"unit": self.unit,
@@ -102,7 +112,7 @@ class MaintenanceRequest(Document):
 			self.status = "Approved"
 
 	def create_work_order(self):
-		"""Creates a Work Order from an approved Maintenance Request"""
+		wo_maint_type = self.maintenance_type if self.maintenance_type in ["Corrective", "Preventive", "Predictive", "Emergency", "Routine", "Breakdown", "Inspection", "Calibration", "Servicing"] else "Corrective"
 		wo = frappe.get_doc({
 			"doctype": "Work Order",
 			"maintenance_request": self.name,
@@ -110,7 +120,7 @@ class MaintenanceRequest(Document):
 			"equipment_name": self.equipment_name,
 			"department": self.department,
 			"location": self.location,
-			"maintenance_type": self.maintenance_type,
+			"maintenance_type": wo_maint_type,
 			"priority": self.priority,
 			"assigned_team": getattr(self, "assigned_team", None),
 			"assigned_technician": self.assigned_to,

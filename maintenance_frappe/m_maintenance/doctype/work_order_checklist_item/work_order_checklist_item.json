@@ -45,7 +45,7 @@
    "label": "Remarks"
   }
  ],
- "module": "M-Maintenance",
+ "module": "Maintenance Management",
  "name": "Work Order Checklist Item",
  "permissions": []
 }

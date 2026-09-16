@@ -63,7 +63,7 @@
    "label": "Address"
   }
  ],
- "module": "M-Maintenance",
+ "module": "Maintenance Management",
  "name": "Maintenance Vendor",
  "permissions": [
   {

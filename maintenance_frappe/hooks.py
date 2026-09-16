@@ -15,8 +15,8 @@ add_to_apps_screen = [
 	{
 		"name": "maintenance_frappe",
 		"logo": "/assets/maintenance_frappe/logo.png",
-		"title": "Maintenance-Frappe",
-		"route": "/app/maintenance-request",
+		"title": "Maintenance Management",
+		"route": "/app/maintenance-management",
 		"has_permission": "maintenance_frappe.permissions.maintenance_request.has_app_permission"
 	}
 ]

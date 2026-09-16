@@ -60,7 +60,7 @@
  "links": [],
  "modified": "2026-09-09 15:00:00.000000",
  "modified_by": "Administrator",
- "module": "M-Maintenance",
+ "module": "Maintenance Management",
  "name": "Responsible Person",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
@@ -106,4 +106,3 @@
  "states": [],
  "track_changes": 1
 }
-

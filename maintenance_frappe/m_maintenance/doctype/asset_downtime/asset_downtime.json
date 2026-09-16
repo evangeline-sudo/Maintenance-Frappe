@@ -75,7 +75,7 @@
    "label": "Remarks"
   }
  ],
- "module": "M-Maintenance",
+ "module": "Maintenance Management",
  "name": "Asset Downtime",
  "permissions": [
   {

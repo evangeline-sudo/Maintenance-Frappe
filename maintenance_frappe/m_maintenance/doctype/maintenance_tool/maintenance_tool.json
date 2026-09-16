@@ -81,7 +81,7 @@
    "label": "Calibration Due Date"
   }
  ],
- "module": "M-Maintenance",
+ "module": "Maintenance Management",
  "name": "Maintenance Tool",
  "permissions": [
   {
