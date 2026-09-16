@@ -4,6 +4,19 @@ from frappe.model.document import Document
 from datetime import datetime
 
 
+CATEGORY_MAINTENANCE_TYPE_MAP = {
+	"IT Equipment": ["IT"],
+	"Electrical Equipment": ["Non-IT"],
+	"Vehicle": ["Non-IT"],
+	"Machine": ["Non-IT"],
+	"Furniture": ["Non-IT"],
+	"Building/Facility": ["Non-IT"],
+	"Office Equipment": ["Non-IT"],
+	"Medical Equipment": ["Professional-Specialized"],
+	"Other": ["Non-IT"]
+}
+
+
 class MaintenanceRequest(Document):
 	"""
 	Maintenance Request DocType
@@ -31,7 +44,12 @@ class MaintenanceRequest(Document):
 		self.check_approval_requirement()
 
 	def before_validate(self):
-		"""Pre-validation hook: create missing issue categories and equipment before link validation"""
+		"""Pre-validation hook: auto-assign default maintenance_type for equipment_category if missing"""
+		if getattr(self, "equipment_category", None):
+			allowed = CATEGORY_MAINTENANCE_TYPE_MAP.get(self.equipment_category, ["Non-IT"])
+			if not getattr(self, "maintenance_type", None):
+				self.maintenance_type = allowed[0]
+
 		self.auto_create_issue_category()
 		self.auto_handle_equipment()
 
@@ -60,27 +78,53 @@ class MaintenanceRequest(Document):
 		"""Automatically create or link Equipment record based on details"""
 		if self.equipment and frappe.db.exists("Equipment", self.equipment):
 			eq_doc = frappe.get_doc("Equipment", self.equipment)
-			if not self.equipment_name:
+			if eq_doc.equipment_name:
 				self.equipment_name = eq_doc.equipment_name
-			if not self.equipment_serial:
-				self.equipment_serial = eq_doc.serial_number
+			if eq_doc.serial_number or eq_doc.equipment_id:
+				self.equipment_serial = eq_doc.serial_number or eq_doc.equipment_id
+			if getattr(eq_doc, "location", None):
+				self.equipment_location = eq_doc.location
+				if not getattr(self, "location", None):
+					self.location = eq_doc.location
+			if getattr(eq_doc, "department", None):
+				self.department = eq_doc.department
+			if getattr(eq_doc, "unit", None):
+				self.unit = eq_doc.unit
+			if getattr(eq_doc, "equipment_category", None):
+				category_map = {
+					"Electrical": "Electrical Equipment",
+					"IT": "IT Equipment",
+					"Vehicles": "Vehicle",
+					"Medical": "Medical Equipment",
+					"HVAC": "Building/Facility",
+					"Network": "IT Equipment"
+				}
+				eq_cat = eq_doc.equipment_category
+				self.equipment_category = category_map.get(eq_cat, eq_cat if eq_cat in ["IT Equipment", "Electrical Equipment", "Vehicle", "Machine", "Furniture", "Building/Facility", "Medical Equipment", "Office Equipment", "Other"] else "Other")
+			if getattr(eq_doc, "maintenance_type", None):
+				self.maintenance_type = eq_doc.maintenance_type if eq_doc.maintenance_type in ["IT", "Non-IT", "Professional-Specialized"] else "IT"
 			return
 
 		# Check if equipment already exists in DB by serial or name
 		existing_eq = None
-		if self.equipment_serial:
-			existing_eq = frappe.db.get_value("Equipment", {"serial_number": self.equipment_serial}, "name") \
-				or frappe.db.get_value("Equipment", {"equipment_id": self.equipment_serial}, "name")
-		if not existing_eq and self.equipment_name:
-			existing_eq = frappe.db.get_value("Equipment", {"equipment_name": self.equipment_name, "department": self.department or ""}, "name") \
-				or frappe.db.get_value("Equipment", {"equipment_name": self.equipment_name}, "name")
+		eq_serial = getattr(self, "equipment_serial", None)
+		eq_name = getattr(self, "equipment_name", None)
+		eq_category = getattr(self, "equipment_category", None)
+		maint_type = getattr(self, "maintenance_type", None)
+
+		if eq_serial:
+			existing_eq = frappe.db.get_value("Equipment", {"serial_number": eq_serial}, "name") \
+				or frappe.db.get_value("Equipment", {"equipment_id": eq_serial}, "name")
+		if not existing_eq and eq_name:
+			existing_eq = frappe.db.get_value("Equipment", {"equipment_name": eq_name, "department": getattr(self, "department", "") or ""}, "name") \
+				or frappe.db.get_value("Equipment", {"equipment_name": eq_name}, "name")
 
 		if existing_eq:
 			self.equipment = existing_eq
-		elif self.equipment_name or self.equipment_serial:
-			eq_id = self.equipment_serial or self.equipment_name
-			eq_cat = self.equipment_category if frappe.db.exists("Equipment Category", self.equipment_category) else None
-			if not eq_cat and self.equipment_category:
+		elif eq_name or eq_serial:
+			eq_id = eq_serial or eq_name
+			eq_cat = eq_category if eq_category and frappe.db.exists("Equipment Category", eq_category) else None
+			if not eq_cat and eq_category:
 				try:
 					new_eq_cat = frappe.get_doc({
 						"doctype": "Equipment Category",
@@ -99,8 +143,8 @@ class MaintenanceRequest(Document):
 				"equipment_category": eq_cat,
 				"maintenance_type": self.maintenance_type if self.maintenance_type in ["IT", "Non-IT", "Professional/Specialized"] else "Non-IT",
 				"serial_number": self.equipment_serial,
-				"department": self.department,
-				"unit": self.unit,
+				"department": getattr(self, "department", None),
+				"unit": getattr(self, "unit", None),
 				"status": "Active"
 			})
 			new_eq.insert(ignore_permissions=True)
@@ -108,7 +152,7 @@ class MaintenanceRequest(Document):
 
 	def check_approved_status(self):
 		"""Ensure status is set to Approved when approval_status is Approved"""
-		if self.approval_status == "Approved" and self.status in ["Submitted", "Pending Approval"]:
+		if hasattr(self, "status") and self.approval_status == "Approved" and self.status in ["Submitted", "Pending Approval"]:
 			self.status = "Approved"
 
 	def create_work_order(self):
@@ -140,11 +184,20 @@ class MaintenanceRequest(Document):
 			self.department = emp.department
 
 	def validate_maintenance_type(self):
-		"""Validate maintenance type and equipment category are selected"""
-		if not self.maintenance_type:
-			frappe.throw(_("Maintenance Type is mandatory"))
+		"""Validate maintenance type and equipment category mapping"""
 		if not self.equipment_category:
 			frappe.throw(_("Equipment Category is mandatory"))
+
+		allowed_types = CATEGORY_MAINTENANCE_TYPE_MAP.get(self.equipment_category, ["Non-IT"])
+
+		if not self.maintenance_type:
+			self.maintenance_type = allowed_types[0]
+		elif self.maintenance_type not in allowed_types:
+			frappe.throw(
+				_("Maintenance Type '{0}' is invalid for Equipment Category '{1}'. Allowed Maintenance Type is '{2}'.").format(
+					self.maintenance_type, self.equipment_category, ", ".join(allowed_types)
+				)
+			)
 
 	def validate_ownership_type(self):
 		"""Validate fields based on Organizational vs Non-Organizational Asset"""
@@ -198,9 +251,9 @@ class MaintenanceRequest(Document):
 
 	def update_status(self, new_status, reason=""):
 		"""Update request status and add to history"""
-		if self.status != new_status:
+		if hasattr(self, "status") and self.status != new_status:
 			self.status = new_status
-			self.add_status_history(new_status, reason)
+		self.add_status_history(new_status, reason)
 
 	def add_status_history(self, status, notes=""):
 		"""Add entry to status history table"""
@@ -248,7 +301,7 @@ class MaintenanceRequest(Document):
 
 	def assign_to_technician(self, technician, notes=""):
 		"""Admin assigns the request to a technician"""
-		if self.status not in ["Approved", "Assigned"]:
+		if getattr(self, "status", None) and self.status not in ["Approved", "Assigned"]:
 			frappe.throw(_("Request must be approved before assignment"))
 
 		self.assigned_to = technician
@@ -259,7 +312,7 @@ class MaintenanceRequest(Document):
 
 	def start_work(self):
 		"""Technician starts work on the request"""
-		if self.status != "Assigned":
+		if getattr(self, "status", None) and self.status != "Assigned":
 			frappe.throw(_("Request must be assigned before starting work"))
 
 		self.update_status("In Progress", f"Work started by {frappe.session.user}")
@@ -272,13 +325,13 @@ class MaintenanceRequest(Document):
 		self.estimated_cost = estimated_cost
 		if estimated_completion_time:
 			self.estimated_completion_time = estimated_completion_time
-		self.add_status_history(self.status, f"Diagnosis updated by {frappe.session.user}")
+		self.add_status_history(getattr(self, "status", "In Progress"), f"Diagnosis updated by {frappe.session.user}")
 		self.save()
 		frappe.msgprint(_("Diagnosis details saved for Maintenance Request {0}").format(self.name))
 
 	def mark_resolved(self, resolution_notes="", root_cause=""):
 		"""Technician marks the request as resolved"""
-		if self.status != "In Progress":
+		if getattr(self, "status", None) and self.status != "In Progress":
 			frappe.throw(_("Request must be in progress to mark as resolved"))
 
 		self.resolution_date = datetime.now()
@@ -290,7 +343,7 @@ class MaintenanceRequest(Document):
 
 	def verify_request(self, verification_status, feedback="", verified_by=None):
 		"""Supervisor or Requester verifies the completed maintenance work"""
-		if self.status != "Resolved":
+		if getattr(self, "status", None) and self.status != "Resolved":
 			frappe.throw(_("Request must be resolved before verification"))
 
 		self.verification_status = verification_status
@@ -301,14 +354,14 @@ class MaintenanceRequest(Document):
 		if verification_status == "Rework Required":
 			self.update_status("In Progress", f"Rework requested during verification by {self.verified_by}")
 		else:
-			self.add_status_history(self.status, f"Verified ({verification_status}) by {self.verified_by}")
+			self.add_status_history(getattr(self, "status", "Verified"), f"Verified ({verification_status}) by {self.verified_by}")
 
 		self.save()
 		frappe.msgprint(_("Verification status updated for Maintenance Request {0}").format(self.name))
 
 	def close_request(self, closing_remarks="", verified_by=""):
 		"""Supervisor/Unit Head closes the request"""
-		if self.status != "Resolved":
+		if getattr(self, "status", None) and self.status != "Resolved":
 			frappe.throw(_("Request must be resolved before closure"))
 
 		self.closed_date = datetime.now()

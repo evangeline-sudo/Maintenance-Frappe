@@ -16,7 +16,7 @@ add_to_apps_screen = [
 		"name": "maintenance_frappe",
 		"logo": "/assets/maintenance_frappe/logo.png",
 		"title": "Maintenance Management",
-		"route": "/app/maintenance-management",
+		"route": "/app/maintenance",
 		"has_permission": "maintenance_frappe.permissions.maintenance_request.has_app_permission"
 	}
 ]
@@ -246,8 +246,15 @@ scheduler_events = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
-# Translation
-# ------------
-# List of apps whose translatable strings should be excluded from this app's translations.
-# ignore_translatable_strings_from = []
+# Fixtures
+# --------
+fixtures = [
+	{"dt": "Workspace", "filters": [["name", "=", "Maintenance"]]},
+	{"dt": "Workspace Sidebar", "filters": [["name", "=", "Maintenance"]]},
+	{"dt": "Dashboard", "filters": [["name", "=", "Maintenance"]]},
+	{"dt": "Number Card", "filters": [["module", "=", "Maintenance"]]},
+	{"dt": "Dashboard Chart", "filters": [["module", "=", "Maintenance"]]},
+	{"dt": "Desktop Icon", "filters": [["name", "=", "Maintenance"]]}
+]
+
 

@@ -1,0 +1,23 @@
+{
+ "name": "Active Equipment",
+ "owner": "Administrator",
+ "creation": "2026-09-16 09:28:30.728011",
+ "modified": "2026-09-16 09:28:30.728011",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "is_standard": 1,
+ "module": "Maintenance",
+ "label": "Active Equipment",
+ "type": "Document Type",
+ "function": "Count",
+ "document_type": "Equipment",
+ "report_function": "Sum",
+ "is_public": 0,
+ "currency": "INR",
+ "show_full_number": 0,
+ "show_percentage_stats": 1,
+ "stats_time_interval": "Daily",
+ "filters_json": "[[\"Equipment\",\"status\",\"=\",\"Active\"]]",
+ "doctype": "Number Card"
+}
