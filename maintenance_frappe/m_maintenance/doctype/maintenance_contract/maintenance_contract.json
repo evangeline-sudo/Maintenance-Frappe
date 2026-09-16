@@ -1,0 +1,123 @@
+{
+ "allow_rename": 1,
+ "autoname": "field:contract_id",
+ "creation": "2026-09-15 21:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "contract_id",
+  "vendor",
+  "contract_type",
+  "start_date",
+  "end_date",
+  "contract_value",
+  "sla",
+  "status",
+  "covered_assets",
+  "terms"
+ ],
+ "fields": [
+  {
+   "fieldname": "contract_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Contract ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Vendor",
+   "options": "Maintenance Vendor",
+   "reqd": 1
+  },
+  {
+   "default": "AMC",
+   "fieldname": "contract_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Contract Type",
+   "options": "AMC\nWarranty Contract\nService Contract\nOutsourced Maintenance"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "End Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "contract_value",
+   "fieldtype": "Currency",
+   "label": "Contract Value"
+  },
+  {
+   "fieldname": "sla",
+   "fieldtype": "Data",
+   "label": "SLA"
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nExpired\nTerminated"
+  },
+  {
+   "fieldname": "covered_assets",
+   "fieldtype": "Small Text",
+   "label": "Covered Assets"
+  },
+  {
+   "fieldname": "terms",
+   "fieldtype": "Text Editor",
+   "label": "Terms & Conditions"
+  }
+ ],
+ "module": "Maintenance Management",
+ "name": "Maintenance Contract",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "All"
+  }
+ ]
+}

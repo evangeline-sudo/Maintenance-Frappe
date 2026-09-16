@@ -1,0 +1,15 @@
+{
+ "creation": "2026-09-15 22:30:00",
+ "doctype": "Dashboard Chart",
+ "chart_name": "Maintenance Requests by Status Pie",
+ "chart_type": "Group By",
+ "type": "Pie",
+ "document_type": "Maintenance Request",
+ "group_by_based_on": "status",
+ "group_by_type": "Count",
+ "filters_json": "{}",
+ "module": "Maintenance",
+ "is_standard": 1,
+ "is_public": 1,
+ "name": "Maintenance Requests by Status Pie"
+}

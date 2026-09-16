@@ -15,8 +15,8 @@ add_to_apps_screen = [
 	{
 		"name": "maintenance_frappe",
 		"logo": "/assets/maintenance_frappe/logo.png",
-		"title": "Maintenance-Frappe",
-		"route": "/app/maintenance-request",
+		"title": "Maintenance Management",
+		"route": "/app/maintenance-management",
 		"has_permission": "maintenance_frappe.permissions.maintenance_request.has_app_permission"
 	}
 ]
@@ -133,7 +133,7 @@ add_to_apps_screen = [
 # Permissions evaluated in scripted ways
 
 permission_query_conditions = {
-	"Maintenance Request": "maintenance_frappe.permissions.maintenance_request.has_permission",
+	"Maintenance Request": "maintenance_frappe.permissions.maintenance_request.get_permission_query_conditions",
 }
 
 has_permission = {
@@ -155,23 +155,12 @@ has_permission = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"maintenance_frappe.tasks.all"
-# 	],
-# 	"daily": [
-# 		"maintenance_frappe.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"maintenance_frappe.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"maintenance_frappe.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"maintenance_frappe.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"maintenance_frappe.api.maintenance.process_preventive_maintenance_due",
+		"maintenance_frappe.api.maintenance.check_contract_expiries_and_stock"
+	]
+}
 
 # Testing
 # -------
