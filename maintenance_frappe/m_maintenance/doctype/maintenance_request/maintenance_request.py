@@ -60,10 +60,22 @@ class MaintenanceRequest(Document):
 		"""Automatically create or link Equipment record based on details"""
 		if self.equipment and frappe.db.exists("Equipment", self.equipment):
 			eq_doc = frappe.get_doc("Equipment", self.equipment)
-			if not self.equipment_name:
+			if not getattr(self, "equipment_name", None) and eq_doc.equipment_name:
 				self.equipment_name = eq_doc.equipment_name
-			if not self.equipment_serial:
-				self.equipment_serial = eq_doc.serial_number
+			if not getattr(self, "equipment_serial", None) and (eq_doc.serial_number or eq_doc.equipment_id):
+				self.equipment_serial = eq_doc.serial_number or eq_doc.equipment_id
+			if not getattr(self, "equipment_location", None) and getattr(eq_doc, "location", None):
+				self.equipment_location = eq_doc.location
+			if not getattr(self, "department", None) and getattr(eq_doc, "department", None):
+				self.department = eq_doc.department
+			if not getattr(self, "unit", None) and getattr(eq_doc, "unit", None):
+				self.unit = eq_doc.unit
+			if not getattr(self, "location", None) and getattr(eq_doc, "location", None):
+				self.location = eq_doc.location
+			if not getattr(self, "equipment_category", None) and getattr(eq_doc, "equipment_category", None):
+				self.equipment_category = eq_doc.equipment_category
+			if not getattr(self, "maintenance_type", None) and getattr(eq_doc, "maintenance_type", None):
+				self.maintenance_type = eq_doc.maintenance_type if eq_doc.maintenance_type in ["IT", "Non-IT", "Professional-Specialized"] else "IT"
 			return
 
 		# Check if equipment already exists in DB by serial or name
@@ -72,7 +84,7 @@ class MaintenanceRequest(Document):
 			existing_eq = frappe.db.get_value("Equipment", {"serial_number": self.equipment_serial}, "name") \
 				or frappe.db.get_value("Equipment", {"equipment_id": self.equipment_serial}, "name")
 		if not existing_eq and self.equipment_name:
-			existing_eq = frappe.db.get_value("Equipment", {"equipment_name": self.equipment_name, "department": self.department or ""}, "name") \
+			existing_eq = frappe.db.get_value("Equipment", {"equipment_name": self.equipment_name, "department": getattr(self, "department", "") or ""}, "name") \
 				or frappe.db.get_value("Equipment", {"equipment_name": self.equipment_name}, "name")
 
 		if existing_eq:
@@ -99,8 +111,8 @@ class MaintenanceRequest(Document):
 				"equipment_category": eq_cat,
 				"maintenance_type": self.maintenance_type if self.maintenance_type in ["IT", "Non-IT", "Professional/Specialized"] else "Non-IT",
 				"serial_number": self.equipment_serial,
-				"department": self.department,
-				"unit": self.unit,
+				"department": getattr(self, "department", None),
+				"unit": getattr(self, "unit", None),
 				"status": "Active"
 			})
 			new_eq.insert(ignore_permissions=True)

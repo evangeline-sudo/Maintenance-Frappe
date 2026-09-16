@@ -14,11 +14,6 @@
   "maintenance_type",
   "equipment_category",
   "status",
-  "section_requester_details",
-  "employee",
-  "employee_name",
-  "department",
-  "unit",
   "section_maintenance_details",
   "category",
   "issue_category",
@@ -28,6 +23,10 @@
   "location",
   "asset",
   "section_equipment_details",
+  "requester_details_column",
+  "employee",
+  "employee_name",
+  "column_break_zrqs",
   "equipment",
   "equipment_name",
   "equipment_serial",
@@ -97,19 +96,14 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
    "options": "Submitted\nPending Approval\nApproved\nAssigned\nIn Progress\nResolved\nClosed",
    "read_only": 1,
-   "reqd": 1,
-   "allow_on_submit": 1
-  },
-  {
-   "fieldname": "section_requester_details",
-   "fieldtype": "Section Break",
-   "label": "Requester Details"
+   "reqd": 1
   },
   {
    "fieldname": "employee",
@@ -123,19 +117,6 @@
    "fieldname": "employee_name",
    "fieldtype": "Read Only",
    "label": "Employee Name"
-  },
-  {
-   "fetch_from": "employee.department",
-   "fieldname": "department",
-   "fieldtype": "Link",
-   "label": "Department",
-   "options": "Department"
-  },
-  {
-   "fieldname": "unit",
-   "fieldtype": "Link",
-   "label": "Unit",
-   "options": "Unit"
   },
   {
    "fieldname": "section_maintenance_details",
@@ -252,40 +233,40 @@
    "options": "User"
   },
   {
+   "allow_on_submit": 1,
    "default": "Pending",
    "fieldname": "approval_status",
    "fieldtype": "Select",
    "label": "Approval Status",
    "options": "Pending\nApproved\nRejected\nHold",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "approval_date",
    "fieldtype": "Datetime",
    "label": "Approval Date",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "approval_notes",
    "fieldtype": "Text",
-   "label": "Approval Notes",
-   "allow_on_submit": 1
+   "label": "Approval Notes"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "assigned_to",
    "fieldtype": "Link",
    "label": "Assigned To (Technician)",
-   "options": "User",
-   "allow_on_submit": 1
+   "options": "User"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "assigned_date",
    "fieldtype": "Datetime",
    "label": "Assigned Date",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
    "fieldname": "section_diagnosis",
@@ -293,22 +274,22 @@
    "label": "Diagnosis"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "diagnosis_notes",
    "fieldtype": "Text Editor",
-   "label": "Diagnosis Notes",
-   "allow_on_submit": 1
+   "label": "Diagnosis Notes"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "estimated_completion_time",
    "fieldtype": "Datetime",
-   "label": "Estimated Completion Time",
-   "allow_on_submit": 1
+   "label": "Estimated Completion Time"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "estimated_cost",
    "fieldtype": "Currency",
-   "label": "Estimated Cost",
-   "allow_on_submit": 1
+   "label": "Estimated Cost"
   },
   {
    "fieldname": "section_work_details",
@@ -316,47 +297,47 @@
    "label": "Work Details"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "work_logs",
    "fieldtype": "Table",
    "label": "Work Logs",
-   "options": "Maintenance Work Log",
-   "allow_on_submit": 1
+   "options": "Maintenance Work Log"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "parts_used",
    "fieldtype": "Table",
    "label": "Parts Used",
-   "options": "Maintenance Parts Used",
-   "allow_on_submit": 1
+   "options": "Maintenance Parts Used"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_parts_cost",
    "fieldtype": "Currency",
    "label": "Total Parts Cost",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_labour_cost",
    "fieldtype": "Currency",
    "label": "Total Labour Cost",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_maintenance_cost",
    "fieldtype": "Currency",
    "label": "Total Maintenance Cost",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "status_history",
    "fieldtype": "Table",
    "label": "Status History",
    "options": "Maintenance Status History",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
    "fieldname": "section_resolution",
@@ -364,23 +345,23 @@
    "label": "Resolution"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "resolution_date",
    "fieldtype": "Datetime",
    "label": "Resolution Date",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "resolution_notes",
    "fieldtype": "Text Editor",
-   "label": "Resolution Notes",
-   "allow_on_submit": 1
+   "label": "Resolution Notes"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "root_cause",
    "fieldtype": "Text Editor",
-   "label": "Root Cause Analysis",
-   "allow_on_submit": 1
+   "label": "Root Cause Analysis"
   },
   {
    "fieldname": "section_verification",
@@ -388,25 +369,25 @@
    "label": "Verification"
   },
   {
+   "allow_on_submit": 1,
    "default": "Pending",
    "fieldname": "verification_status",
    "fieldtype": "Select",
    "label": "Verification Status",
-   "options": "Pending\nVerified\nRework Required",
-   "allow_on_submit": 1
+   "options": "Pending\nVerified\nRework Required"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "verification_feedback",
    "fieldtype": "Text",
-   "label": "Verification Feedback",
-   "allow_on_submit": 1
+   "label": "Verification Feedback"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "verification_date",
    "fieldtype": "Datetime",
    "label": "Verification Date",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
    "fieldname": "section_closure",
@@ -414,24 +395,24 @@
    "label": "Closure"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "closed_date",
    "fieldtype": "Datetime",
    "label": "Closed Date",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "closing_remarks",
    "fieldtype": "Text Editor",
-   "label": "Closing Remarks",
-   "allow_on_submit": 1
+   "label": "Closing Remarks"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "verified_by",
    "fieldtype": "Link",
    "label": "Verified By (Supervisor/Unit Head)",
-   "options": "User",
-   "allow_on_submit": 1
+   "options": "User"
   },
   {
    "fieldname": "issue_category",
@@ -448,11 +429,20 @@
    "in_standard_filter": 1,
    "label": "Equipment",
    "options": "Equipment"
+  },
+  {
+   "fieldname": "requester_details_column",
+   "fieldtype": "Column Break",
+   "label": "Requester Details"
+  },
+  {
+   "fieldname": "column_break_zrqs",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-15 18:39:32.156977",
+ "modified": "2026-09-16 09:55:06.125027",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance Request",

@@ -3,36 +3,40 @@
 
 frappe.ui.form.on('Maintenance Request', {
 	setup: function(frm) {
+		frm.trigger('setup_queries');
+	},
+
+	setup_queries: function(frm) {
 		frm.set_query('equipment', function() {
-			return {
-				filters: [
-					['Equipment', 'status', 'not in', ['Retired', 'Disposed']]
-				]
+			let filters = {
+				'status': ['not in', ['Retired', 'Disposed']]
 			};
+			if (frm.doc.equipment_category) {
+				filters['equipment_category'] = frm.doc.equipment_category;
+			}
+			if (frm.doc.maintenance_type) {
+				filters['maintenance_type'] = frm.doc.maintenance_type;
+			}
+			if (frm.doc.department) {
+				filters['department'] = frm.doc.department;
+			}
+			return { filters: filters };
 		});
 
 		frm.set_query('issue_category', function() {
-			return {
-				filters: {
-					is_active: 1
-				}
-			};
+			let filters = { is_active: 1 };
+			if (frm.doc.equipment_category) {
+				filters['equipment_category'] = frm.doc.equipment_category;
+			}
+			return { filters: filters };
 		});
 
 		frm.set_query('location', function() {
-			return {
-				filters: {
-					is_active: 1
-				}
-			};
+			return { filters: { is_active: 1 } };
 		});
 
 		frm.set_query('assigned_team', function() {
-			return {
-				filters: {
-					is_active: 1
-				}
-			};
+			return { filters: { is_active: 1 } };
 		});
 
 		frm.set_query('responsible_person', function() {
@@ -45,29 +49,85 @@ frappe.ui.form.on('Maintenance Request', {
 	},
 
 	refresh: function(frm) {
+		frm.trigger('setup_queries');
 		frm.trigger('setup_workflow_buttons');
 		frm.trigger('set_field_states');
+		frm.trigger('set_section_visibilities');
 	},
 
-	assigned_team: function(frm) {
-		// Clear responsible person if not in team
-		if (frm.doc.responsible_person) {
-			frappe.db.get_value('Responsible Person', frm.doc.responsible_person, 'maintenance_team', function(r) {
-				if (r && r.maintenance_team !== frm.doc.assigned_team) {
-					frm.set_value('responsible_person', '');
-				}
-			});
-		}
+	onload: function(frm) {
+		frm.trigger('set_section_visibilities');
+	},
+
+	ownership_type: function(frm) {
+		frm.trigger('setup_queries');
+	},
+
+	maintenance_type: function(frm) {
+		frm.trigger('setup_queries');
+	},
+
+	equipment_category: function(frm) {
+		frm.trigger('setup_queries');
+	},
+
+	department: function(frm) {
+		frm.trigger('setup_queries');
 	},
 
 	equipment: function(frm) {
 		if (frm.doc.equipment) {
-			frappe.db.get_value('Equipment', frm.doc.equipment, 'maintenance_type', function(r) {
-				if (r && r.maintenance_type) {
-					frm.set_value('maintenance_type', r.maintenance_type);
+			frappe.db.get_doc('Equipment', frm.doc.equipment).then(eq => {
+				if (eq) {
+					if (eq.equipment_name) {
+						frm.set_value('equipment_name', eq.equipment_name);
+					}
+					if (eq.serial_number || eq.equipment_id) {
+						frm.set_value('equipment_serial', eq.serial_number || eq.equipment_id);
+					}
+					if (eq.location) {
+						frm.set_value('equipment_location', eq.location);
+						if (!frm.doc.location) {
+							frm.set_value('location', eq.location);
+						}
+					}
+					if (!frm.doc.equipment_category && eq.equipment_category) {
+						frm.set_value('equipment_category', eq.equipment_category);
+					}
+					if (!frm.doc.maintenance_type && eq.maintenance_type) {
+						frm.set_value('maintenance_type', eq.maintenance_type);
+					}
+					if (eq.department && !frm.doc.department) {
+						frm.set_value('department', eq.department);
+					}
+					if (eq.unit && !frm.doc.unit) {
+						frm.set_value('unit', eq.unit);
+					}
+					if (eq.asset_id && !frm.doc.asset) {
+						frm.set_value('asset', eq.asset_id);
+					}
 				}
 			});
 		}
+	},
+
+	set_section_visibilities: function(frm) {
+		let user_roles = frappe.user_roles || [];
+		let is_admin_or_approver = user_roles.includes('System Manager') || 
+			user_roles.includes('Maintenance User') || 
+			user_roles.includes('Unit Head') || 
+			user_roles.includes('Supervisor') || 
+			user_roles.includes('Technician');
+
+		// Hide Approval & Assignment and all subsequent sections for standard Employee role
+		let hide_approval_and_below = !is_admin_or_approver;
+
+		frm.set_df_property('section_approval_assignment', 'hidden', hide_approval_and_below ? 1 : 0);
+		frm.set_df_property('section_diagnosis', 'hidden', hide_approval_and_below ? 1 : 0);
+		frm.set_df_property('section_work_details', 'hidden', hide_approval_and_below ? 1 : 0);
+		frm.set_df_property('section_resolution', 'hidden', hide_approval_and_below ? 1 : 0);
+		frm.set_df_property('section_verification', 'hidden', hide_approval_and_below ? 1 : 0);
+		frm.set_df_property('section_closure', 'hidden', hide_approval_and_below ? 1 : 0);
 	},
 
 	set_field_states: function(frm) {
