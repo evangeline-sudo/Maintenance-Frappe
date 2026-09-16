@@ -91,7 +91,7 @@
   "dynamic_filters_json": null,
   "filters_json": "{}",
   "from_date": null,
-  "group_by_based_on": "status",
+  "group_by_based_on": "approval_status",
   "group_by_type": "Count",
   "heatmap_year": null,
   "is_public": 1,

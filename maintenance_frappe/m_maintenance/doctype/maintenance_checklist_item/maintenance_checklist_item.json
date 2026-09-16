@@ -14,10 +14,11 @@
  "fields": [
   {
    "fieldname": "inspection_item",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Inspection Item",
-   "reqd": 1
+   "reqd": 1,
+   "option":"Item"
   },
   {
    "fieldname": "expected_result",

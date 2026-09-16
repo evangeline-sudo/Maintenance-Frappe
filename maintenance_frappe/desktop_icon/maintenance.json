@@ -1,25 +1,41 @@
 {
  "app": "maintenance_frappe",
  "bg_color": "blue",
- "creation": "2026-09-14 16:25:00.325853",
+ "creation": "2026-09-16 10:50:49.291373",
  "docstatus": 0,
  "doctype": "Desktop Icon",
  "hidden": 0,
  "icon": "tool",
  "icon_image": "/files/Maintenance.png",
  "icon_type": "App",
- "idx": 1,
+ "idx": 0,
  "label": "Maintenance",
  "link": "/app/maintenance",
  "link_to": "Maintenance",
  "link_type": "Workspace Sidebar",
  "logo_url": "",
- "modified": "2026-09-16 09:34:13.518742",
+ "modified": "2026-09-16 11:25:42.824314",
  "modified_by": "Administrator",
  "name": "Maintenance",
  "owner": "Administrator",
  "restrict_removal": 0,
- "roles": [],
+ "roles": [
+  {
+   "role": "Maintenance Technician"
+  },
+  {
+   "role": "Maintenance Manager"
+  },
+  {
+   "role": "Maintenance User"
+  },
+  {
+   "role": "Technician"
+  },
+  {
+   "role": "Employee"
+  }
+ ],
  "sidebar": "Maintenance",
  "standard": 1
 }

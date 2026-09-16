@@ -16,6 +16,18 @@ CATEGORY_MAINTENANCE_TYPE_MAP = {
 	"Other": ["Non-IT"]
 }
 
+EQUIPMENT_CATEGORY_ALIASES = {
+	"IT Equipment": ["IT Equipment", "IT", "Network", "Hardware", "Computer", "Laptop", "Server"],
+	"Electrical Equipment": ["Electrical Equipment", "Electrical", "Power", "Generator", "UPS", "Transformer"],
+	"Vehicle": ["Vehicle", "Vehicles", "Automobile", "Fleet", "Car", "Truck", "Van"],
+	"Machine": ["Machine", "Machinery", "Mechanical Equipment", "Plant Machinery", "Apparatus"],
+	"Furniture": ["Furniture", "Fixtures", "Furniture & Fixtures"],
+	"Building/Facility": ["Building/Facility", "Building", "Facility", "HVAC", "Civil", "Infrastructure"],
+	"Medical Equipment": ["Medical Equipment", "Medical", "Biomedical", "Clinical", "Healthcare"],
+	"Office Equipment": ["Office Equipment", "Office", "Printer", "Copier", "Scanner"],
+	"Other": ["Other", "General", "Miscellaneous"]
+}
+
 
 class MaintenanceRequest(Document):
 	"""
@@ -56,6 +68,8 @@ class MaintenanceRequest(Document):
 	def validate(self):
 		"""Validate the document"""
 		self.validate_employee()
+		self.validate_approval_status_permissions()
+		self.validate_equipment_category_match()
 		self.validate_maintenance_type()
 		self.validate_ownership_type()
 		self.validate_asset_details()
@@ -177,11 +191,107 @@ class MaintenanceRequest(Document):
 		return wo.name
 
 	def validate_employee(self):
-		"""Validate that employee exists and get department"""
+		"""Validate that employee exists, set employee_name, and auto-populate unit_head if missing"""
 		if self.employee:
 			emp = frappe.get_doc("Employee", self.employee)
 			self.employee_name = emp.employee_name
-			self.department = emp.department
+			if hasattr(self, "department") and getattr(emp, "department", None):
+				self.department = emp.department
+
+			# Auto-populate unit_head (User) from employee details if not already set
+			if not self.unit_head:
+				manager_info = get_employee_manager_user(self.employee)
+				if manager_info and manager_info.get("user_id"):
+					self.unit_head = manager_info["user_id"]
+
+	def validate_approval_status_permissions(self):
+		"""
+		Enforce that Approval Status can only be changed by:
+		- Maintenance Manager
+		- System Manager
+		- Administrator
+		- Assigned Unit Head / Manager User (self.unit_head)
+		"""
+		current_user = frappe.session.user
+		if current_user == "Administrator":
+			return
+
+		user_roles = frappe.get_roles(current_user)
+		is_manager = any(role in user_roles for role in ["Administrator", "System Manager", "Maintenance Manager"])
+		is_unit_head = bool(self.unit_head and current_user == self.unit_head)
+
+		# If creating a new document
+		if self.is_new():
+			# Regular users can only submit with approval_status = 'Pending'
+			if self.approval_status and self.approval_status != "Pending":
+				if not (is_manager or is_unit_head):
+					frappe.throw(
+						_("Only Maintenance Manager or the assigned Unit Head ({0}) can set Approval Status to '{1}'.").format(
+							self.unit_head or _("Unit Head"), self.approval_status
+						)
+					)
+			return
+
+		# If updating an existing document and approval_status changed
+		if self.has_value_changed("approval_status"):
+			if not (is_manager or is_unit_head):
+				frappe.throw(
+					_("Only Maintenance Manager or the assigned Unit Head/Manager ({0}) can change the Approval Status.").format(
+						self.unit_head or _("Unit Head")
+					)
+				)
+
+			# Record approval/rejection timestamp and audit history
+			if self.approval_status == "Approved":
+				self.approval_date = datetime.now()
+				self.add_status_history("Approved", f"Approved by {current_user}")
+			elif self.approval_status == "Rejected":
+				self.approval_date = datetime.now()
+				self.add_status_history("Rejected", f"Rejected by {current_user}")
+			elif self.approval_status == "Hold":
+				self.add_status_history("Hold", f"Placed on Hold by {current_user}")
+
+	def validate_approval_authority(self):
+		"""Validate that current user has authority to approve/reject"""
+		current_user = frappe.session.user
+		if current_user == "Administrator":
+			return True
+
+		user_roles = frappe.get_roles(current_user)
+		is_authorized = (
+			any(role in user_roles for role in ["System Manager", "Maintenance Manager"]) or
+			bool(self.unit_head and current_user == self.unit_head)
+		)
+		if not is_authorized:
+			frappe.throw(
+				_("Only Maintenance Manager or the assigned Unit Head/Manager ({0}) can approve or reject this request.").format(
+					self.unit_head or _("Unit Head")
+				)
+			)
+		return True
+
+	def validate_equipment_category_match(self):
+		"""Ensure equipment matches equipment_category if both are selected"""
+		if self.equipment and self.equipment_category:
+			eq_cat = frappe.db.get_value("Equipment", self.equipment, "equipment_category")
+			if eq_cat:
+				matching_cats = get_matching_equipment_categories(self.equipment_category)
+				if eq_cat not in matching_cats:
+					category_map = {
+						"Electrical": "Electrical Equipment",
+						"IT": "IT Equipment",
+						"Vehicles": "Vehicle",
+						"Medical": "Medical Equipment",
+						"HVAC": "Building/Facility",
+						"Network": "IT Equipment"
+					}
+					mapped = category_map.get(eq_cat, eq_cat)
+					if mapped != self.equipment_category and eq_cat not in matching_cats:
+						frappe.throw(
+							_("Selected Equipment '{0}' belongs to category '{1}', which does not match the request category '{2}'.").format(
+								self.equipment, eq_cat, self.equipment_category
+							)
+						)
 
 	def validate_maintenance_type(self):
 		"""Validate maintenance type and equipment category mapping"""
@@ -277,26 +387,31 @@ class MaintenanceRequest(Document):
 		todo.insert(ignore_permissions=True)
 
 	def approve_request(self, approval_notes=""):
-		"""Unit Head approves the maintenance request"""
-		if self.approval_status != "Pending":
-			frappe.throw(_("Only pending requests can be approved"))
+		"""Maintenance Manager or Unit Head approves the maintenance request"""
+		self.validate_approval_authority()
+		if self.approval_status not in ["Pending", "Hold"]:
+			frappe.throw(_("Only pending or on-hold requests can be approved"))
 
 		self.approval_status = "Approved"
 		self.approval_date = datetime.now()
-		self.approval_notes = approval_notes
+		if approval_notes:
+			self.approval_notes = approval_notes
 		self.update_status("Approved", f"Approved by {frappe.session.user}")
-		self.save()
+		self.save(ignore_permissions=True)
 		frappe.msgprint(_("Maintenance Request {0} approved").format(self.name))
 
 	def reject_request(self, approval_notes=""):
-		"""Unit Head rejects the maintenance request"""
-		if self.approval_status != "Pending":
-			frappe.throw(_("Only pending requests can be rejected"))
+		"""Maintenance Manager or Unit Head rejects the maintenance request"""
+		self.validate_approval_authority()
+		if self.approval_status not in ["Pending", "Hold"]:
+			frappe.throw(_("Only pending or on-hold requests can be rejected"))
 
 		self.approval_status = "Rejected"
-		self.approval_notes = approval_notes
-		self.update_status("Submitted", f"Rejected by {frappe.session.user}")
-		self.save()
+		self.approval_date = datetime.now()
+		if approval_notes:
+			self.approval_notes = approval_notes
+		self.update_status("Rejected", f"Rejected by {frappe.session.user}")
+		self.save(ignore_permissions=True)
 		frappe.msgprint(_("Maintenance Request {0} rejected").format(self.name))
 
 	def assign_to_technician(self, technician, notes=""):
@@ -450,3 +565,334 @@ def flt(val, default=0.0):
 		return float(val or 0.0)
 	except (ValueError, TypeError):
 		return default
+
+
+def find_manager_by_role(emp):
+	"""
+	Search for a manager/unit head Employee based on the 'role' field in Employee DocType:
+	1. Check within the same unit / custom_unit or department.
+	2. If not found in same unit/dept, check across all active Employees.
+	3. Check by Frappe Has Role ('Unit Head', 'Maintenance Manager').
+	"""
+	emp_name = getattr(emp, "name", "")
+	emp_unit = getattr(emp, "custom_unit", getattr(emp, "unit", None))
+	emp_dept = getattr(emp, "department", None)
+
+	# 1. First priority: look in the same unit / department for an Employee with manager/unit head role
+	query_same_unit = """
+		SELECT name, employee_name, user_id, role
+		FROM `tabEmployee`
+		WHERE status = 'Active'
+		  AND name != %(emp_name)s
+		  AND (
+			role IN ('Unit Head', 'Maintenance Manager', 'Manager', 'Department Head', 'Supervisor')
+			OR role LIKE '%%Unit Head%%'
+			OR role LIKE '%%Manager%%'
+			OR custom_role IN ('Unit Head', 'Maintenance Manager', 'Manager', 'Department Head', 'Supervisor')
+			OR custom_role LIKE '%%Unit Head%%'
+			OR custom_role LIKE '%%Manager%%'
+			OR designation LIKE '%%Unit Head%%'
+			OR designation LIKE '%%Manager%%'
+			OR is_manager = 1
+			OR custom_is_manager = 1
+			OR is_unit_head = 1
+			OR custom_is_unit_head = 1
+		  )
+		  AND (
+			(%(emp_unit)s IS NOT NULL AND (custom_unit = %(emp_unit)s OR unit = %(emp_unit)s))
+			OR (%(emp_dept)s IS NOT NULL AND department = %(emp_dept)s)
+		  )
+		ORDER BY 
+			CASE 
+				WHEN role = 'Unit Head' OR custom_role = 'Unit Head' THEN 1
+				WHEN role LIKE '%%Unit Head%%' OR custom_role LIKE '%%Unit Head%%' THEN 2
+				WHEN role = 'Maintenance Manager' OR custom_role = 'Maintenance Manager' THEN 3
+				WHEN is_manager = 1 OR custom_is_manager = 1 THEN 4
+				ELSE 5 
+			END ASC
+		LIMIT 1
+	"""
+	try:
+		mgr = frappe.db.sql(query_same_unit, {"emp_name": emp_name, "emp_unit": emp_unit, "emp_dept": emp_dept}, as_dict=True)
+		if mgr and mgr[0].get("user_id"):
+			return mgr[0]
+	except Exception:
+		pass
+
+	# 2. Second priority: look globally for an Employee with Unit Head or Maintenance Manager role
+	query_global = """
+		SELECT name, employee_name, user_id, role
+		FROM `tabEmployee`
+		WHERE status = 'Active'
+		  AND name != %(emp_name)s
+		  AND (
+			role IN ('Unit Head', 'Maintenance Manager')
+			OR role LIKE '%%Unit Head%%'
+			OR custom_role IN ('Unit Head', 'Maintenance Manager')
+			OR custom_role LIKE '%%Unit Head%%'
+			OR is_manager = 1
+			OR custom_is_manager = 1
+			OR is_unit_head = 1
+		  )
+		ORDER BY 
+			CASE 
+				WHEN role = 'Unit Head' OR custom_role = 'Unit Head' THEN 1
+				WHEN is_unit_head = 1 THEN 2
+				ELSE 3 
+			END ASC
+		LIMIT 1
+	"""
+	try:
+		mgr = frappe.db.sql(query_global, {"emp_name": emp_name}, as_dict=True)
+		if mgr and mgr[0].get("user_id"):
+			return mgr[0]
+	except Exception:
+		pass
+
+	# 3. Third priority: look by Frappe User Role in tabHas Role
+	try:
+		users_with_role = frappe.db.sql("""
+			SELECT DISTINCT e.name, e.employee_name, e.user_id
+			FROM `tabEmployee` e
+			JOIN `tabHas Role` hr ON hr.parent = e.user_id
+			WHERE e.status = 'Active'
+			  AND e.name != %(emp_name)s
+			  AND hr.role IN ('Unit Head', 'Maintenance Manager')
+			ORDER BY CASE WHEN hr.role = 'Unit Head' THEN 1 ELSE 2 END ASC
+			LIMIT 1
+		""", {"emp_name": emp_name}, as_dict=True)
+		if users_with_role and users_with_role[0].get("user_id"):
+			return users_with_role[0]
+	except Exception:
+		pass
+
+	return None
+
+
+@frappe.whitelist()
+def get_employee_manager_user(employee=None):
+	"""
+	Determine the Manager / Unit Head (User) based on Employee details and Role:
+	1. If the selected employee has 'is_manager' enabled or their Role is 'Unit Head' / 'Manager':
+	   The employee themselves is the manager/unit head; return their linked user_id.
+	2. If not, check if the employee's 'reports_to' has a linked user_id.
+	3. Find the manager/unit head from the Employee 'role' field (in the same unit/department or globally).
+	4. Fallback to Department Head in Department DocType.
+	"""
+	if not employee:
+		return {}
+
+	emp = frappe.get_doc("Employee", employee)
+	emp_role = getattr(emp, "role", getattr(emp, "custom_role", getattr(emp, "designation", ""))) or ""
+	emp_role_str = str(emp_role).lower()
+
+	result = {
+		"employee_name": emp.employee_name,
+		"employee_role": emp_role,
+		"department": getattr(emp, "department", None),
+		"unit": getattr(emp, "custom_unit", getattr(emp, "unit", None)),
+		"user_id": None
+	}
+
+	# Check 1: Is this employee themselves a Manager or Unit Head?
+	# Enabled via is_manager / custom_is_manager / is_unit_head OR via role field
+	is_manager_flag = bool(
+		getattr(emp, "is_manager", 0) or 
+		getattr(emp, "custom_is_manager", 0) or 
+		getattr(emp, "is_unit_head", 0) or 
+		getattr(emp, "custom_is_unit_head", 0)
+	)
+	is_manager_role = (
+		"unit head" in emp_role_str or 
+		"manager" in emp_role_str or 
+		"supervisor" in emp_role_str or
+		"head" in emp_role_str
+	)
+
+	if (is_manager_flag or is_manager_role) and getattr(emp, "user_id", None):
+		result["user_id"] = emp.user_id
+		result["manager_employee"] = emp.name
+		result["manager_name"] = emp.employee_name
+		result["source"] = "self_is_manager_or_role"
+		return result
+
+	# Check 2: Reports To (Direct Supervisor / Manager Employee)
+	reports_to = getattr(emp, "reports_to", None)
+	if reports_to:
+		mgr_doc = frappe.db.get_value("Employee", reports_to, ["user_id", "employee_name"], as_dict=True)
+		if mgr_doc and mgr_doc.get("user_id"):
+			result["user_id"] = mgr_doc["user_id"]
+			result["manager_employee"] = reports_to
+			result["manager_name"] = mgr_doc.get("employee_name")
+			result["source"] = "reports_to"
+			return result
+
+	# Check 3: Find Manager / Unit Head from Employee Role fields
+	mgr_by_role = find_manager_by_role(emp)
+	if mgr_by_role and mgr_by_role.get("user_id"):
+		result["user_id"] = mgr_by_role["user_id"]
+		result["manager_employee"] = mgr_by_role.get("name")
+		result["manager_name"] = mgr_by_role.get("employee_name")
+		result["source"] = "employee_role"
+		return result
+
+	# Check 4: Check Department Head from Department DocType
+	dept = getattr(emp, "department", None)
+	if dept and frappe.db.exists("Department", dept):
+		dept_doc = frappe.get_doc("Department", dept)
+		dept_head = getattr(dept_doc, "department_head", None)
+		if dept_head:
+			dept_head_user = frappe.db.get_value("Employee", dept_head, "user_id") or dept_head
+			if frappe.db.exists("User", dept_head_user):
+				result["user_id"] = dept_head_user
+				result["manager_employee"] = dept_head
+				result["source"] = "department_head"
+				return result
+
+	# Check 5: Check if employee has user_id
+	if getattr(emp, "user_id", None):
+		result["employee_user_id"] = emp.user_id
+
+	return result
+
+
+@frappe.whitelist()
+def get_matching_equipment_categories(equipment_category=None):
+	"""Return a list of category names matching the given equipment_category or its aliases"""
+	if not equipment_category:
+		return []
+
+	aliases = EQUIPMENT_CATEGORY_ALIASES.get(equipment_category, [equipment_category])
+	matched = set(aliases)
+	keywords = [equipment_category.lower()]
+	for a in aliases:
+		keywords.append(a.lower())
+
+	if frappe.db.table_exists("Equipment Category"):
+		try:
+			existing_cats = frappe.db.get_all("Equipment Category", fields=["name", "category_name"])
+			for cat in existing_cats:
+				c_name = cat.get("category_name") or cat.get("name")
+				if c_name:
+					c_lower = c_name.lower()
+					if any(k in c_lower or c_lower in k for k in keywords):
+						matched.add(cat.get("name"))
+						if cat.get("category_name"):
+							matched.add(cat.get("category_name"))
+		except Exception:
+			pass
+
+	return list(matched)
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_equipment_for_category(doctype, txt, searchfield, start, page_len, filters):
+	"""
+	Filter equipment by equipment_category and active status for Link field queries.
+	"""
+	equipment_category = filters.get("equipment_category") if filters else None
+	conditions = ["status NOT IN ('Retired', 'Disposed')"]
+	params = {}
+
+	if equipment_category:
+		matching_cats = get_matching_equipment_categories(equipment_category)
+		if matching_cats:
+			placeholders = ", ".join([f"%({f'cat_{i}'})s" for i in range(len(matching_cats))])
+			conditions.append(f"equipment_category IN ({placeholders})")
+			for i, cat in enumerate(matching_cats):
+				params[f"cat_{i}"] = cat
+		else:
+			conditions.append("equipment_category = %(equipment_category)s")
+			params["equipment_category"] = equipment_category
+
+	if txt:
+		conditions.append("(name LIKE %(txt)s OR equipment_name LIKE %(txt)s OR serial_number LIKE %(txt)s)")
+		params["txt"] = f"%{txt}%"
+
+	where_clause = " AND ".join(conditions)
+	query = f"""
+		SELECT name, equipment_name, serial_number, location, equipment_category
+		FROM `tabEquipment`
+		WHERE {where_clause}
+		ORDER BY name ASC
+		LIMIT %(start)s, %(page_len)s
+	"""
+	params["start"] = int(start or 0)
+	params["page_len"] = int(page_len or 20)
+
+	return frappe.db.sql(query, params)
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_manager_users(doctype, txt, searchfield, start, page_len, filters):
+	"""
+	Return users who are:
+	- Linked to an Employee with is_manager / custom_is_manager = 1
+	- Or linked to an Employee who has reports_to pointing to them
+	- Or have role Unit Head, Maintenance Manager, System Manager, Administrator
+	"""
+	manager_roles = ("System Manager", "Administrator", "Maintenance Manager", "Unit Head", "Supervisor")
+	role_users = frappe.db.get_all(
+		"Has Role",
+		filters={"role": ["in", manager_roles]},
+		pluck="parent"
+	)
+
+	emp_users = []
+	try:
+		emp_users = frappe.db.sql_list("""
+			SELECT DISTINCT user_id FROM `tabEmployee`
+			WHERE user_id IS NOT NULL AND user_id != ''
+			AND (
+				role IN ('Unit Head', 'Maintenance Manager', 'Manager', 'Department Head', 'Supervisor')
+				OR role LIKE '%%Unit Head%%'
+				OR role LIKE '%%Manager%%'
+				OR custom_role IN ('Unit Head', 'Maintenance Manager', 'Manager', 'Department Head', 'Supervisor')
+				OR custom_role LIKE '%%Unit Head%%'
+				OR custom_role LIKE '%%Manager%%'
+				OR designation LIKE '%%Unit Head%%'
+				OR designation LIKE '%%Manager%%'
+				OR is_manager = 1 OR custom_is_manager = 1
+				OR is_unit_head = 1 OR custom_is_unit_head = 1
+				OR name IN (SELECT DISTINCT reports_to FROM `tabEmployee` WHERE reports_to IS NOT NULL AND reports_to != '')
+			)
+		""")
+	except Exception:
+		try:
+			emp_users = frappe.db.sql_list("""
+				SELECT DISTINCT user_id FROM `tabEmployee`
+				WHERE user_id IS NOT NULL AND user_id != ''
+				AND (
+					is_manager = 1 OR custom_is_manager = 1
+					OR name IN (SELECT DISTINCT reports_to FROM `tabEmployee` WHERE reports_to IS NOT NULL AND reports_to != '')
+				)
+			""")
+		except Exception:
+			pass
+
+	eligible_users = list(set(role_users + emp_users))
+	params = {
+		"txt": f"%{txt}%",
+		"start": int(start or 0),
+		"page_len": int(page_len or 20)
+	}
+
+	if not eligible_users:
+		return frappe.db.sql("""
+			SELECT name, full_name, email FROM `tabUser`
+			WHERE enabled = 1 AND (name LIKE %(txt)s OR full_name LIKE %(txt)s OR email LIKE %(txt)s)
+			ORDER BY name ASC LIMIT %(start)s, %(page_len)s
+		""", params)
+
+	placeholders = ", ".join([f"%({f'u_{i}'})s" for i in range(len(eligible_users))])
+	for i, u in enumerate(eligible_users):
+		params[f"u_{i}"] = u
+
+	return frappe.db.sql(f"""
+		SELECT name, full_name, email FROM `tabUser`
+		WHERE enabled = 1 AND name IN ({placeholders})
+		AND (name LIKE %(txt)s OR full_name LIKE %(txt)s OR email LIKE %(txt)s)
+		ORDER BY name ASC LIMIT %(start)s, %(page_len)s
+	""", params)

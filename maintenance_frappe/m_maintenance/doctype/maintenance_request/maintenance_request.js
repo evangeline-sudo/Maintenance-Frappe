@@ -17,19 +17,18 @@ frappe.ui.form.on('Maintenance Request', {
 
 	setup_queries: function(frm) {
 		frm.set_query('equipment', function() {
-			let filters = {
-				'status': ['not in', ['Retired', 'Disposed']]
+			return {
+				query: 'maintenance_frappe.m_maintenance.doctype.maintenance_request.maintenance_request.get_equipment_for_category',
+				filters: {
+					equipment_category: frm.doc.equipment_category || ''
+				}
 			};
-			if (frm.doc.equipment_category) {
-				filters['equipment_category'] = frm.doc.equipment_category;
-			}
-			if (frm.doc.maintenance_type) {
-				filters['maintenance_type'] = frm.doc.maintenance_type;
-			}
-			if (frm.doc.department) {
-				filters['department'] = frm.doc.department;
-			}
-			return { filters: filters };
+		});
+
+		frm.set_query('unit_head', function() {
+			return {
+				query: 'maintenance_frappe.m_maintenance.doctype.maintenance_request.maintenance_request.get_manager_users'
+			};
 		});
 
 		frm.set_query('issue_category', function() {
@@ -81,6 +80,57 @@ frappe.ui.form.on('Maintenance Request', {
 	equipment_category: function(frm) {
 		frm.trigger('setup_queries');
 		frm.trigger('update_maintenance_type_options');
+
+		// Check if current equipment matches the new category; if not, clear it
+		if (frm.doc.equipment && frm.doc.equipment_category) {
+			frappe.call({
+				method: 'maintenance_frappe.m_maintenance.doctype.maintenance_request.maintenance_request.get_matching_equipment_categories',
+				args: {
+					equipment_category: frm.doc.equipment_category
+				},
+				callback: function(r) {
+					let matching_cats = r.message || [];
+					frappe.db.get_value('Equipment', frm.doc.equipment, 'equipment_category').then(val => {
+						let current_eq_cat = val && val.message ? val.message.equipment_category : null;
+						if (current_eq_cat && !matching_cats.includes(current_eq_cat)) {
+							frm.set_value('equipment', '');
+							frm.set_value('equipment_name', '');
+							frm.set_value('equipment_serial', '');
+							frm.set_value('equipment_location', '');
+						}
+					});
+				}
+			});
+		}
+	},
+
+	employee: function(frm) {
+		if (frm.doc.employee) {
+			frappe.call({
+				method: 'maintenance_frappe.m_maintenance.doctype.maintenance_request.maintenance_request.get_employee_manager_user',
+				args: {
+					employee: frm.doc.employee
+				},
+				callback: function(r) {
+					if (r.message) {
+						if (r.message.employee_name && !frm.doc.employee_name) {
+							frm.set_value('employee_name', r.message.employee_name);
+						}
+						if (r.message.user_id) {
+							frm.set_value('unit_head', r.message.user_id);
+						}
+						frm.trigger('set_field_states');
+					}
+				}
+			});
+		} else {
+			frm.set_value('employee_name', '');
+		}
+	},
+
+	unit_head: function(frm) {
+		frm.trigger('set_field_states');
+		frm.trigger('set_section_visibilities');
 	},
 
 	update_maintenance_type_options: function(frm) {
@@ -115,35 +165,38 @@ frappe.ui.form.on('Maintenance Request', {
 							frm.set_value('location', eq.location);
 						}
 					}
+					if (eq.asset_id && !frm.doc.asset) {
+						frm.set_value('asset', eq.asset_id);
+					}
 					if (!frm.doc.equipment_category && eq.equipment_category) {
 						frm.set_value('equipment_category', eq.equipment_category);
 					}
 					if (!frm.doc.maintenance_type && eq.maintenance_type) {
 						frm.set_value('maintenance_type', eq.maintenance_type);
 					}
-					if (eq.department && !frm.doc.department) {
-						frm.set_value('department', eq.department);
-					}
-					if (eq.unit && !frm.doc.unit) {
-						frm.set_value('unit', eq.unit);
-					}
-					if (eq.asset_id && !frm.doc.asset) {
-						frm.set_value('asset', eq.asset_id);
-					}
 				}
 			});
+		} else {
+			frm.set_value('equipment_name', '');
+			frm.set_value('equipment_serial', '');
+			frm.set_value('equipment_location', '');
 		}
 	},
 
 	set_section_visibilities: function(frm) {
 		let user_roles = frappe.user_roles || [];
-		let is_admin_or_approver = user_roles.includes('System Manager') || 
+		let is_admin_or_approver = (
+			frappe.session.user === 'Administrator' ||
+			user_roles.includes('System Manager') || 
+			user_roles.includes('Maintenance Manager') ||
 			user_roles.includes('Maintenance User') || 
 			user_roles.includes('Unit Head') || 
 			user_roles.includes('Supervisor') || 
-			user_roles.includes('Technician');
+			user_roles.includes('Technician') ||
+			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
+		);
 
-		// Hide Approval & Assignment and all subsequent sections for standard Employee role
+		// Hide Approval & Assignment and all subsequent sections for standard Employee role unless they are the unit head
 		let hide_approval_and_below = !is_admin_or_approver;
 
 		frm.set_df_property('section_approval_assignment', 'hidden', hide_approval_and_below ? 1 : 0);
@@ -155,6 +208,17 @@ frappe.ui.form.on('Maintenance Request', {
 	},
 
 	set_field_states: function(frm) {
+		let user_roles = frappe.user_roles || [];
+		let is_authorized_approver = (
+			frappe.session.user === 'Administrator' ||
+			user_roles.includes('System Manager') ||
+			user_roles.includes('Maintenance Manager') ||
+			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
+		);
+
+		// Approval Status can only be changed by Maintenance Manager, System Manager, Admin, or assigned Unit Head User
+		frm.set_df_property('approval_status', 'read_only', is_authorized_approver ? 0 : 1);
+
 		if (frm.doc.approval_status === 'Rejected') {
 			frm.disable_save();
 		}
@@ -163,8 +227,16 @@ frappe.ui.form.on('Maintenance Request', {
 	setup_workflow_buttons: function(frm) {
 		if (frm.is_new()) return;
 
-		// 1. Pending Approval Actions
-		if (frm.doc.status === 'Pending Approval') {
+		let user_roles = frappe.user_roles || [];
+		let can_approve = (
+			frappe.session.user === 'Administrator' ||
+			user_roles.includes('System Manager') ||
+			user_roles.includes('Maintenance Manager') ||
+			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
+		);
+
+		// 1. Pending / Hold Approval Actions - only for Maintenance Manager, System Manager, Admin, or assigned Unit Head
+		if ((frm.doc.approval_status === 'Pending' || frm.doc.approval_status === 'Hold' || frm.doc.status === 'Pending Approval') && can_approve) {
 			frm.add_custom_button(__('Approve'), function() {
 				frappe.prompt([
 					{
@@ -176,7 +248,7 @@ frappe.ui.form.on('Maintenance Request', {
 					frappe.call({
 						doc: frm.doc,
 						method: 'approve_request',
-						args: { remarks: values.remarks },
+						args: { approval_notes: values.remarks },
 						callback: function(r) {
 							if (!r.exc) {
 								frappe.show_alert({ message: __('Request Approved'), indicator: 'green' });
@@ -187,32 +259,32 @@ frappe.ui.form.on('Maintenance Request', {
 				}, __('Approve Maintenance Request'), __('Approve'));
 			}, __('Actions')).addClass('btn-primary');
 
-			frm.add_custom_button(__('Reject'), function() {
-				frappe.prompt([
-					{
-						fieldname: 'remarks',
-						fieldtype: 'Small Text',
-						label: __('Rejection Reason'),
-						reqd: 1
-					}
-				], function(values) {
-					frappe.call({
-						doc: frm.doc,
-						method: 'reject_request',
-						args: { remarks: values.remarks },
-						callback: function(r) {
-							if (!r.exc) {
-								frappe.show_alert({ message: __('Request Rejected'), indicator: 'red' });
-								frm.reload_doc();
-							}
+				frm.add_custom_button(__('Reject'), function() {
+					frappe.prompt([
+						{
+							fieldname: 'remarks',
+							fieldtype: 'Small Text',
+							label: __('Rejection Reason'),
+							reqd: 1
 						}
-					});
-				}, __('Reject Maintenance Request'), __('Reject'));
-			}, __('Actions')).addClass('btn-danger');
+					], function(values) {
+						frappe.call({
+							doc: frm.doc,
+							method: 'reject_request',
+							args: { approval_notes: values.remarks },
+							callback: function(r) {
+								if (!r.exc) {
+									frappe.show_alert({ message: __('Request Rejected'), indicator: 'red' });
+									frm.reload_doc();
+								}
+							}
+						});
+					}, __('Reject Maintenance Request'), __('Reject'));
+				}, __('Actions')).addClass('btn-danger');
 		}
 
 		// 2. Approved -> Assign
-		if (frm.doc.status === 'Approved') {
+		if ((frm.doc.approval_status === 'Approved' || frm.doc.status === 'Approved') && !frm.doc.assigned_to) {
 			frm.add_custom_button(__('Assign Technician'), function() {
 				frappe.prompt([
 					{

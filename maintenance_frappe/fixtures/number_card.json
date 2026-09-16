@@ -37,7 +37,7 @@
   "document_type": "Maintenance Request",
   "dynamic_filters_json": null,
   "filters_config": null,
-  "filters_json": "[[\"Maintenance Request\",\"status\",\"in\",[\"Submitted\",\"Pending Approval\",\"Approved\",\"Assigned\",\"In Progress\"]]]",
+  "filters_json": "[[\"Maintenance Request\",\"approval_status\",\"in\",[\"Pending\",\"Approved\"]]]",
   "function": "Count",
   "is_public": 0,
   "is_standard": 1,
