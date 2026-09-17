@@ -14,6 +14,7 @@
   "column_break_basic",
   "equipment_type",
   "product_type",
+  "maintenance_type",
   "asset_id",
   "ownership",
   "location_and_org_section",
@@ -212,8 +213,18 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Maintenance User",
+   "role": "Maintenance Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Technician",
    "write": 1
   },
   {
@@ -222,7 +233,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "All"
+   "role": "Maintenance User"
   }
  ],
  "quick_entry": 1,

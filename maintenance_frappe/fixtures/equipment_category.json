@@ -1,0 +1,137 @@
+[
+ {
+  "category_name": "IT",
+  "description": "Computers and IT infrastructure",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-14 10:34:19.586641",
+  "name": "IT"
+ },
+ {
+  "category_name": "Electrical",
+  "description": "Electrical and power equipment",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-14 10:35:28.430500",
+  "name": "Electrical"
+ },
+ {
+  "category_name": "HVAC",
+  "description": "Air conditioning and ventilation equipment",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-14 10:36:27.188225",
+  "name": "HVAC"
+ },
+ {
+  "category_name": "Vehicles",
+  "description": "Organization vehicles",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-14 10:36:47.730830",
+  "name": "Vehicles"
+ },
+ {
+  "category_name": "Medical",
+  "description": "Medical and healthcare equipment",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-14 10:38:48.118612",
+  "name": "Medical"
+ },
+ {
+  "category_name": "Network",
+  "description": "Network and communication equipment",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-14 10:39:33.177966",
+  "name": "Network"
+ },
+ {
+  "category_name": "IT Equipment",
+  "description": "Computers, Laptops, Servers, Switches, Printers",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-17 06:28:47.913812",
+  "name": "IT Equipment"
+ },
+ {
+  "category_name": "Electrical Equipment",
+  "description": "Generators, Transformers, UPS, DB Panels, Wiring",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-17 06:28:47.933249",
+  "name": "Electrical Equipment"
+ },
+ {
+  "category_name": "Vehicle",
+  "description": "Company Cars, Trucks, Vans, Forklifts",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-17 06:28:47.949174",
+  "name": "Vehicle"
+ },
+ {
+  "category_name": "Machine",
+  "description": "CNC Machines, Lathes, Presses, Compressors, Pumps",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-17 06:28:47.964801",
+  "name": "Machine"
+ },
+ {
+  "category_name": "Furniture",
+  "description": "Desks, Chairs, Cabinets, Tables",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-17 06:28:47.978353",
+  "name": "Furniture"
+ },
+ {
+  "category_name": "Building/Facility",
+  "description": "HVAC, Plumbing, Lighting, Elevators, Doors, Roofing",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-17 06:28:47.992510",
+  "name": "Building/Facility"
+ },
+ {
+  "category_name": "Medical Equipment",
+  "description": "Monitors, Scanners, Sterilizers, Specialized Devices",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-17 06:28:48.006845",
+  "name": "Medical Equipment"
+ },
+ {
+  "category_name": "Office Equipment",
+  "description": "Scanners, Projectors, Shredders, Laminators",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-17 06:28:48.021892",
+  "name": "Office Equipment"
+ },
+ {
+  "category_name": "Other",
+  "description": "Miscellaneous Equipment",
+  "docstatus": 0,
+  "doctype": "Equipment Category",
+  "is_active": 1,
+  "modified": "2026-09-17 06:28:48.038041",
+  "name": "Other"
+ }
+]

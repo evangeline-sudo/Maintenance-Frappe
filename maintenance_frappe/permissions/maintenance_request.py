@@ -45,7 +45,7 @@ def get_permission_query_conditions(user=None):
 			)
 
 	# Technician can see requests assigned to them
-	if "Technician" in user_roles:
+	if "Maintenance Technician" in user_roles:
 		conditions.append(
 			"(`tabMaintenance Request`.`assigned_to` = {0})".format(
 				frappe.db.escape(user)
@@ -76,11 +76,11 @@ def has_permission(doc=None, ptype=None, user=None, debug=False):
 	if any(role in user_roles for role in ["Administrator", "System Manager", "Maintenance Manager", "Supervisor"]):
 		return True
 
-	if not doc:
+	if not doc or isinstance(doc, str):
 		return True
 
 	# Creator/Owner can access their own request
-	if doc.owner == user:
+	if getattr(doc, "owner", None) == user:
 		return True
 
 	# Employee can access their own requests
@@ -101,7 +101,7 @@ def has_permission(doc=None, ptype=None, user=None, debug=False):
 				return True
 
 	# Technician can access assigned requests
-	if "Technician" in user_roles:
+	if "Maintenance Technician" in user_roles:
 		if ptype in ["read", "write"]:
 			if doc.get("assigned_to") and doc.assigned_to == user:
 				return True
@@ -115,14 +115,19 @@ def has_app_permission(user=None):
 	if not user:
 		user = frappe.session.user
 
+	if not user or user == "Guest":
+		return False
+
 	allowed_roles = [
 		"Administrator",
 		"System Manager",
 		"Maintenance Manager",
 		"Employee",
 		"Unit Head",
-		"Technician",
+		"Maintenance Technician",
 		"Supervisor",
+		"Maintenance User",
+		"All",
 	]
 
 	user_roles = frappe.get_roles(user)

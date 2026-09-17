@@ -59,3 +59,19 @@ class PreventiveMaintenancePlan(Document):
 		self.next_due_date = self.calculate_next_due_date(self.next_due_date)
 		self.save(ignore_permissions=True)
 		return wo.name
+
+
+def process_due_plans():
+	today = getdate()
+	due_plans = frappe.get_all(
+		"Preventive Maintenance Plan",
+		filters={"status": "Active", "next_due_date": ["<=", today]},
+		pluck="name"
+	)
+	for plan_name in due_plans:
+		try:
+			plan_doc = frappe.get_doc("Preventive Maintenance Plan", plan_name)
+			plan_doc.generate_work_order()
+		except Exception as e:
+			frappe.log_error(f"Error processing PM Plan {plan_name}: {e}", "PM Scheduler Error")
+

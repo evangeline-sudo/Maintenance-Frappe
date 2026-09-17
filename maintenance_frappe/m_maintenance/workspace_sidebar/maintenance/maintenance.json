@@ -346,7 +346,7 @@
    "link_type": "DocType",
    "icon": "truck",
    "type": "Link",
-   "link_to": "Maintenance Vendor",
+   "link_to": "Supplier",
    "child": 1,
    "collapsible": 1,
    "indent": 0,
