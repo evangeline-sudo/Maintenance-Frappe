@@ -19,9 +19,10 @@
   "issue_category",
   "priority",
   "title",
-  "description",
   "location",
   "asset",
+  "column_break_hwsa",
+  "description",
   "section_equipment_details",
   "requester_details_column",
   "employee",
@@ -42,32 +43,38 @@
   "unit_head",
   "approval_status",
   "approval_date",
-  "approval_notes",
   "assigned_to",
   "assigned_date",
+  "column_break_rbfz",
+  "approval_notes",
   "section_diagnosis",
-  "diagnosis_notes",
   "estimated_completion_time",
   "estimated_cost",
+  "column_break_dyee",
+  "diagnosis_notes",
   "section_work_details",
-  "work_logs",
   "parts_used",
   "total_parts_cost",
   "total_labour_cost",
   "total_maintenance_cost",
+  "column_break_xopc",
+  "work_logs",
   "status_history",
   "section_resolution",
   "resolution_date",
   "resolution_notes",
+  "column_break_nmbm",
   "root_cause",
   "section_verification",
   "verification_status",
-  "verification_feedback",
   "verification_date",
+  "column_break_iqor",
+  "verification_feedback",
   "section_closure",
   "closed_date",
-  "closing_remarks",
-  "verified_by"
+  "verified_by",
+  "column_break_ifsb",
+  "closing_remarks"
  ],
  "fields": [
   {
@@ -88,21 +95,22 @@
    "reqd": 1
   },
   {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nSubmitted\nPending Approval\nApproved\nPlanned\nAssigned\nIn Progress\nOn Hold\nResolved\nClosed\nRejected\nScheduled",
+   "default": "Draft",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
    "fieldname": "equipment_category",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Equipment Category",
    "options": "IT Equipment\nElectrical Equipment\nVehicle\nMachine\nFurniture\nBuilding/Facility\nMedical Equipment\nOffice Equipment\nOther",
-   "reqd": 1
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Submitted\nPending Approval\nApproved\nAssigned\nIn Progress\nResolved\nClosed",
-   "read_only": 1,
    "reqd": 1
   },
   {
@@ -229,7 +237,7 @@
   {
    "fieldname": "unit_head",
    "fieldtype": "Link",
-   "label": "Unit Head",
+   "label": "Manager/Unit Head",
    "options": "User"
   },
   {
@@ -239,7 +247,7 @@
    "fieldtype": "Select",
    "label": "Approval Status",
    "options": "Pending\nApproved\nRejected\nHold",
-   "read_only": 1
+   "read_only": 0
   },
   {
    "allow_on_submit": 1,
@@ -336,8 +344,7 @@
    "fieldname": "status_history",
    "fieldtype": "Table",
    "label": "Status History",
-   "options": "Maintenance Status History",
-   "read_only": 1
+   "options": "Maintenance Status History"
   },
   {
    "fieldname": "section_resolution",
@@ -374,7 +381,8 @@
    "fieldname": "verification_status",
    "fieldtype": "Select",
    "label": "Verification Status",
-   "options": "Pending\nVerified\nRework Required"
+   "options": "Pending\nVerified\nRework Required",
+   "read_only": 0
   },
   {
    "allow_on_submit": 1,
@@ -438,11 +446,39 @@
   {
    "fieldname": "column_break_zrqs",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_hwsa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_rbfz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_nmbm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_iqor",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_ifsb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_dyee",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_xopc",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-16 10:31:37.315863",
+ "modified": "2026-09-17 06:58:36.802651",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance Request",
@@ -451,27 +487,29 @@
  "permissions": [
   {
    "create": 1,
+   "delete": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Employee",
-   "write": 1
-  },
-  {
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Administrator",
+   "role": "System Manager",
    "share": 1,
    "write": 1
   },
   {
    "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
    "email": 1,
    "export": 1,
    "print": 1,
@@ -481,27 +519,40 @@
    "write": 1
   },
   {
+   "create": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Technician",
+   "role": "Maintenance Technician",
    "write": 1
   },
   {
+   "create": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Supervisor",
+   "role": "Maintenance User",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1,
    "write": 1
   }
  ],
  "quick_entry": 1,
  "row_format": "Dynamic",
- "search_fields": "employee,title,status,maintenance_type,ownership_type,equipment_category,priority",
  "search_fields": "employee,title,maintenance_type,ownership_type,equipment_category,priority",
  "sort_field": "creation",
  "sort_order": "DESC",
