@@ -442,7 +442,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-16 10:31:37.315863",
+ "modified": "2026-09-17 06:58:36.802651",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance Request",
@@ -451,27 +451,29 @@
  "permissions": [
   {
    "create": 1,
+   "delete": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Employee",
-   "write": 1
-  },
-  {
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Administrator",
+   "role": "System Manager",
    "share": 1,
    "write": 1
   },
   {
    "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
    "email": 1,
    "export": 1,
    "print": 1,
@@ -481,27 +483,44 @@
    "write": 1
   },
   {
+   "create": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Technician",
+   "role": "Maintenance Technician",
    "write": 1
   },
   {
+   "create": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Supervisor",
+   "role": "Maintenance User",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "All"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1,
    "write": 1
   }
  ],
  "quick_entry": 1,
  "row_format": "Dynamic",
- "search_fields": "employee,title,status,maintenance_type,ownership_type,equipment_category,priority",
  "search_fields": "employee,title,maintenance_type,ownership_type,equipment_category,priority",
  "sort_field": "creation",
  "sort_order": "DESC",

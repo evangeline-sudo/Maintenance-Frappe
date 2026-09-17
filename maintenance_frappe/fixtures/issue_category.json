@@ -1,0 +1,232 @@
+[
+ {
+  "description": "PC/Laptop hardware failure",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "IT Equipment",
+  "is_active": 1,
+  "issue_category_name": "Hardware Failure",
+  "modified": "2026-09-17 06:28:48.087646",
+  "name": "Hardware Failure"
+ },
+ {
+  "description": "LAN/WiFi connectivity issue",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "IT Equipment",
+  "is_active": 1,
+  "issue_category_name": "Network Connectivity",
+  "modified": "2026-09-17 06:28:48.106298",
+  "name": "Network Connectivity"
+ },
+ {
+  "description": "Printer issues",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "IT Equipment",
+  "is_active": 1,
+  "issue_category_name": "Printer Paper Jam / Cartridge",
+  "modified": "2026-09-17 06:28:48.119404",
+  "name": "Printer Paper Jam / Cartridge"
+ },
+ {
+  "description": "Display flickering or black screen",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "IT Equipment",
+  "is_active": 1,
+  "issue_category_name": "Monitor / Display Issue",
+  "modified": "2026-09-17 06:28:48.133082",
+  "name": "Monitor / Display Issue"
+ },
+ {
+  "description": "Circuit breaker trip",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Electrical Equipment",
+  "is_active": 1,
+  "issue_category_name": "Power Outage / Tripping",
+  "modified": "2026-09-17 06:28:48.147977",
+  "name": "Power Outage / Tripping"
+ },
+ {
+  "description": "UPS not holding charge",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Electrical Equipment",
+  "is_active": 1,
+  "issue_category_name": "UPS Battery Backup Failure",
+  "modified": "2026-09-17 06:28:48.162077",
+  "name": "UPS Battery Backup Failure"
+ },
+ {
+  "description": "DG set fails to start",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Electrical Equipment",
+  "is_active": 1,
+  "issue_category_name": "Generator Starting Problem",
+  "modified": "2026-09-17 06:28:48.177002",
+  "name": "Generator Starting Problem"
+ },
+ {
+  "description": "Vehicle engine heat issue",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Vehicle",
+  "is_active": 1,
+  "issue_category_name": "Engine Overheating",
+  "modified": "2026-09-17 06:28:48.191138",
+  "name": "Engine Overheating"
+ },
+ {
+  "description": "Brake pads or fluid leak",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Vehicle",
+  "is_active": 1,
+  "issue_category_name": "Brake System Fault",
+  "modified": "2026-09-17 06:28:48.207429",
+  "name": "Brake System Fault"
+ },
+ {
+  "description": "Vehicle battery failure",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Vehicle",
+  "is_active": 1,
+  "issue_category_name": "Battery Dead",
+  "modified": "2026-09-17 06:28:48.223033",
+  "name": "Battery Dead"
+ },
+ {
+  "description": "Mechanical noise",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Machine",
+  "is_active": 1,
+  "issue_category_name": "Abnormal Noise / Vibration",
+  "modified": "2026-09-17 06:28:48.239639",
+  "name": "Abnormal Noise / Vibration"
+ },
+ {
+  "description": "Fluid leakage",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Machine",
+  "is_active": 1,
+  "issue_category_name": "Oil / Hydraulic Leakage",
+  "modified": "2026-09-17 06:28:48.254420",
+  "name": "Oil / Hydraulic Leakage"
+ },
+ {
+  "description": "Motor trip",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Machine",
+  "is_active": 1,
+  "issue_category_name": "Motor Overload",
+  "modified": "2026-09-17 06:28:48.270133",
+  "name": "Motor Overload"
+ },
+ {
+  "description": "Hydraulic lift or wheel broken",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Furniture",
+  "is_active": 1,
+  "issue_category_name": "Broken Chair Mechanism",
+  "modified": "2026-09-17 06:28:48.287593",
+  "name": "Broken Chair Mechanism"
+ },
+ {
+  "description": "Drawer lock stuck",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Furniture",
+  "is_active": 1,
+  "issue_category_name": "Desk Lock / Hinge Damage",
+  "modified": "2026-09-17 06:28:48.306037",
+  "name": "Desk Lock / Hinge Damage"
+ },
+ {
+  "description": "HVAC not cooling",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Building/Facility",
+  "is_active": 1,
+  "issue_category_name": "AC Cooling Failure",
+  "modified": "2026-09-17 06:28:48.322871",
+  "name": "AC Cooling Failure"
+ },
+ {
+  "description": "Plumbing leakage",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Building/Facility",
+  "is_active": 1,
+  "issue_category_name": "Water Pipe Leakage",
+  "modified": "2026-09-17 06:28:48.337697",
+  "name": "Water Pipe Leakage"
+ },
+ {
+  "description": "Lighting bulb/choke defect",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Building/Facility",
+  "is_active": 1,
+  "issue_category_name": "Light Fitting Replacement",
+  "modified": "2026-09-17 06:28:48.353201",
+  "name": "Light Fitting Replacement"
+ },
+ {
+  "description": "Calibration error",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Medical Equipment",
+  "is_active": 1,
+  "issue_category_name": "Sensor Calibration Drift",
+  "modified": "2026-09-17 06:28:48.369602",
+  "name": "Sensor Calibration Drift"
+ },
+ {
+  "description": "System error code displayed",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Medical Equipment",
+  "is_active": 1,
+  "issue_category_name": "Display Error Code",
+  "modified": "2026-09-17 06:28:48.383615",
+  "name": "Display Error Code"
+ },
+ {
+  "description": "Projector light warning",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Office Equipment",
+  "is_active": 1,
+  "issue_category_name": "Projector Lamp Fault",
+  "modified": "2026-09-17 06:28:48.401010",
+  "name": "Projector Lamp Fault"
+ },
+ {
+  "description": "Paper shredder jammed",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Office Equipment",
+  "is_active": 1,
+  "issue_category_name": "Shredder Jam",
+  "modified": "2026-09-17 06:28:48.417891",
+  "name": "Shredder Jam"
+ },
+ {
+  "description": "General maintenance",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Other",
+  "is_active": 1,
+  "issue_category_name": "General Maintenance Issue",
+  "modified": "2026-09-17 06:28:48.434448",
+  "name": "General Maintenance Issue"
+ }
+]

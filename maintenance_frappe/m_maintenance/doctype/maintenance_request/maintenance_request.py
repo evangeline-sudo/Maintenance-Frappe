@@ -37,11 +37,55 @@ class MaintenanceRequest(Document):
 		self.auto_create_issue_category()
 		self.auto_handle_equipment()
 
-	def on_submit(self):
-		"""On submit, add initial status history entry"""
+	def after_insert(self):
+		"""After insert hook: log submitted status history, send submitted notification, and check approval rules"""
 		self.add_status_history("Submitted", f"Request submitted for {self.ownership_type}")
-		# Auto-determine if Unit Head approval is required
+		self.send_status_notification("Submitted")
 		self.check_approval_requirement()
+
+	def on_submit(self):
+		"""On submit, add initial status history entry and check approval"""
+		self.add_status_history("Submitted", f"Request submitted for {self.ownership_type}")
+		self.send_status_notification("Submitted")
+		self.check_approval_requirement()
+
+	def send_status_notification(self, event_type):
+		"""Send notification email using responsive Merriweather HTML Email Templates"""
+		template_name_map = {
+			"Submitted": "Maintenance Request Submitted",
+			"Approval Required": "Maintenance Approval Required",
+			"Approved": "Maintenance Request Approved",
+			"Rejected": "Maintenance Request Rejected",
+			"Assigned": "Maintenance Request Assigned",
+			"Resolved": "Maintenance Work Resolved",
+			"Rework Required": "Maintenance Rework Requested",
+			"Closed": "Maintenance Request Closed",
+		}
+		template_name = template_name_map.get(event_type, "Maintenance Request Submitted")
+		try:
+			recipients = []
+			if event_type == "Approval Required" and getattr(self, "unit_head", None) and "@" in str(self.unit_head):
+				recipients.append(self.unit_head)
+			if getattr(self, "assigned_to", None) and "@" in str(self.assigned_to):
+				recipients.append(self.assigned_to)
+			if getattr(self, "owner", None) and "@" in str(self.owner):
+				recipients.append(self.owner)
+
+			recipients = list(set(recipients))
+			if not recipients:
+				return
+
+			if frappe.db.exists("Email Template", template_name):
+				tmpl = frappe.get_doc("Email Template", template_name)
+				subject = frappe.render_template(tmpl.subject, {"doc": self})
+				message = frappe.render_template(tmpl.response, {"doc": self})
+				frappe.sendmail(recipients=recipients, subject=subject, message=message)
+			else:
+				subject = f"Maintenance Request {self.name} - {event_type}"
+				message = f"Maintenance Request {self.name} status updated to {self.status}."
+				frappe.sendmail(recipients=recipients, subject=subject, message=message)
+		except Exception as e:
+			frappe.log_error(f"Failed to send email notification for {self.name}: {e}", "Notification Email Error")
 
 	def before_validate(self):
 		"""Pre-validation hook: auto-assign default maintenance_type for equipment_category if missing"""
@@ -59,6 +103,7 @@ class MaintenanceRequest(Document):
 		self.validate_maintenance_type()
 		self.validate_ownership_type()
 		self.validate_asset_details()
+		self.validate_issue_category_match()
 		self.check_approved_status()
 		self.calculate_total_costs()
 
@@ -66,13 +111,32 @@ class MaintenanceRequest(Document):
 		"""Automatically create Issue Category if it does not exist"""
 		if self.issue_category and not frappe.db.exists("Issue Category", self.issue_category):
 			eq_cat = self.equipment_category if frappe.db.exists("Equipment Category", self.equipment_category) else None
-			issue_cat = frappe.get_doc({
-				"doctype": "Issue Category",
-				"issue_category_name": self.issue_category,
-				"equipment_category": eq_cat,
-				"is_active": 1
-			})
-			issue_cat.insert(ignore_permissions=True)
+			try:
+				issue_cat = frappe.get_doc({
+					"doctype": "Issue Category",
+					"issue_category_name": self.issue_category,
+					"equipment_category": eq_cat,
+					"is_active": 1
+				})
+				issue_cat.insert(ignore_permissions=True)
+			except Exception:
+				pass
+
+	def validate_issue_category_match(self):
+		"""Server-side validation to ensure Issue Category belongs to the selected Equipment Category"""
+		if self.issue_category and self.equipment_category:
+			issue_cat_data = frappe.db.get_value(
+				"Issue Category", self.issue_category, ["equipment_category", "is_active"], as_dict=True
+			)
+			if issue_cat_data:
+				if not issue_cat_data.is_active:
+					frappe.throw(_("Selected Issue Category '{0}' is inactive.").format(self.issue_category))
+				if issue_cat_data.equipment_category and issue_cat_data.equipment_category != self.equipment_category:
+					frappe.throw(
+						_("Issue Category '{0}' does not belong to Equipment Category '{1}'.").format(
+							self.issue_category, self.equipment_category
+						)
+					)
 
 	def auto_handle_equipment(self):
 		"""Automatically create or link Equipment record based on details"""
@@ -91,18 +155,9 @@ class MaintenanceRequest(Document):
 			if getattr(eq_doc, "unit", None):
 				self.unit = eq_doc.unit
 			if getattr(eq_doc, "equipment_category", None):
-				category_map = {
-					"Electrical": "Electrical Equipment",
-					"IT": "IT Equipment",
-					"Vehicles": "Vehicle",
-					"Medical": "Medical Equipment",
-					"HVAC": "Building/Facility",
-					"Network": "IT Equipment"
-				}
-				eq_cat = eq_doc.equipment_category
-				self.equipment_category = category_map.get(eq_cat, eq_cat if eq_cat in ["IT Equipment", "Electrical Equipment", "Vehicle", "Machine", "Furniture", "Building/Facility", "Medical Equipment", "Office Equipment", "Other"] else "Other")
+				self.equipment_category = eq_doc.equipment_category
 			if getattr(eq_doc, "maintenance_type", None):
-				self.maintenance_type = eq_doc.maintenance_type if eq_doc.maintenance_type in ["IT", "Non-IT", "Professional-Specialized"] else "IT"
+				self.maintenance_type = eq_doc.maintenance_type
 			return
 
 		# Check if equipment already exists in DB by serial or name
@@ -110,7 +165,6 @@ class MaintenanceRequest(Document):
 		eq_serial = getattr(self, "equipment_serial", None)
 		eq_name = getattr(self, "equipment_name", None)
 		eq_category = getattr(self, "equipment_category", None)
-		maint_type = getattr(self, "maintenance_type", None)
 
 		if eq_serial:
 			existing_eq = frappe.db.get_value("Equipment", {"serial_number": eq_serial}, "name") \
@@ -141,7 +195,7 @@ class MaintenanceRequest(Document):
 				"equipment_id": eq_id,
 				"equipment_name": self.equipment_name or self.equipment_serial or "Equipment",
 				"equipment_category": eq_cat,
-				"maintenance_type": self.maintenance_type if self.maintenance_type in ["IT", "Non-IT", "Professional/Specialized"] else "Non-IT",
+				"maintenance_type": self.maintenance_type if self.maintenance_type in ["IT", "Non-IT", "Professional-Specialized"] else "Non-IT",
 				"serial_number": self.equipment_serial,
 				"department": getattr(self, "department", None),
 				"unit": getattr(self, "unit", None),
@@ -150,38 +204,39 @@ class MaintenanceRequest(Document):
 			new_eq.insert(ignore_permissions=True)
 			self.equipment = new_eq.name
 
+	def fetch_employee_approver(self):
+		"""Automatically resolve Unit Head / Approver from Employee record"""
+		if not self.employee:
+			return None
+		emp = frappe.get_doc("Employee", self.employee)
+		# 1. Check reports_to employee user
+		if emp.reports_to:
+			approver_user = frappe.db.get_value("Employee", emp.reports_to, "user_id")
+			if approver_user:
+				return approver_user
+		# 2. Check department head
+		if emp.department:
+			dept_head = frappe.db.get_value("Department", emp.department, "custom_department_head") or frappe.db.get_value("Department", emp.department, "disabled")
+			if dept_head:
+				return dept_head
+		return None
+
 	def check_approved_status(self):
 		"""Ensure status is set to Approved when approval_status is Approved"""
 		if hasattr(self, "status") and self.approval_status == "Approved" and self.status in ["Submitted", "Pending Approval"]:
 			self.status = "Approved"
 
-	def create_work_order(self):
-		wo_maint_type = self.maintenance_type if self.maintenance_type in ["Corrective", "Preventive", "Predictive", "Emergency", "Routine", "Breakdown", "Inspection", "Calibration", "Servicing"] else "Corrective"
-		wo = frappe.get_doc({
-			"doctype": "Work Order",
-			"maintenance_request": self.name,
-			"equipment": self.equipment,
-			"equipment_name": self.equipment_name,
-			"department": self.department,
-			"location": self.location,
-			"maintenance_type": wo_maint_type,
-			"priority": self.priority,
-			"assigned_team": getattr(self, "assigned_team", None),
-			"assigned_technician": self.assigned_to,
-			"problem_description": self.description,
-			"status": "Scheduled"
-		})
-		wo.insert(ignore_permissions=True)
-		self.update_status("Assigned", f"Converted to Work Order {wo.name}")
-		self.save(ignore_permissions=True)
-		return wo.name
-
 	def validate_employee(self):
-		"""Validate that employee exists and get department"""
+		"""Validate that employee exists and get department and unit"""
 		if self.employee:
 			emp = frappe.get_doc("Employee", self.employee)
 			self.employee_name = emp.employee_name
-			self.department = emp.department
+			if getattr(emp, "department", None):
+				self.department = emp.department
+			if getattr(emp, "unit", None):
+				self.unit = emp.unit
+			if not getattr(self, "unit_head", None):
+				self.unit_head = self.fetch_employee_approver()
 
 	def validate_maintenance_type(self):
 		"""Validate maintenance type and equipment category mapping"""
@@ -206,9 +261,6 @@ class MaintenanceRequest(Document):
 				frappe.throw(_("External Ownership Type is mandatory for Non-Organizational Asset maintenance"))
 			if not self.external_owner_name:
 				frappe.throw(_("External Owner / Provider Name is mandatory for Non-Organizational Asset maintenance"))
-		elif self.ownership_type == "Organizational Asset":
-			# Clear non-organizational specific fields if switched to organizational
-			pass
 
 	def validate_asset_details(self):
 		"""Validate asset if provided for organizational equipment"""
@@ -221,33 +273,35 @@ class MaintenanceRequest(Document):
 				frappe.throw(_("Asset {0} does not exist").format(self.asset))
 
 	def check_approval_requirement(self):
-		"""
-		Determine if Unit Head approval is required based on:
-		- Unit
-		- Department
-		- Category
-		- Priority
-		"""
-		approval_required = frappe.db.get_value(
+		"""Determine if Unit Head approval is required based on rules"""
+		rule = frappe.db.get_value(
 			"Maintenance Approval Rule",
 			{
-				"unit": self.unit or "",
-				"department": self.department or "",
-				"category": self.category or "",
-				"priority": self.priority,
+				"unit": getattr(self, "unit", "") or "",
+				"department": getattr(self, "department", "") or "",
+				"category": getattr(self, "category", "") or "",
+				"priority": getattr(self, "priority", "Medium"),
 				"disabled": 0
-			}
+			},
+			["name", "requires_approval", "approval_authority"],
+			as_dict=True
 		)
 
-		if approval_required:
+		requires_approval = rule.requires_approval if rule else False
+
+		if requires_approval:
 			self.update_status("Pending Approval", "Awaiting Unit Head approval")
 			self.approval_status = "Pending"
+			if not self.unit_head:
+				self.unit_head = self.fetch_employee_approver()
 			if self.unit_head:
 				self.create_approval_todo()
+			self.send_status_notification("Approval Required")
 		else:
 			self.update_status("Approved", "Auto-approved")
 			self.approval_status = "Approved"
 			self.approval_date = datetime.now()
+			self.send_status_notification("Approved")
 
 	def update_status(self, new_status, reason=""):
 		"""Update request status and add to history"""
@@ -266,115 +320,189 @@ class MaintenanceRequest(Document):
 
 	def create_approval_todo(self):
 		"""Create a ToDo for Unit Head approval"""
-		todo = frappe.get_doc({
-			"doctype": "ToDo",
-			"owner": self.unit_head,
-			"description": f"Approval required for Maintenance Request {self.name}",
-			"reference_type": "Maintenance Request",
-			"reference_name": self.name,
-			"priority": "High" if self.priority == "Critical" else "Medium"
-		})
-		todo.insert(ignore_permissions=True)
+		if self.unit_head:
+			todo = frappe.get_doc({
+				"doctype": "ToDo",
+				"owner": self.unit_head,
+				"description": f"Approval required for Maintenance Request {self.name}",
+				"reference_type": "Maintenance Request",
+				"reference_name": self.name,
+				"priority": "High" if self.priority == "Critical" else "Medium"
+			})
+			todo.insert(ignore_permissions=True)
 
-	def approve_request(self, approval_notes=""):
+	@frappe.whitelist()
+	def approve_request(self, remarks=""):
 		"""Unit Head approves the maintenance request"""
-		if self.approval_status != "Pending":
+		if self.approval_status != "Pending" and self.status != "Pending Approval":
 			frappe.throw(_("Only pending requests can be approved"))
 
 		self.approval_status = "Approved"
 		self.approval_date = datetime.now()
-		self.approval_notes = approval_notes
-		self.update_status("Approved", f"Approved by {frappe.session.user}")
-		self.save()
+		self.approval_notes = remarks
+		self.update_status("Approved", f"Approved by {frappe.session.user}: {remarks}")
+		self.save(ignore_permissions=True)
+		self.send_status_notification("Approved")
 		frappe.msgprint(_("Maintenance Request {0} approved").format(self.name))
 
-	def reject_request(self, approval_notes=""):
+	@frappe.whitelist()
+	def reject_request(self, remarks=""):
 		"""Unit Head rejects the maintenance request"""
-		if self.approval_status != "Pending":
+		if self.approval_status != "Pending" and self.status != "Pending Approval":
 			frappe.throw(_("Only pending requests can be rejected"))
 
 		self.approval_status = "Rejected"
-		self.approval_notes = approval_notes
-		self.update_status("Submitted", f"Rejected by {frappe.session.user}")
-		self.save()
-		frappe.msgprint(_("Maintenance Request {0} rejected").format(self.name))
+		self.approval_notes = remarks
+		self.closed_date = datetime.now()
+		self.update_status("Rejected", f"Rejected by {frappe.session.user}: {remarks}")
+		self.save(ignore_permissions=True)
+		self.send_status_notification("Rejected")
+		frappe.msgprint(_("Maintenance Request {0} rejected and closed.").format(self.name))
 
-	def assign_to_technician(self, technician, notes=""):
-		"""Admin assigns the request to a technician"""
-		if getattr(self, "status", None) and self.status not in ["Approved", "Assigned"]:
-			frappe.throw(_("Request must be approved before assignment"))
+	@frappe.whitelist()
+	def assign_technician(self, team=None, technician=None, expected_date=None, remarks=""):
+		"""Admin/Supervisor assigns maintenance team and technician"""
+		if team:
+			self.assigned_team = team
+		if technician:
+			self.assigned_to = technician
+		if expected_date:
+			self.estimated_completion_time = expected_date
 
-		self.assigned_to = technician
 		self.assigned_date = datetime.now()
-		self.update_status("Assigned", f"Assigned to technician {technician}")
-		self.save()
-		frappe.msgprint(_("Maintenance Request {0} assigned to {1}").format(self.name, technician))
+		self.update_status("Assigned", f"Assigned to {technician or team} by {frappe.session.user}")
+		self.save(ignore_permissions=True)
+		self.send_status_notification("Assigned")
+		frappe.msgprint(_("Maintenance Request {0} assigned").format(self.name))
 
-	def start_work(self):
-		"""Technician starts work on the request"""
-		if getattr(self, "status", None) and self.status != "Assigned":
-			frappe.throw(_("Request must be assigned before starting work"))
-
+	@frappe.whitelist()
+	def start_maintenance_work(self):
+		"""Technician starts maintenance work"""
 		self.update_status("In Progress", f"Work started by {frappe.session.user}")
-		self.save()
+		self.save(ignore_permissions=True)
 		frappe.msgprint(_("Work started on Maintenance Request {0}").format(self.name))
 
-	def save_diagnosis(self, diagnosis_notes, estimated_cost=0, estimated_completion_time=None):
-		"""Technician records diagnosis findings and estimates"""
-		self.diagnosis_notes = diagnosis_notes
-		self.estimated_cost = estimated_cost
-		if estimated_completion_time:
-			self.estimated_completion_time = estimated_completion_time
-		self.add_status_history(getattr(self, "status", "In Progress"), f"Diagnosis updated by {frappe.session.user}")
-		self.save()
-		frappe.msgprint(_("Diagnosis details saved for Maintenance Request {0}").format(self.name))
+	@frappe.whitelist()
+	def put_on_hold(self, reason="Parts Unavailable / Vendor Delay"):
+		"""Put maintenance work on hold (returns to Planning state)"""
+		self.update_status("On Hold", f"Put on hold by {frappe.session.user}: {reason}")
+		self.save(ignore_permissions=True)
+		frappe.msgprint(_("Maintenance Request {0} put on hold ({1})").format(self.name, reason))
 
-	def mark_resolved(self, resolution_notes="", root_cause=""):
-		"""Technician marks the request as resolved"""
-		if getattr(self, "status", None) and self.status != "In Progress":
-			frappe.throw(_("Request must be in progress to mark as resolved"))
+	@frappe.whitelist()
+	def resume_work(self):
+		"""Resume maintenance work from hold"""
+		self.update_status("In Progress", f"Work resumed by {frappe.session.user}")
+		self.save(ignore_permissions=True)
+		frappe.msgprint(_("Work resumed on Maintenance Request {0}").format(self.name))
+
+	@frappe.whitelist()
+	def resolve_maintenance(self, resolution_type=None, resolution_details="", diagnosis="", work_details="", failure_cause=None):
+		"""Technician marks maintenance work as resolved"""
+		if resolution_type:
+			self.resolution_type = resolution_type
+		if resolution_details:
+			self.resolution_notes = resolution_details
+		if diagnosis:
+			self.diagnosis_notes = diagnosis
+		if work_details:
+			self.work_performed = work_details
+		if failure_cause:
+			self.root_cause = failure_cause
 
 		self.resolution_date = datetime.now()
-		self.resolution_notes = resolution_notes
-		self.root_cause = root_cause
-		self.update_status("Resolved", f"Marked as resolved by {frappe.session.user}")
-		self.save()
-		frappe.msgprint(_("Maintenance Request {0} marked as resolved").format(self.name))
+		self.update_status("Resolved", f"Marked resolved by {frappe.session.user}")
+		self.save(ignore_permissions=True)
+		self.send_status_notification("Resolved")
+		frappe.msgprint(_("Maintenance Request {0} resolved").format(self.name))
 
-	def verify_request(self, verification_status, feedback="", verified_by=None):
-		"""Supervisor or Requester verifies the completed maintenance work"""
-		if getattr(self, "status", None) and self.status != "Resolved":
-			frappe.throw(_("Request must be resolved before verification"))
-
-		self.verification_status = verification_status
-		self.verification_feedback = feedback
+	@frappe.whitelist()
+	def verify_and_close(self, remarks=""):
+		"""Supervisor/Admin verifies completed work and closes request"""
+		self.verification_status = "Verified"
+		self.verification_feedback = remarks
 		self.verification_date = datetime.now()
-		self.verified_by = verified_by or frappe.session.user
-
-		if verification_status == "Rework Required":
-			self.update_status("In Progress", f"Rework requested during verification by {self.verified_by}")
-		else:
-			self.add_status_history(getattr(self, "status", "Verified"), f"Verified ({verification_status}) by {self.verified_by}")
-
-		self.save()
-		frappe.msgprint(_("Verification status updated for Maintenance Request {0}").format(self.name))
-
-	def close_request(self, closing_remarks="", verified_by=""):
-		"""Supervisor/Unit Head closes the request"""
-		if getattr(self, "status", None) and self.status != "Resolved":
-			frappe.throw(_("Request must be resolved before closure"))
-
+		self.verified_by = frappe.session.user
 		self.closed_date = datetime.now()
-		self.closing_remarks = closing_remarks
-		if verified_by:
-			self.verified_by = verified_by
-		if not self.verification_status or self.verification_status == "Pending":
-			self.verification_status = "Verified"
-			self.verification_date = datetime.now()
+		self.closing_remarks = remarks
+		self.update_status("Closed", f"Verified and closed by {frappe.session.user}")
+		self.save(ignore_permissions=True)
+		self.send_status_notification("Closed")
+		frappe.msgprint(_("Maintenance Request {0} verified and closed").format(self.name))
 
-		self.update_status("Closed", f"Closed and verified by {frappe.session.user}")
-		self.save()
-		frappe.msgprint(_("Maintenance Request {0} closed").format(self.name))
+	@frappe.whitelist()
+	def request_rework(self, remarks=""):
+		"""Supervisor requests rework if inspection/verification fails"""
+		self.verification_status = "Rework Required"
+		self.verification_feedback = remarks
+		self.verification_date = datetime.now()
+		self.verified_by = frappe.session.user
+		self.update_status("In Progress", f"Rework requested by {frappe.session.user}: {remarks}")
+		self.save(ignore_permissions=True)
+		self.send_status_notification("Rework Required")
+		frappe.msgprint(_("Rework requested for Maintenance Request {0}").format(self.name))
+
+	@frappe.whitelist()
+	def create_work_order(self):
+		"""Create linked Work Order for request"""
+		wo_maint_type = self.maintenance_type if self.maintenance_type in ["Corrective", "Preventive", "Predictive", "Emergency", "Routine", "Breakdown", "Inspection", "Calibration", "Servicing"] else "Corrective"
+		wo = frappe.get_doc({
+			"doctype": "Work Order",
+			"maintenance_request": self.name,
+			"equipment": self.equipment,
+			"equipment_name": self.equipment_name,
+			"department": self.department,
+			"location": self.location,
+			"maintenance_type": wo_maint_type,
+			"priority": self.priority,
+			"assigned_team": getattr(self, "assigned_team", None),
+			"assigned_technician": self.assigned_to,
+			"problem_description": self.description,
+			"status": "Scheduled"
+		})
+		wo.insert(ignore_permissions=True)
+		self.update_status("Assigned", f"Converted to Work Order {wo.name}")
+		self.save(ignore_permissions=True)
+		return wo.name
+
+	def send_status_notification(self, event_type):
+		"""Send notification email using Email Template to employee, approver, or technician"""
+		try:
+			template_name = f"Maintenance Request {event_type}"
+			if event_type == "Approval Required":
+				template_name = "Maintenance Approval Required"
+			elif event_type == "Resolved" or event_type == "Work Resolved":
+				template_name = "Maintenance Work Resolved"
+			elif event_type == "Rework Required" or event_type == "Rework Requested":
+				template_name = "Maintenance Rework Requested"
+
+			recipients = set()
+			if self.owner and "@" in self.owner:
+				recipients.add(self.owner)
+			if getattr(self, "employee_email", None) and "@" in self.employee_email:
+				recipients.add(self.employee_email)
+			if getattr(self, "unit_head", None) and "@" in self.unit_head:
+				recipients.add(self.unit_head)
+			if self.assigned_to and "@" in self.assigned_to:
+				recipients.add(self.assigned_to)
+
+			if not recipients:
+				return
+
+			recipients_list = list(recipients)
+
+			if frappe.db.exists("Email Template", template_name):
+				template = frappe.get_doc("Email Template", template_name)
+				subject = frappe.render_template(template.subject, {"doc": self})
+				html_content = template.response_html or template.response
+				message = frappe.render_template(html_content, {"doc": self})
+			else:
+				subject = f"Maintenance Request {self.name} - {event_type}"
+				message = f"Maintenance Request {self.name} status updated to {self.status}.<br>Equipment: {self.equipment_name or self.equipment_category}<br>Description: {self.description}"
+
+			frappe.sendmail(recipients=recipients_list, subject=subject, message=message)
+		except Exception as e:
+			frappe.log_error(f"Error sending email notification for {self.name}: {str(e)}", "Maintenance Request Email Notification")
 
 	def add_work_log(self, technician, description, duration_minutes=0, hourly_rate=0, status="In Progress"):
 		"""Add a work log entry with labour cost calculation"""
@@ -392,11 +520,10 @@ class MaintenanceRequest(Document):
 			"status": status
 		})
 		self.calculate_total_costs()
-		self.save()
-		frappe.msgprint(_("Work log added to Maintenance Request {0}").format(self.name))
+		self.save(ignore_permissions=True)
 
 	def add_parts_used(self, item, quantity, uom="", rate=0, notes=""):
-		"""Add parts used entry"""
+		"""Add parts used entry and update stock"""
 		if not frappe.db.exists("Item", item):
 			frappe.throw(_("Item {0} does not exist").format(item))
 
@@ -415,8 +542,7 @@ class MaintenanceRequest(Document):
 			"notes": notes
 		})
 		self.calculate_total_costs()
-		self.save()
-		frappe.msgprint(_("Parts used added to Maintenance Request {0}").format(self.name))
+		self.save(ignore_permissions=True)
 
 	def calculate_total_costs(self):
 		"""Calculate and update total parts, labour, and maintenance costs"""
@@ -450,3 +576,4 @@ def flt(val, default=0.0):
 		return float(val or 0.0)
 	except (ValueError, TypeError):
 		return default
+

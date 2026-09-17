@@ -166,7 +166,7 @@
    "indent": 1,
    "keep_closed": 0,
    "label": "Maintenance Vendor",
-   "link_to": "Maintenance Vendor",
+   "link_to": "Supplier",
    "link_type": "DocType",
    "show_arrow": 0,
    "type": "Link"

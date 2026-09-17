@@ -10,8 +10,7 @@
   "name": "Maintenance User",
   "restrict_to_domain": null,
   "role_name": "Maintenance User",
-  "two_factor_auth": 0,
-  "module": "Maintenance Management"
+  "two_factor_auth": 0
  },
  {
   "desk_access": 1,
@@ -24,8 +23,7 @@
   "name": "Maintenance Manager",
   "restrict_to_domain": null,
   "role_name": "Maintenance Manager",
-  "two_factor_auth": 0,
-  "module": "Maintenance Management"
+  "two_factor_auth": 0
  },
  {
   "desk_access": 1,
@@ -38,8 +36,7 @@
   "name": "Maintenance Technician",
   "restrict_to_domain": null,
   "role_name": "Maintenance Technician",
-  "two_factor_auth": 0,
-  "module": "Maintenance Management"
+  "two_factor_auth": 0
  },
  {
   "desk_access": 1,
@@ -52,7 +49,6 @@
   "name": "Unit Head",
   "restrict_to_domain": null,
   "role_name": "Unit Head",
-  "two_factor_auth": 0,
-  "module": "Maintenance Management"
+  "two_factor_auth": 0
  }
 ]

@@ -292,7 +292,7 @@
     "is_query_report": 0,
     "label": "Maintenance Vendor",
     "link_count": 0,
-    "link_to": "Maintenance Vendor",
+    "link_to": "Supplier",
     "link_type": "DocType",
     "onboard": 0,
     "only_for": null,
@@ -525,7 +525,7 @@
     "type": "Link"
    }
   ],
-  "modified": "2026-09-16 11:05:00.000000",
+  "modified": "2026-09-16 11:05:00",
   "module": "Maintenance Management",
   "name": "Maintenance",
   "number_cards": [],
