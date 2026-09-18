@@ -318,7 +318,7 @@
  ],
  "modified": "2026-09-17 10:45:28.078566",
  "modified_by": "Administrator",
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Maintenance",
  "number_cards": [],
  "owner": "Administrator",

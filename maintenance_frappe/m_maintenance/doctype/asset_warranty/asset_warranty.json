@@ -89,7 +89,7 @@
    "label": "Remarks"
   }
  ],
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Asset Warranty",
  "permissions": [
   {

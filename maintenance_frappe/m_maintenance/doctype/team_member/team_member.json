@@ -33,7 +33,7 @@
    "label": "Is Active"
   }
  ],
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Team Member",
  "permissions": []
 }

@@ -47,7 +47,7 @@
    "read_only": 1
   }
  ],
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Work Order Tool",
  "permissions": []
 }

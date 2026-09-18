@@ -46,7 +46,7 @@
  "links": [],
  "modified": "2026-09-15 14:21:21.716719",
  "modified_by": "Administrator",
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Maintenance Category",
  "owner": "Administrator",
  "permissions": [

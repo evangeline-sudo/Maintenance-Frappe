@@ -54,7 +54,7 @@
    "options": "Maintenance Checklist Item"
   }
  ],
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Maintenance Checklist",
  "permissions": [
   {

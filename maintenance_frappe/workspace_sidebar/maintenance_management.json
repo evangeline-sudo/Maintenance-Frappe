@@ -666,7 +666,7 @@
  ],
  "modified": "2026-09-17 10:21:31.860266",
  "modified_by": "Administrator",
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Maintenance Management",
  "owner": "Administrator",
  "standard": 1,

@@ -76,7 +76,7 @@
    "label": "Preventive Action"
   }
  ],
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Maintenance Root Cause Analysis",
  "permissions": [
   {

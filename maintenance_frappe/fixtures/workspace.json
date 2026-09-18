@@ -1250,7 +1250,7 @@
    }
   ],
   "modified": "2026-09-16 11:05:00",
-  "module": "Maintenance Management",
+  "module": "m_maintenance",
   "name": "Maintenance",
   "number_cards": [],
   "parent_page": "",

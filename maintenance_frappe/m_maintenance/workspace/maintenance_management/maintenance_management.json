@@ -622,7 +622,7 @@
  ],
  "modified": "2026-09-16 11:56:51.544277",
  "modified_by": "Administrator",
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Maintenance Management",
  "number_cards": [],
  "owner": "Administrator",

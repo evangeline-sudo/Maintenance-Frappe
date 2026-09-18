@@ -20,6 +20,9 @@
   "maintenance_type",
   "priority",
   "description",
+  "total_parts_cost",
+  "total_labour_cost",
+  "total_maintenance_cost",
   "resolution_notes",
   "resolution_date",
   "column_break_sqlx",
@@ -100,6 +103,30 @@
    "fieldtype": "Small Text",
    "label": "Description",
    "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": 0,
+   "fieldname": "total_parts_cost",
+   "fieldtype": "Currency",
+   "label": "Total Parts Cost",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": 0,
+   "fieldname": "total_labour_cost",
+   "fieldtype": "Currency",
+   "label": "Total Labour Cost",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": 0,
+   "fieldname": "total_maintenance_cost",
+   "fieldtype": "Currency",
+   "label": "Total Maintenance Cost",
+   "read_only": 1
   },
   {
    "default": "Draft",
@@ -226,7 +253,7 @@
  "links": [],
  "modified": "2026-09-18 17:21:17.830280",
  "modified_by": "Administrator",
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Maintenance Request",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",
