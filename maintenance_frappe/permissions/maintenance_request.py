@@ -2,6 +2,14 @@ import frappe
 from frappe import _
 
 
+ALLOWED_ROLES = [
+	"Employee",
+	"Manager",
+	"Maintenance Manager",
+	"Maintenance User",
+]
+
+
 def get_permission_query_conditions(user=None):
 	"""
 	Return SQL conditions for Maintenance Request list queries.
@@ -12,8 +20,11 @@ def get_permission_query_conditions(user=None):
 
 	user_roles = frappe.get_roles(user)
 
-	# Manager, Administrator, System Manager, and Supervisor can see all requests
-	if any(role in user_roles for role in ["Administrator", "System Manager", "Maintenance Manager", "Supervisor"]):
+	if not any(role in user_roles for role in ALLOWED_ROLES):
+		return "1=0"
+
+	# Manager and Maintenance Manager can see all requests
+	if any(role in user_roles for role in ["Manager", "Maintenance Manager"]):
 		return ""
 
 	conditions = []
@@ -27,37 +38,29 @@ def get_permission_query_conditions(user=None):
 					frappe.db.escape(employee)
 				)
 			)
-		# Also check by owner/user
 		conditions.append(
 			"(`tabMaintenance Request`.`owner` = {0})".format(
 				frappe.db.escape(user)
 			)
 		)
 
-	# Unit Head can see requests assigned to their unit
-	if "Unit Head" in user_roles:
-		unit = frappe.db.get_value("Employee", {"user_id": user}, "custom_unit")
-		if unit:
-			conditions.append(
-				"(`tabMaintenance Request`.`unit` = {0})".format(
-					frappe.db.escape(unit)
-				)
+	# Maintenance User can access their own requests and assigned requests
+	if "Maintenance User" in user_roles:
+		conditions.append(
+			"(`tabMaintenance Request`.`owner` = {0})".format(
+				frappe.db.escape(user)
 			)
-
-	# Technician can see requests assigned to them
-	if "Maintenance Technician" in user_roles:
+		)
 		conditions.append(
 			"(`tabMaintenance Request`.`assigned_to` = {0})".format(
 				frappe.db.escape(user)
 			)
 		)
 
-	# If the user has one or more allowed conditions
 	if conditions:
 		return " OR ".join(conditions)
 
-	# Fallback: allow if owner
-	return "(`tabMaintenance Request`.`owner` = {0})".format(frappe.db.escape(user))
+	return "1=0"
 
 
 def has_permission(doc=None, ptype=None, user=None, debug=False):
@@ -72,8 +75,11 @@ def has_permission(doc=None, ptype=None, user=None, debug=False):
 
 	user_roles = frappe.get_roles(user)
 
-	# Managers & Admins have all permissions
-	if any(role in user_roles for role in ["Administrator", "System Manager", "Maintenance Manager", "Supervisor"]):
+	if not any(role in user_roles for role in ALLOWED_ROLES):
+		return False
+
+	# Manager and Maintenance Manager have all permissions
+	if any(role in user_roles for role in ["Manager", "Maintenance Manager"]):
 		return True
 
 	if not doc or isinstance(doc, str):
@@ -87,23 +93,13 @@ def has_permission(doc=None, ptype=None, user=None, debug=False):
 	if "Employee" in user_roles:
 		employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
 		if ptype in ["read", "write", "create", "submit"]:
-			if doc.employee == user or (employee and doc.employee == employee):
+			if doc.get("employee") == user or (employee and doc.get("employee") == employee):
 				return True
 
-	# Unit Head can access requests for their unit
-	if "Unit Head" in user_roles:
-		unit = frappe.db.get_value("Employee", {"user_id": user}, "custom_unit")
-		if ptype in ["read", "write", "select"]:
-			if (doc.get("unit_head") and doc.unit_head == user) or (unit and doc.get("unit") and doc.unit == unit):
-				return True
-		if ptype == "approve":
-			if doc.get("unit_head") and doc.unit_head == user:
-				return True
-
-	# Technician can access assigned requests
-	if "Maintenance Technician" in user_roles:
-		if ptype in ["read", "write"]:
-			if doc.get("assigned_to") and doc.assigned_to == user:
+	# Maintenance User can access their own and assigned requests
+	if "Maintenance User" in user_roles:
+		if ptype in ["read", "write", "create", "submit"]:
+			if getattr(doc, "owner", None) == user or getattr(doc, "assigned_to", None) == user:
 				return True
 
 	return False
@@ -118,18 +114,5 @@ def has_app_permission(user=None):
 	if not user or user == "Guest":
 		return False
 
-	allowed_roles = [
-		"Administrator",
-		"System Manager",
-		"Maintenance Manager",
-		"Employee",
-		"Unit Head",
-		"Maintenance Technician",
-		"Supervisor",
-		"Maintenance User",
-		"All",
-	]
-
 	user_roles = frappe.get_roles(user)
-
-	return any(role in allowed_roles for role in user_roles)
+	return any(role in ALLOWED_ROLES for role in user_roles)

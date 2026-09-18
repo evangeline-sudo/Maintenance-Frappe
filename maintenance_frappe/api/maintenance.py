@@ -2,6 +2,40 @@ import frappe
 from frappe import _
 
 
+def filter_employee_sidebar(bootinfo):
+	"""Limit the Maintenance sidebar for standard Employee users while preserving section headers."""
+	roles = set(frappe.get_roles())
+	elevated_roles = {
+		"Administrator",
+		"System Manager",
+		"Maintenance Manager",
+		"Maintenance User",
+		"Unit Head",
+		"Supervisor",
+		"Technician",
+		"Maintenance Technician",
+	}
+	if "Employee" not in roles or roles & elevated_roles:
+		return
+
+	allowed_links = {"Maintenance Request", "Equipment", "Issue Category"}
+	for sidebar_name, sidebar in bootinfo.get("workspace_sidebar_item", {}).items():
+		is_maintenance_sidebar = (
+			sidebar_name.lower() == "maintenance"
+			or str(sidebar.get("label") or "").lower() == "maintenance"
+			or str(sidebar.get("module") or "").lower() == "maintenance"
+		)
+		if not is_maintenance_sidebar:
+			continue
+
+		sidebar["items"] = [
+			item
+			for item in sidebar.get("items", [])
+			if item.get("type") == "Card Break"
+			or (item.get("link_type") == "DocType" and item.get("link_to") in allowed_links)
+		]
+
+
 def _get_authorized_request_doc(request_id, ptype="write", action="update"):
 	request_doc = frappe.get_doc("Maintenance Request", request_id)
 	if not frappe.has_permission("Maintenance Request", ptype, request_doc):
@@ -13,7 +47,7 @@ def _get_authorized_request_doc(request_id, ptype="write", action="update"):
 def approve_maintenance_request(request_id, notes=""):
 	"""
 	API endpoint to approve a maintenance request
-	Only Unit Head can approve
+	Only Manager can approve
 	"""
 	request_doc = _get_authorized_request_doc(request_id, "write", "approve")
 	request_doc.approve_request(notes)
@@ -24,7 +58,7 @@ def approve_maintenance_request(request_id, notes=""):
 def reject_maintenance_request(request_id, notes=""):
 	"""
 	API endpoint to reject a maintenance request
-	Only Unit Head can reject
+	Only Manager can reject
 	"""
 	request_doc = _get_authorized_request_doc(request_id, "write", "reject")
 	request_doc.reject_request(notes)

@@ -204,6 +204,10 @@ scheduler_events = {
 # before_request = ["maintenance_frappe.utils.before_request"]
 # after_request = ["maintenance_frappe.utils.after_request"]
 
+# Boot session
+# ------------------
+boot_session = ["maintenance_frappe.api.maintenance.filter_employee_sidebar"]
+
 # Job Events
 # ----------
 # before_job = ["maintenance_frappe.utils.before_job"]

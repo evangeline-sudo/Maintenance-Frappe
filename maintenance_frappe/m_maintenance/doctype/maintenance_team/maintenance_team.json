@@ -10,7 +10,7 @@
   "team_code",
   "team_lead",
   "is_active",
-  "description"
+  "team_members"
  ],
  "fields": [
   {
@@ -45,9 +45,10 @@
    "label": "Is Active"
   },
   {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
+   "fieldname": "team_members",
+   "fieldtype": "Table",
+   "label": "Team Members",
+   "options": "Team Member"
   }
  ],
  "index_web_pages_for_search": 1,

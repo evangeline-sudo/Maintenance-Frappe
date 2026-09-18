@@ -11,24 +11,13 @@
   "equipment_category",
   "status",
   "criticality",
-  "column_break_basic",
-  "equipment_type",
-  "product_type",
-  "maintenance_type",
-  "asset_id",
-  "ownership",
-  "location_and_org_section",
-  "unit",
   "department",
   "location",
-  "column_break_tech",
   "manufacturer",
   "model",
   "serial_number",
-  "dates_and_warranty_section",
   "purchase_date",
   "installation_date",
-  "column_break_dates",
   "warranty_expiry_date",
   "amc_available"
  ],
@@ -77,50 +66,6 @@
    "options": "Low\nMedium\nHigh\nCritical"
   },
   {
-   "fieldname": "column_break_basic",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "equipment_type",
-   "fieldtype": "Data",
-   "label": "Equipment Type"
-  },
-  {
-   "fieldname": "product_type",
-   "fieldtype": "Link",
-   "label": "Product Type",
-   "options": "Product Type Value"
-  },
-  {
-   "fieldname": "maintenance_type",
-   "fieldtype": "Select",
-   "label": "Maintenance Type",
-   "options": "IT\nNon-IT\nProfessional/Specialized",
-   "in_standard_filter": 1
-  },
-  {
-   "fieldname": "asset_id",
-   "fieldtype": "Data",
-   "label": "Asset ID"
-  },
-  {
-   "fieldname": "ownership",
-   "fieldtype": "Select",
-   "label": "Ownership",
-   "options": "\nOwned\nLeased\nRented\nThird Party\nOther"
-  },
-  {
-   "fieldname": "location_and_org_section",
-   "fieldtype": "Section Break",
-   "label": "Location & Organization"
-  },
-  {
-   "fieldname": "unit",
-   "fieldtype": "Data",
-   "in_standard_filter": 1,
-   "label": "Unit"
-  },
-  {
    "fieldname": "department",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -133,10 +78,6 @@
    "in_standard_filter": 1,
    "label": "Location",
    "options": "Maintenance Location"
-  },
-  {
-   "fieldname": "column_break_tech",
-   "fieldtype": "Column Break"
   },
   {
    "fieldname": "manufacturer",
@@ -154,11 +95,6 @@
    "label": "Serial Number"
   },
   {
-   "fieldname": "dates_and_warranty_section",
-   "fieldtype": "Section Break",
-   "label": "Dates & Warranty"
-  },
-  {
    "fieldname": "purchase_date",
    "fieldtype": "Date",
    "label": "Purchase Date"
@@ -167,10 +103,6 @@
    "fieldname": "installation_date",
    "fieldtype": "Date",
    "label": "Installation Date"
-  },
-  {
-   "fieldname": "column_break_dates",
-   "fieldtype": "Column Break"
   },
   {
    "fieldname": "warranty_expiry_date",

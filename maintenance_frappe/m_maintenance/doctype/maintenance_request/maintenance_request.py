@@ -44,20 +44,25 @@ class MaintenanceRequest(Document):
 
 	def before_insert(self):
 		"""Set default values and auto-create linked entities before link validation"""
-		if not self.ownership_type:
-			self.ownership_type = "Organizational Asset"
+		if not getattr(self, "ownership_type", None):
+			try:
+				self.ownership_type = "Organizational Asset"
+			except AttributeError:
+				pass
 		self.auto_create_issue_category()
 		self.auto_handle_equipment()
 
 	def after_insert(self):
 		"""After insert hook: log submitted status history, send submitted notification, and check approval rules"""
-		self.add_status_history("Submitted", f"Request submitted for {self.ownership_type}")
+		ownership_type = getattr(self, "ownership_type", None) or "Organizational Asset"
+		self.add_status_history("Submitted", f"Request submitted for {ownership_type}")
 		self.send_status_notification("Submitted")
 		self.check_approval_requirement()
 
 	def on_submit(self):
 		"""On submit, add initial status history entry and check approval"""
-		self.add_status_history("Submitted", f"Request submitted for {self.ownership_type}")
+		ownership_type = getattr(self, "ownership_type", None) or "Organizational Asset"
+		self.add_status_history("Submitted", f"Request submitted for {ownership_type}")
 		self.send_status_notification("Submitted")
 		self.check_approval_requirement()
 
@@ -193,8 +198,9 @@ class MaintenanceRequest(Document):
 
 	def before_validate(self):
 		"""Pre-validation hook: auto-assign default maintenance_type for equipment_category if missing"""
-		if getattr(self, "equipment_category", None):
-			allowed = CATEGORY_MAINTENANCE_TYPE_MAP.get(self.equipment_category, ["Non-IT"])
+		equipment_category = getattr(self, "equipment_category", None)
+		if equipment_category:
+			allowed = CATEGORY_MAINTENANCE_TYPE_MAP.get(equipment_category, ["Non-IT"])
 			if not getattr(self, "maintenance_type", None):
 				self.maintenance_type = allowed[0]
 
@@ -216,7 +222,8 @@ class MaintenanceRequest(Document):
 	def auto_create_issue_category(self):
 		"""Automatically create Issue Category if it does not exist"""
 		if self.issue_category and not frappe.db.exists("Issue Category", self.issue_category):
-			eq_cat = self.equipment_category if frappe.db.exists("Equipment Category", self.equipment_category) else None
+			equipment_category = getattr(self, "equipment_category", None)
+			eq_cat = equipment_category if equipment_category and frappe.db.exists("Equipment Category", equipment_category) else None
 			try:
 				issue_cat = frappe.get_doc({
 					"doctype": "Issue Category",
@@ -230,17 +237,18 @@ class MaintenanceRequest(Document):
 
 	def validate_issue_category_match(self):
 		"""Server-side validation to ensure Issue Category belongs to the selected Equipment Category"""
-		if self.issue_category and self.equipment_category:
+		equipment_category = getattr(self, "equipment_category", None)
+		if self.issue_category and equipment_category:
 			issue_cat_data = frappe.db.get_value(
 				"Issue Category", self.issue_category, ["equipment_category", "is_active"], as_dict=True
 			)
 			if issue_cat_data:
 				if not issue_cat_data.is_active:
 					frappe.throw(_("Selected Issue Category '{0}' is inactive.").format(self.issue_category))
-				if issue_cat_data.equipment_category and issue_cat_data.equipment_category != self.equipment_category:
+				if issue_cat_data.equipment_category and issue_cat_data.equipment_category != equipment_category:
 					frappe.throw(
 						_("Issue Category '{0}' does not belong to Equipment Category '{1}'.").format(
-							self.issue_category, self.equipment_category
+							self.issue_category, equipment_category
 						)
 					)
 
@@ -389,7 +397,7 @@ class MaintenanceRequest(Document):
 			return
 
 		user_roles = frappe.get_roles(current_user)
-		is_manager = any(role in user_roles for role in ["Administrator", "System Manager", "Maintenance Manager"])
+		is_manager = any(role in user_roles for role in ["Administrator", "System Manager", "Maintenance Manager", "Manager"])
 		is_unit_head = bool(self.unit_head and current_user == self.unit_head)
 
 		# If creating a new document
@@ -431,7 +439,7 @@ class MaintenanceRequest(Document):
 
 		user_roles = frappe.get_roles(current_user)
 		is_authorized = (
-			any(role in user_roles for role in ["System Manager", "Maintenance Manager"]) or
+			any(role in user_roles for role in ["System Manager", "Maintenance Manager", "Manager"]) or
 			bool(self.unit_head and current_user == self.unit_head)
 		)
 		if not is_authorized:
@@ -444,10 +452,11 @@ class MaintenanceRequest(Document):
 
 	def validate_equipment_category_match(self):
 		"""Ensure equipment matches equipment_category if both are selected"""
-		if self.equipment and self.equipment_category:
+		equipment_category = getattr(self, "equipment_category", None)
+		if self.equipment and equipment_category:
 			eq_cat = frappe.db.get_value("Equipment", self.equipment, "equipment_category")
 			if eq_cat:
-				matching_cats = get_matching_equipment_categories(self.equipment_category)
+				matching_cats = get_matching_equipment_categories(equipment_category)
 				if eq_cat not in matching_cats:
 					category_map = {
 						"Electrical": "Electrical Equipment",
@@ -458,46 +467,50 @@ class MaintenanceRequest(Document):
 						"Network": "IT Equipment"
 					}
 					mapped = category_map.get(eq_cat, eq_cat)
-					if mapped != self.equipment_category and eq_cat not in matching_cats:
+					if mapped != equipment_category and eq_cat not in matching_cats:
 						frappe.throw(
 							_("Selected Equipment '{0}' belongs to category '{1}', which does not match the request category '{2}'.").format(
-								self.equipment, eq_cat, self.equipment_category
+								self.equipment, eq_cat, equipment_category
 							)
 						)
 
 	def validate_maintenance_type(self):
 		"""Validate maintenance type and equipment category mapping"""
-		if not self.equipment_category:
-			frappe.throw(_("Equipment Category is mandatory"))
+		equipment_category = getattr(self, "equipment_category", None)
+		if not equipment_category:
+			return
 
-		allowed_types = CATEGORY_MAINTENANCE_TYPE_MAP.get(self.equipment_category, ["Non-IT"])
+		allowed_types = CATEGORY_MAINTENANCE_TYPE_MAP.get(equipment_category, ["Non-IT"])
 
 		if not self.maintenance_type:
 			self.maintenance_type = allowed_types[0]
 		elif self.maintenance_type not in allowed_types:
 			frappe.throw(
 				_("Maintenance Type '{0}' is invalid for Equipment Category '{1}'. Allowed Maintenance Type is '{2}'.").format(
-					self.maintenance_type, self.equipment_category, ", ".join(allowed_types)
+					self.maintenance_type, equipment_category, ", ".join(allowed_types)
 				)
 			)
 
 	def validate_ownership_type(self):
 		"""Validate fields based on Organizational vs Non-Organizational Asset"""
-		if self.ownership_type == "Non-Organizational Asset":
-			if not self.external_ownership_type:
+		ownership_type = getattr(self, "ownership_type", None)
+		if ownership_type == "Non-Organizational Asset":
+			if not getattr(self, "external_ownership_type", None):
 				frappe.throw(_("External Ownership Type is mandatory for Non-Organizational Asset maintenance"))
-			if not self.external_owner_name:
+			if not getattr(self, "external_owner_name", None):
 				frappe.throw(_("External Owner / Provider Name is mandatory for Non-Organizational Asset maintenance"))
 
 	def validate_asset_details(self):
 		"""Validate asset if provided for organizational equipment"""
-		if self.ownership_type == "Organizational Asset" and self.asset:
+		ownership_type = getattr(self, "ownership_type", None)
+		asset = getattr(self, "asset", None)
+		if ownership_type == "Organizational Asset" and asset:
 			try:
-				asset = frappe.get_doc("Asset", self.asset)
-				self.equipment_name = asset.asset_name
-				self.equipment_serial = asset.name
+				asset_doc = frappe.get_doc("Asset", asset)
+				self.equipment_name = asset_doc.asset_name
+				self.equipment_serial = asset_doc.name
 			except frappe.DoesNotExistError:
-				frappe.throw(_("Asset {0} does not exist").format(self.asset))
+				frappe.throw(_("Asset {0} does not exist").format(asset))
 
 	def check_approval_requirement(self):
 		"""Determine if Unit Head approval is required based on rules"""
@@ -537,7 +550,9 @@ class MaintenanceRequest(Document):
 		self.add_status_history(new_status, reason)
 
 	def add_status_history(self, status, notes=""):
-		"""Add entry to status history table"""
+		"""Add entry to status history table when the field exists in the schema."""
+		if not hasattr(self, "status_history"):
+			return
 		self.append("status_history", {
 			"status": status,
 			"date_time": datetime.now(),
@@ -743,12 +758,14 @@ class MaintenanceRequest(Document):
 
 	def get_total_parts_cost(self):
 		"""Calculate total cost of parts used"""
-		return sum([flt(line.amount) for line in self.parts_used])
+		parts_used = getattr(self, "parts_used", []) or []
+		return sum([flt(line.amount) for line in parts_used])
 
 	def get_total_labour_cost(self):
 		"""Calculate total labour cost from work logs"""
+		work_logs = getattr(self, "work_logs", []) or []
 		total = 0.0
-		for line in self.work_logs:
+		for line in work_logs:
 			if getattr(line, "labour_amount", 0):
 				total += flt(line.labour_amount)
 			elif getattr(line, "duration_minutes", 0) and getattr(line, "hourly_rate", 0):
@@ -757,7 +774,8 @@ class MaintenanceRequest(Document):
 
 	def get_total_work_hours(self):
 		"""Calculate total work hours from work logs"""
-		total_minutes = sum([flt(line.duration_minutes) for line in self.work_logs])
+		work_logs = getattr(self, "work_logs", []) or []
+		total_minutes = sum([flt(line.duration_minutes) for line in work_logs])
 		return total_minutes / 60.0 if total_minutes else 0.0
 
 

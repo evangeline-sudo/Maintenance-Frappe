@@ -219,6 +219,7 @@ frappe.ui.form.on('Maintenance Request', {
 		let user_roles = frappe.user_roles || [];
 		let is_admin_or_approver = (
 			user_roles.includes('System Manager') ||
+			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
 			user_roles.includes('Maintenance User') ||
 			user_roles.includes('Unit Head') ||
@@ -319,6 +320,7 @@ frappe.ui.form.on('Maintenance Request', {
 		let is_authorized_approver = (
 			frappe.session.user === 'Administrator' ||
 			user_roles.includes('System Manager') ||
+			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
 			user_roles.includes('Supervisor') ||
 			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
@@ -342,6 +344,7 @@ frappe.ui.form.on('Maintenance Request', {
 		let can_approve = (
 			frappe.session.user === 'Administrator' ||
 			user_roles.includes('System Manager') ||
+			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
 			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
 		);

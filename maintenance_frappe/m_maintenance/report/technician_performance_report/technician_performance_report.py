@@ -3,7 +3,7 @@ from frappe import _
 
 def execute(filters=None):
     columns = [
-        {"label": "Technician", "fieldname": "assigned_technician", "fieldtype": "Link", "options": "Responsible Person", "width": 160},
+        {"label": "Technician", "fieldname": "assigned_technician", "fieldtype": "Link", "options": "Employee", "width": 160},
         {"label": "Completed Orders", "fieldname": "completed_orders", "fieldtype": "Int", "width": 130},
         {"label": "Total Labor Cost", "fieldname": "total_labor", "fieldtype": "Currency", "width": 140}
     ]

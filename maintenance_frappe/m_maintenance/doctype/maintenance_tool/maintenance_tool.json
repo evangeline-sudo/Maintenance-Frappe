@@ -10,7 +10,6 @@
   "tool_type",
   "serial_number",
   "location",
-  "responsible_person",
   "condition",
   "status",
   "calibration_required",
@@ -47,12 +46,6 @@
    "fieldname": "location",
    "fieldtype": "Data",
    "label": "Location"
-  },
-  {
-   "fieldname": "responsible_person",
-   "fieldtype": "Link",
-   "label": "Responsible Person",
-   "options": "Responsible Person"
   },
   {
    "default": "Good",
