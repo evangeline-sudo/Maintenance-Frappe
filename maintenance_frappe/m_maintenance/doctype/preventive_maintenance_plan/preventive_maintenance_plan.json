@@ -7,12 +7,15 @@
  "field_order": [
   "plan_name",
   "equipment",
+  "equipment_name",
+  "equipment_category",
   "maintenance_type",
   "frequency",
   "custom_interval_days",
   "start_date",
   "end_date",
   "next_due_date",
+  "last_generated_date",
   "assigned_team",
   "assigned_technician",
   "checklist",
@@ -34,6 +37,18 @@
    "label": "Equipment",
    "options": "Equipment",
    "reqd": 1
+  },
+  {
+   "fetch_from": "equipment.equipment_name",
+   "fieldname": "equipment_name",
+   "fieldtype": "Read Only",
+   "label": "Equipment Name"
+  },
+  {
+   "fieldname": "equipment_category",
+   "fieldtype": "Link",
+   "label": "Equipment Category",
+   "options": "Equipment Category"
   },
   {
    "default": "Preventive",
@@ -76,6 +91,12 @@
    "reqd": 1
   },
   {
+   "fieldname": "last_generated_date",
+   "fieldtype": "Date",
+   "label": "Last Generated Date",
+   "read_only": 1
+  },
+  {
    "fieldname": "assigned_team",
    "fieldtype": "Link",
    "label": "Assigned Team",
@@ -85,7 +106,7 @@
    "fieldname": "assigned_technician",
    "fieldtype": "Link",
    "label": "Assigned Technician",
-   "options": "Employee"
+   "options": "Responsible Person"
   },
   {
    "fieldname": "checklist",

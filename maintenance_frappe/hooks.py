@@ -271,13 +271,7 @@ fixtures = [
 			]]
 		]
 	},
-	{"dt": "Role", "filters": [["name", "in", ["Maintenance User", "Maintenance Manager", "Maintenance Technician", "Unit Head"]]]},
-	{"dt": "Workspace", "filters": [["name", "=", "Maintenance"]]},
-	{"dt": "Workspace Sidebar", "filters": [["name", "=", "Maintenance"]]},
-	{"dt": "Dashboard", "filters": [["name", "=", "Maintenance"]]},
-	{"dt": "Number Card", "filters": [["module", "=", "Maintenance"]]},
-	{"dt": "Dashboard Chart", "filters": [["module", "=", "Maintenance"]]},
-	{"dt": "Desktop Icon", "filters": [["name", "=", "Maintenance"]]}
+	{"dt": "Role", "filters": [["name", "in", ["Maintenance User", "Maintenance Manager", "Maintenance Technician", "Unit Head"]]]}
 ]
 
 

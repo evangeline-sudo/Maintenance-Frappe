@@ -7,6 +7,7 @@
  "field_order": [
   "inspection_item",
   "expected_result",
+  "numeric_tolerance",
   "is_mandatory",
   "instructions"
  ],
@@ -23,6 +24,11 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Expected Result"
+  },
+  {
+   "fieldname": "numeric_tolerance",
+   "fieldtype": "Data",
+   "label": "Numeric Tolerance Range"
   },
   {
    "default": "1",

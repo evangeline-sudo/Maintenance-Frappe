@@ -8,6 +8,9 @@
   "maintenance_request",
   "pm_plan",
   "equipment",
+  "equipment_name",
+  "location",
+  "department",
   "maintenance_type",
   "priority",
   "assigned_team",
@@ -56,6 +59,23 @@
    "reqd": 1
   },
   {
+   "fetch_from": "equipment.equipment_name",
+   "fieldname": "equipment_name",
+   "fieldtype": "Read Only",
+   "label": "Equipment Name"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department"
+  },
+  {
    "default": "Corrective",
    "fieldname": "maintenance_type",
    "fieldtype": "Select",
@@ -81,7 +101,7 @@
    "fieldname": "assigned_technician",
    "fieldtype": "Link",
    "label": "Assigned Technician",
-   "options": "Employee"
+   "options": "Responsible Person"
   },
   {
    "fieldname": "planned_start",

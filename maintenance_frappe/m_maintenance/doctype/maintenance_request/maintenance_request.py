@@ -49,6 +49,18 @@ class MaintenanceRequest(Document):
 				self.ownership_type = "Organizational Asset"
 			except AttributeError:
 				pass
+		if not getattr(self, "employee", None) and frappe.session.user and frappe.session.user != "Guest":
+			emp_info = get_logged_in_employee(frappe.session.user)
+			if emp_info and emp_info.get("name"):
+				self.employee = emp_info.get("name")
+				if not getattr(self, "employee_name", None):
+					self.employee_name = emp_info.get("employee_name")
+				if not getattr(self, "unit_head", None) and emp_info.get("unit_head"):
+					self.unit_head = emp_info.get("unit_head")
+				if not getattr(self, "department", None) and emp_info.get("department"):
+					self.department = emp_info.get("department")
+				if not getattr(self, "unit", None) and emp_info.get("unit"):
+					self.unit = emp_info.get("unit")
 		self.auto_create_issue_category()
 		self.auto_handle_equipment()
 
@@ -67,31 +79,47 @@ class MaintenanceRequest(Document):
 		self.check_approval_requirement()
 
 	def on_update(self):
-		"""On direct save/update: fire status-change notification when status changes."""
-		if not self.is_new() and self.has_value_changed("status"):
-			# Map doc status to event_type keys used by notification
-			status_event_map = {
-				"Submitted": "Submitted",
-				"Pending Approval": "Approval Required",
-				"Approved": "Approved",
-				"Rejected": "Rejected",
-				"Assigned": "Assigned",
-				"Resolved": "Resolved",
-				"Closed": "Closed",
-			}
-			event_type = status_event_map.get(self.status)
-			if event_type:
-				self.send_status_notification(event_type)
+		"""On direct save/update: fire status-change notification when status or assigned_to changes."""
+		if not self.is_new():
+			if self.has_value_changed("status"):
+				status_event_map = {
+					"Submitted": "Submitted",
+					"Pending Approval": "Approval Required",
+					"Approved": "Approved",
+					"Rejected": "Rejected",
+					"Assigned": "Assigned",
+					"Resolved": "Resolved",
+					"Closed": "Closed",
+				}
+				event_type = status_event_map.get(self.status)
+				if event_type:
+					self.send_status_notification(event_type)
+
+			if self.has_value_changed("assigned_to") and getattr(self, "assigned_to", None):
+				if self.status in ["Approved", "Pending Approval", "Draft", "Submitted"]:
+					self.status = "Assigned"
+					self.add_status_history("Assigned", f"Assigned to {self.assigned_to}")
+				self.send_status_notification("Assigned")
 
 	def send_status_notification(self, event_type):
 		"""Send notification email using responsive Merriweather HTML Email Templates.
 
-		Recipient logic:
-		  - Employee (requester) always receives notifications on every status change.
-		  - All active Administrators and Maintenance Managers always receive notifications.
-		  - Unit Head receives notification on Approval Required events.
-		  - Assigned Technician receives notification on Assigned and Rework Required events.
+		Targeted Recipient Routing:
+		  - Submitted: Requester (Employee)
+		  - Approval Required: Manager / Unit Head
+		  - Approved / Rejected / Closed: Requester (Employee)
+		  - Assigned: Technician & Requester
+		  - Resolved: Requester & Manager
+		  - Rework Required: Technician
 		"""
+		# Prevent sending duplicate notifications for the same event in the same request execution
+		if not hasattr(self, "_sent_notifications"):
+			self._sent_notifications = set()
+		event_key = f"{event_type}:{getattr(self, 'status', '')}:{getattr(self, 'name', '')}"
+		if event_key in self._sent_notifications:
+			return
+		self._sent_notifications.add(event_key)
+
 		template_name_map = {
 			"Submitted": "Maintenance Request Submitted",
 			"Approval Required": "Maintenance Approval Required",
@@ -105,31 +133,29 @@ class MaintenanceRequest(Document):
 		template_name = template_name_map.get(event_type, "Maintenance Request Submitted")
 		try:
 			recipients = []
-
-			# 1. Always notify the Employee (the requester)
 			employee_email = self.get_employee_email()
-			if employee_email:
-				recipients.append(employee_email)
+			unit_head_email = self._resolve_user_email(getattr(self, "unit_head", None))
+			technician_email = self._resolve_user_email(getattr(self, "assigned_to", None))
 
-			# 2. Always notify all Administrators and Maintenance Managers
-			admin_emails = self.get_admin_emails()
-			recipients.extend(admin_emails)
-
-			# 3. For Approval Required events: also notify the assigned Unit Head
-			if event_type == "Approval Required" and getattr(self, "unit_head", None):
-				unit_head_email = self._resolve_user_email(self.unit_head)
+			if event_type in ["Submitted", "Approved", "Rejected", "Closed"]:
+				if employee_email:
+					recipients.append(employee_email)
+			elif event_type == "Approval Required":
 				if unit_head_email:
 					recipients.append(unit_head_email)
-
-			# 4. For Assigned events: notify the assigned technician (in addition to employee and admins)
-			if event_type == "Assigned" and getattr(self, "assigned_to", None):
-				technician_email = self._resolve_user_email(self.assigned_to)
+				elif employee_email:
+					recipients.append(employee_email)
+			elif event_type == "Assigned":
 				if technician_email:
 					recipients.append(technician_email)
-
-			# 5. For Rework Required: also notify the assigned technician
-			if event_type == "Rework Required" and getattr(self, "assigned_to", None):
-				technician_email = self._resolve_user_email(self.assigned_to)
+				if employee_email:
+					recipients.append(employee_email)
+			elif event_type == "Resolved":
+				if employee_email:
+					recipients.append(employee_email)
+				if unit_head_email:
+					recipients.append(unit_head_email)
+			elif event_type == "Rework Required":
 				if technician_email:
 					recipients.append(technician_email)
 
@@ -216,8 +242,27 @@ class MaintenanceRequest(Document):
 		self.validate_ownership_type()
 		self.validate_asset_details()
 		self.validate_issue_category_match()
+		self.validate_category_match()
 		self.check_approved_status()
 		self.calculate_total_costs()
+
+	def validate_category_match(self):
+		"""Server-side validation to ensure Maintenance Category belongs to the selected Maintenance Type"""
+		maintenance_type = getattr(self, "maintenance_type", None)
+		category = getattr(self, "category", None)
+		if category and maintenance_type:
+			cat_data = frappe.db.get_value(
+				"Maintenance Category", category, ["maintenance_type", "is_active"], as_dict=True
+			)
+			if cat_data:
+				if not cat_data.is_active:
+					frappe.throw(_("Selected Maintenance Category '{0}' is inactive.").format(category))
+				if cat_data.maintenance_type and cat_data.maintenance_type != maintenance_type:
+					frappe.throw(
+						_("Category '{0}' belongs to Maintenance Type '{1}', which does not match selected Maintenance Type '{2}'.").format(
+							category, cat_data.maintenance_type, maintenance_type
+						)
+					)
 
 	def auto_create_issue_category(self):
 		"""Automatically create Issue Category if it does not exist"""
@@ -367,14 +412,20 @@ class MaintenanceRequest(Document):
 
 	def validate_employee(self):
 		"""Validate that employee exists, set employee_name, and auto-populate unit_head if missing and unit"""
+		if not getattr(self, "employee", None) and frappe.session.user and frappe.session.user != "Guest":
+			emp_info = get_logged_in_employee(frappe.session.user)
+			if emp_info and emp_info.get("name"):
+				self.employee = emp_info.get("name")
+
 		if self.employee:
 			emp = frappe.get_doc("Employee", self.employee)
 			self.employee_name = emp.employee_name
 			if getattr(emp, "department", None):
-				if hasattr(self, "department"):
+				if hasattr(self, "department") and not getattr(self, "department", None):
 					self.department = emp.department
 			if getattr(emp, "unit", None):
-				self.unit = emp.unit
+				if hasattr(self, "unit") and not getattr(self, "unit", None):
+					self.unit = emp.unit
 			if not getattr(self, "unit_head", None):
 				self.unit_head = self.fetch_employee_approver()
 
@@ -402,14 +453,11 @@ class MaintenanceRequest(Document):
 
 		# If creating a new document
 		if self.is_new():
-			# Regular users can only submit with approval_status = 'Pending'
-			if self.approval_status and self.approval_status != "Pending":
-				if not (is_manager or is_unit_head):
-					frappe.throw(
-						_("Only Maintenance Manager or the assigned Unit Head ({0}) can set Approval Status to '{1}'.").format(
-							self.unit_head or _("Unit Head"), self.approval_status
-						)
-					)
+			# Regular employee users submit with approval_status = 'Pending'
+			if not (is_manager or is_unit_head):
+				self.approval_status = "Pending"
+				if hasattr(self, "status") and self.status not in ["Pending Approval", "Draft"]:
+					self.status = "Pending Approval"
 			return
 
 		# If updating an existing document and approval_status changed
@@ -501,7 +549,9 @@ class MaintenanceRequest(Document):
 				frappe.throw(_("External Owner / Provider Name is mandatory for Non-Organizational Asset maintenance"))
 
 	def validate_asset_details(self):
-		"""Validate asset if provided for organizational equipment"""
+		"""Validate asset if field is present and provided for organizational equipment"""
+		if not hasattr(self, "asset"):
+			return
 		ownership_type = getattr(self, "ownership_type", None)
 		asset = getattr(self, "asset", None)
 		if ownership_type == "Organizational Asset" and asset:
@@ -514,6 +564,9 @@ class MaintenanceRequest(Document):
 
 	def check_approval_requirement(self):
 		"""Determine if Unit Head approval is required based on rules"""
+		user_roles = frappe.get_roles(frappe.session.user)
+		is_manager_or_admin = any(role in user_roles for role in ["Administrator", "System Manager", "Maintenance Manager"])
+
 		rule = frappe.db.get_value(
 			"Maintenance Approval Rule",
 			{
@@ -527,19 +580,23 @@ class MaintenanceRequest(Document):
 			as_dict=True
 		)
 
-		requires_approval = rule.requires_approval if rule else False
+		if rule:
+			requires_approval = bool(rule.requires_approval)
+		else:
+			# Default behavior: All Employee submitted requests require Unit Head / Manager approval
+			requires_approval = not is_manager_or_admin
 
 		if requires_approval:
-			self.update_status("Pending Approval", "Awaiting Unit Head approval")
 			self.approval_status = "Pending"
+			self.update_status("Pending Approval", "Awaiting Unit Head approval")
 			if not self.unit_head:
 				self.unit_head = self.fetch_employee_approver()
 			if self.unit_head:
 				self.create_approval_todo()
 			self.send_status_notification("Approval Required")
 		else:
-			self.update_status("Approved", "Auto-approved")
 			self.approval_status = "Approved"
+			self.update_status("Approved", "Auto-approved")
 			self.approval_date = datetime.now()
 			self.send_status_notification("Approved")
 
@@ -574,32 +631,43 @@ class MaintenanceRequest(Document):
 			todo.insert(ignore_permissions=True)
 
 	@frappe.whitelist()
-	def approve_request(self, remarks=""):
+	def approve_request(self, remarks="", approval_notes="", **kwargs):
 		"""Maintenance Manager or Unit Head approves the maintenance request"""
 		self.validate_approval_authority()
-		if self.approval_status not in ["Pending" and self.status != "Pending Approval", "Hold"]:
+		if self.approval_status not in ["Pending", "Hold"] and self.status != "Pending Approval":
 			frappe.throw(_("Only pending or on-hold requests can be approved"))
 
 		self.approval_status = "Approved"
 		self.approval_date = datetime.now()
-		if approval_notes:
-			self.approval_notes = remarks
-		self.update_status("Approved", f"Approved by {frappe.session.user}: {remarks}")
-		self.save(ignore_permissions=True)
-		self.send_status_notification("Approved", ignore_permissions=True)
+		notes = approval_notes or remarks or ""
+		if hasattr(self, "approval_notes"):
+			self.approval_notes = notes
+
+		if getattr(self, "assigned_to", None):
+			self.update_status("Assigned", f"Approved and assigned to {self.assigned_to} by {frappe.session.user}: {notes}")
+			self.save(ignore_permissions=True)
+			self.send_status_notification("Approved")
+			self.send_status_notification("Assigned")
+		else:
+			self.update_status("Approved", f"Approved by {frappe.session.user}: {notes}")
+			self.save(ignore_permissions=True)
+			self.send_status_notification("Approved")
+
 		frappe.msgprint(_("Maintenance Request {0} approved").format(self.name))
 
 	@frappe.whitelist()
-	def reject_request(self, remarks=""):
+	def reject_request(self, remarks="", approval_notes="", **kwargs):
 		"""Maintenance Manager or Unit Head rejects the maintenance request"""
 		self.validate_approval_authority()
-		if self.approval_status not in ["Pending" and self.status != "Pending Approval", "Hold"]:
+		if self.approval_status not in ["Pending", "Hold"] and self.status != "Pending Approval":
 			frappe.throw(_("Only pending or on-hold requests can be rejected"))
 
 		self.approval_status = "Rejected"
-		self.approval_notes = remarks
+		notes = approval_notes or remarks or ""
+		if hasattr(self, "approval_notes"):
+			self.approval_notes = notes
 		self.closed_date = datetime.now()
-		self.update_status("Rejected", f"Rejected by {frappe.session.user}: {remarks}")
+		self.update_status("Rejected", f"Rejected by {frappe.session.user}: {notes}")
 		self.save(ignore_permissions=True)
 		self.send_status_notification("Rejected")
 		frappe.msgprint(_("Maintenance Request {0} rejected and closed.").format(self.name))
@@ -696,8 +764,8 @@ class MaintenanceRequest(Document):
 			"maintenance_request": self.name,
 			"equipment": self.equipment,
 			"equipment_name": self.equipment_name,
-			"department": self.department,
-			"location": self.location,
+			"department": getattr(self, "department", None),
+			"location": getattr(self, "location", getattr(self, "equipment_location", None)),
 			"maintenance_type": wo_maint_type,
 			"priority": self.priority,
 			"assigned_team": getattr(self, "assigned_team", None),
@@ -887,6 +955,36 @@ def find_manager_by_role(emp):
 		pass
 
 	return None
+
+@frappe.whitelist()
+def get_logged_in_employee(user_id=None):
+	"""Return the Employee record linked to the current logged-in user."""
+	user = user_id or frappe.session.user
+	if not user or user == "Guest":
+		return {}
+
+	fields = ["name", "employee_name", "department"]
+	if frappe.db.has_column("Employee", "unit"):
+		fields.append("unit")
+	elif frappe.db.has_column("Employee", "custom_unit"):
+		fields.append("custom_unit as unit")
+
+	# 1. Try matching user_id
+	emp = frappe.db.get_value("Employee", {"user_id": user}, fields, as_dict=True)
+	if not emp:
+		# 2. Try matching company_email or personal_email
+		emp = frappe.db.get_value("Employee", {"company_email": user}, fields, as_dict=True)
+	if not emp:
+		emp = frappe.db.get_value("Employee", {"personal_email": user}, fields, as_dict=True)
+
+	if emp:
+		# Fetch unit head / manager user
+		manager_info = get_employee_manager_user(emp.name)
+		if manager_info and manager_info.get("user_id"):
+			emp["unit_head"] = manager_info.get("user_id")
+		return emp
+
+	return {}
 
 
 @frappe.whitelist()
@@ -1116,4 +1214,58 @@ def get_manager_users(doctype, txt, searchfield, start, page_len, filters):
 		AND (name LIKE %(txt)s OR full_name LIKE %(txt)s OR email LIKE %(txt)s)
 		ORDER BY name ASC LIMIT %(start)s, %(page_len)s
 	""", params)
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_technician_users(doctype, txt, searchfield, start, page_len, filters):
+	"""
+	Return active Users who have the 'Technician', 'Maintenance Technician', or 'Maintenance User' role.
+	Does NOT fallback to all users, ensuring ONLY users with Technician roles are displayed.
+	"""
+	tech_roles = ("Technician", "Maintenance Technician", "Maintenance User")
+	role_users = frappe.db.get_all(
+		"Has Role",
+		filters={"role": ["in", tech_roles]},
+		pluck="parent"
+	)
+
+	emp_users = []
+	try:
+		emp_users = frappe.db.sql_list("""
+			SELECT DISTINCT user_id FROM `tabEmployee`
+			WHERE user_id IS NOT NULL AND user_id != ''
+			AND (
+				role IN ('Technician', 'Maintenance Technician', 'Maintenance User')
+				OR role LIKE '%%Technician%%'
+				OR custom_role IN ('Technician', 'Maintenance Technician', 'Maintenance User')
+				OR custom_role LIKE '%%Technician%%'
+				OR designation LIKE '%%Technician%%'
+			)
+		""")
+	except Exception:
+		pass
+
+	eligible_users = list(set([u for u in (role_users + emp_users) if u and u != "Guest"]))
+	if not eligible_users:
+		return []
+
+	params = {
+		"txt": f"%{txt}%",
+		"start": int(start or 0),
+		"page_len": int(page_len or 20)
+	}
+
+	placeholders = ", ".join([f"%({f'u_{i}'})s" for i in range(len(eligible_users))])
+	for i, u in enumerate(eligible_users):
+		params[f"u_{i}"] = u
+
+	return frappe.db.sql(f"""
+		SELECT name, full_name, email FROM `tabUser`
+		WHERE enabled = 1 AND name IN ({placeholders})
+		AND (name LIKE %(txt)s OR full_name LIKE %(txt)s OR email LIKE %(txt)s)
+		ORDER BY name ASC LIMIT %(start)s, %(page_len)s
+	""", params)
+
+
 

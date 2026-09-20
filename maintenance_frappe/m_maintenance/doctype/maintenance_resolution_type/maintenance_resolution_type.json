@@ -85,7 +85,7 @@
    "role": "Maintenance User"
   }
  ],
- "quick_entry": 1,
+ "quick_entry": 0,
  "search_fields": "resolution_type",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

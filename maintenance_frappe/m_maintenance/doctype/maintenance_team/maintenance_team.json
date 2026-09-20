@@ -10,7 +10,7 @@
   "team_code",
   "team_lead",
   "is_active",
-  "team_members"
+  "description"
  ],
  "fields": [
   {
@@ -45,10 +45,9 @@
    "label": "Is Active"
   },
   {
-   "fieldname": "team_members",
-   "fieldtype": "Table",
-   "label": "Team Members",
-   "options": "Team Member"
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -112,7 +111,7 @@
    "role": "Maintenance User"
   }
  ],
- "quick_entry": 1,
+ "quick_entry": 0,
  "search_fields": "team_name,team_code,team_lead",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

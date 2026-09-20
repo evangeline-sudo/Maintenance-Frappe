@@ -129,7 +129,7 @@
    "role": "Maintenance User"
   }
  ],
- "quick_entry": 1,
+ "quick_entry": 0,
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
