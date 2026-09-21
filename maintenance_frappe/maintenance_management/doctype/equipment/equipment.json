@@ -9,35 +9,44 @@
   "equipment_id",
   "equipment_name",
   "equipment_category",
-  "status",
-  "criticality",
-  "column_break_basic",
-  "equipment_type",
-  "product_type",
-  "maintenance_type",
-  "asset_id",
-  "ownership",
-  "location_and_org_section",
+  "col_break_top",
+  "maintenance_team",
+  "responsible_person",
+  "used_in_location",
+  "section_used_by",
+  "used_by",
   "unit",
   "department",
-  "location",
-  "column_break_tech",
-  "manufacturer",
+  "employee_link",
+  "section_description_tab",
+  "description",
+  "section_product_info_tab",
+  "vendor",
+  "vendor_reference",
+  "col_break_product_right",
+  "cost",
+  "date_of_purchase",
+  "warranty_status",
   "model",
   "serial_number",
-  "dates_and_warranty_section",
-  "purchase_date",
+  "product_specifications",
+  "section_maintenance_tab",
+  "status",
+  "criticality",
+  "col_break_maint_right",
+  "manufacturer",
   "installation_date",
   "column_break_dates",
   "warranty_expiry_date",
-  "amc_available"
+  "amc_available",
+  "section_status_info"
  ],
  "fields": [
   {
    "fieldname": "equipment_id",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Equipment ID / Code",
+   "label": "Equipment ID",
    "reqd": 1,
    "unique": 1
   },
@@ -59,6 +68,141 @@
    "reqd": 1
   },
   {
+   "fieldname": "col_break_top",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "maintenance_team",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Maintenance Team",
+   "options": "Maintenance Team"
+  },
+  {
+   "fieldname": "responsible_person",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Technician",
+   "options": "Responsible Person"
+  },
+  {
+   "fieldname": "used_in_location",
+   "fieldtype": "Link",
+   "label": "Used in location",
+   "options": "Maintenance Location"
+  },
+  {
+   "fieldname": "section_used_by",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "default": "Unit",
+   "fieldname": "used_by",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Used By",
+   "options": "Unit\nDepartment\nEmployee"
+  },
+  {
+   "depends_on": "eval:doc.used_by=='Unit'",
+   "fieldname": "unit",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Unit",
+   "options": "Cost Center"
+  },
+  {
+   "depends_on": "eval:doc.used_by=='Department'",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "depends_on": "eval:doc.used_by=='Employee'",
+   "fieldname": "employee_link",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "section_description_tab",
+   "fieldtype": "Tab Break",
+   "label": "Description"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "section_product_info_tab",
+   "fieldtype": "Tab Break",
+   "label": "Product Information"
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Vendor",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "vendor_reference",
+   "fieldtype": "Data",
+   "label": "Vendor Reference"
+  },
+  {
+   "fieldname": "col_break_product_right",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "cost",
+   "fieldtype": "Currency",
+   "label": "Cost"
+  },
+  {
+   "fieldname": "date_of_purchase",
+   "fieldtype": "Date",
+   "in_list_view": 0,
+   "label": "Date of Purchase"
+  },
+  {
+   "default": "Not Applicable",
+   "fieldname": "warranty_status",
+   "fieldtype": "Select",
+   "label": "Warranty",
+   "options": "Not Applicable\nIn Warranty\nExpired"
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model"
+  },
+  {
+   "fieldname": "serial_number",
+   "fieldtype": "Data",
+   "label": "Serial Number"
+  },
+  {
+   "fieldname": "product_specifications",
+   "fieldtype": "Table",
+   "label": "Product Specifications",
+   "options": "Product Type Value"
+  },
+  {
+   "fieldname": "section_maintenance_tab",
+   "fieldtype": "Tab Break",
+   "label": "Maintenance"
+  },
+  {
+   "default": "Active",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -120,18 +264,8 @@
    "label": "Unit"
   },
   {
-   "fieldname": "department",
-   "fieldtype": "Link",
-   "in_standard_filter": 1,
-   "label": "Department",
-   "options": "Department"
-  },
-  {
-   "fieldname": "location",
-   "fieldtype": "Data",
-   "in_standard_filter": 1,
-   "label": "Location",
-   "options": "Maintenance Location"
+   "fieldname": "col_break_maint_right",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "column_break_tech",
@@ -141,26 +275,6 @@
    "fieldname": "manufacturer",
    "fieldtype": "Data",
    "label": "Manufacturer"
-  },
-  {
-   "fieldname": "model",
-   "fieldtype": "Data",
-   "label": "Model"
-  },
-  {
-   "fieldname": "serial_number",
-   "fieldtype": "Data",
-   "label": "Serial Number"
-  },
-  {
-   "fieldname": "dates_and_warranty_section",
-   "fieldtype": "Section Break",
-   "label": "Dates & Warranty"
-  },
-  {
-   "fieldname": "purchase_date",
-   "fieldtype": "Date",
-   "label": "Purchase Date"
   },
   {
    "fieldname": "installation_date",
@@ -181,11 +295,22 @@
    "fieldname": "amc_available",
    "fieldtype": "Check",
    "label": "AMC Available"
+  },
+  {
+   "fieldname": "section_status_info",
+   "fieldtype": "Section Break",
+   "label": ""
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [],
- "modified": "2026-09-20 13:14:56.736253",
+ "links": [
+  {
+   "group": "Maintenance",
+   "link_doctype": "Maintenance Request",
+   "link_fieldname": "equipment"
+  }
+ ],
+ "modified": "2026-09-21 15:35:00.000000",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Equipment",
@@ -223,7 +348,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Maintenance Technician",
+   "role": "Technician",
    "write": 1
   },
   {
@@ -232,7 +357,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Maintenance User"
+   "role": "Manger"
   },
   {
    "email": 1,
@@ -240,16 +365,15 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Employee",
-   "share": 1
+   "role": "Employee"
   }
  ],
- "quick_entry": 0,
- "row_format": "Dynamic",
- "search_fields": "equipment_id,equipment_name,equipment_category,location,department",
+ "quick_entry": 1,
+ "search_fields": "equipment_id,equipment_name,status",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
+ "title_field": "equipment_name",
  "track_changes": 1
 }

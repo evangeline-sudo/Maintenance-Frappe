@@ -49,20 +49,23 @@ class MaintenanceRequest(Document):
 				self.ownership_type = "Organizational Asset"
 			except AttributeError:
 				pass
-		if not getattr(self, "employee", None) and frappe.session.user and frappe.session.user != "Guest":
-			emp_info = get_logged_in_employee(frappe.session.user)
-			if emp_info and emp_info.get("name"):
-				self.employee = emp_info.get("name")
-				if not getattr(self, "employee_name", None):
-					self.employee_name = emp_info.get("employee_name")
-				if not getattr(self, "unit_head", None) and emp_info.get("unit_head"):
-					self.unit_head = emp_info.get("unit_head")
-				if not getattr(self, "department", None) and emp_info.get("department"):
-					self.department = emp_info.get("department")
-				if not getattr(self, "unit", None) and emp_info.get("unit"):
-					self.unit = emp_info.get("unit")
+
+		if not getattr(self, "request_date", None):
+			self.request_date = frappe.utils.today()
+
+		if not getattr(self, "employee", None):
+			user_id = getattr(self, "owner", None) or frappe.session.user
+			if user_id and user_id != "Guest":
+				emp_data = frappe.db.get_value("Employee", {"user_id": user_id}, ["name", "employee_name", "department", "custom_unit", "unit"], as_dict=True)
+				if emp_data:
+					self.employee = emp_data.name
+					self.employee_name = emp_data.employee_name
+					self.department = emp_data.department
+					self.unit = emp_data.get("custom_unit") or emp_data.get("unit")
+
 		self.auto_create_issue_category()
 		self.auto_handle_equipment()
+
 
 	def after_insert(self):
 		"""After insert hook: log submitted status history, send submitted notification, and check approval rules"""

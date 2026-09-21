@@ -264,38 +264,72 @@ frappe.ui.form.on('Maintenance Request', {
 	},
 
 	set_section_visibilities: function(frm) {
+		/**
+		 * Four Role-based Visibility Tiers:
+		 *   1. Maintenance Manager: Full system access & control over all fields/sections.
+		 *   2. Maintenance User (Technician): Work execution, work logs, parts used & resolution editable.
+		 *   3. Manager (Unit Head): Department/unit review, approval & assignment fields.
+		 *   4. Employee (Employee Portal):
+		 *      Visible: title, equipment_category (Category), issue_category (Issue Category),
+		 *               priority (Priority), employee_name, department, unit,
+		 *               request_date, responsible_person (Responsible), description
+		 *      Hidden:  employee (internal link), ownership_type, maintenance_type, status,
+		 *               cost totals, technical/approval sections
+		 */
 		let user_roles = frappe.user_roles || [];
-		let is_admin_or_approver = (
+		let current_user = frappe.session.user;
+
+		let is_full_access = (
+			current_user === 'Administrator' ||
 			user_roles.includes('System Manager') ||
-			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
 			user_roles.includes('Maintenance User') ||
 			user_roles.includes('Unit Head') ||
+			user_roles.includes('Manager') ||
 			user_roles.includes('Supervisor') ||
 			user_roles.includes('Technician') ||
-			user_roles.includes('Maintenance Technician') ||
-			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
+			(frm.doc.unit_head && current_user === frm.doc.unit_head)
 		);
 
-		// Hide Approval & Assignment and all subsequent sections for standard Employee role unless they are the unit head
-		let hide_approval_and_below = !is_admin_or_approver;
+		let employee_only = !is_full_access;
 
-		// Hide Asset and Location fields for standard Employee role if present
-		if (frm.fields_dict.asset) {
-			frm.set_df_property('asset', 'hidden', hide_approval_and_below ? 1 : 0);
-		}
-		if (frm.fields_dict.location) {
-			frm.set_df_property('location', 'hidden', hide_approval_and_below ? 1 : 0);
-		}
+		// ── Fields hidden for Employee-only ─────────────────────────────────────
+		['employee', 'ownership_type', 'maintenance_type', 'status',
+		 'total_parts_cost', 'total_labour_cost', 'total_maintenance_cost'
+		].forEach(function(f) {
+			frm.set_df_property(f, 'hidden', employee_only ? 1 : 0);
+		});
 
-		frm.set_df_property('section_approval_assignment', 'hidden', hide_approval_and_below ? 1 : 0);
-		frm.set_df_property('section_diagnosis', 'hidden', hide_approval_and_below ? 1 : 0);
-		frm.set_df_property('section_work_details', 'hidden', hide_approval_and_below ? 1 : 0);
-		frm.set_df_property('section_resolution', 'hidden', hide_approval_and_below ? 1 : 0);
-		frm.set_df_property('section_verification', 'hidden', hide_approval_and_below ? 1 : 0);
-		frm.set_df_property('section_closure', 'hidden', hide_approval_and_below ? 1 : 0);
+		// ── Fields visible for Employee Portal ──────────────────────────────────
+		['title', 'equipment_category', 'issue_category', 'priority',
+		 'employee_name', 'department', 'unit', 'request_date', 'responsible_person', 'description'
+		].forEach(function(f) {
+			frm.set_df_property(f, 'hidden', 0);
+		});
 
-		// Apply technician-specific read-only restrictions after sections are visible
+		// ── Sections hidden for Employee-only ────────────────────────────────────
+		['section_maintenance_details',
+		 'section_equipment_details',
+		 'section_non_organizational_details',
+		 'section_approval_assignment',
+		 'section_diagnosis',
+		 'section_work_details',
+		 'section_resolution',
+		 'section_verification',
+		 'section_closure'
+		].forEach(function(section) {
+			frm.set_df_property(section, 'hidden', employee_only ? 1 : 0);
+		});
+
+		// Status history table always hidden for employee-only
+		frm.set_df_property('status_history', 'hidden', employee_only ? 1 : 0);
+
+		// ── Requester fields: read-only for everyone (auto-filled) ───────────────
+		['employee_name', 'department', 'unit', 'request_date', 'responsible_person'].forEach(function(f) {
+			frm.set_df_property(f, 'read_only', 1);
+		});
+
+		// ── Apply technician-specific restrictions on top of the above ───────────
 		frm.trigger('apply_technician_restrictions');
 	},
 
@@ -398,7 +432,7 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('System Manager') ||
 			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
-			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
+			(frm.doc.manager && frappe.session.user === frm.doc.manager)
 		);
 
 		// 1. Pending / Hold Approval Actions - only for Maintenance Manager, System Manager, Admin, or assigned Unit Head
