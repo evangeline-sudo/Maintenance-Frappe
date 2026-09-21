@@ -10,24 +10,26 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "title",
+  "section_maintenance_details",
+  "description",
+  "prioity",
   "ownership_type",
+  "column_break_edkr",
+  "priority",
   "equipment_category",
   "maintenance_type",
   "status",
-  "section_maintenance_details",
-  "category",
-  "issue_category",
-  "priority",
-  "title",
-  "description",
   "section_equipment_details",
   "requester_details_column",
   "employee",
   "equipment",
+  "equipment_name",
   "section_non_organizational_details",
   "external_ownership_type",
   "external_owner_name",
   "external_contact_person",
+  "column_break_isch",
   "external_contact_phone",
   "contract_reference",
   "warranty_amc_status",
@@ -35,6 +37,7 @@
   "unit_head",
   "approval_status",
   "approval_date",
+  "column_break_oaxo",
   "approval_notes",
   "assigned_to",
   "assigned_date",
@@ -45,22 +48,20 @@
   "section_work_details",
   "work_logs",
   "parts_used",
+  "column_break_hgdr",
   "total_parts_cost",
   "total_labour_cost",
   "total_maintenance_cost",
   "status_history",
   "section_resolution",
+  "resolution_column",
   "resolution_date",
   "resolution_notes",
   "root_cause",
-  "section_verification",
+  "verification_column",
   "verification_status",
   "verification_feedback",
-  "verification_date",
-  "section_closure",
-  "closed_date",
-  "closing_remarks",
-  "verified_by"
+  "verification_date"
  ],
  "fields": [
   {
@@ -77,14 +78,6 @@
    "in_standard_filter": 1,
    "label": "Equipment",
    "options": "Equipment"
-  },
-  {
-   "fieldname": "issue_category",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Issue Category",
-   "options": "Issue Category"
   },
   {
    "fieldname": "maintenance_type",
@@ -105,7 +98,8 @@
    "fieldname": "title",
    "fieldtype": "Data",
    "label": "Title",
-   "reqd": 1
+   "reqd": 1,
+   "width": "100"
   },
   {
    "fieldname": "description",
@@ -215,29 +209,9 @@
   },
   {
    "allow_on_submit": 1,
-   "fieldname": "verified_by",
-   "fieldtype": "Link",
-   "label": "Verified By Manager",
-   "options": "User"
-  },
-  {
-   "allow_on_submit": 1,
    "fieldname": "verification_feedback",
    "fieldtype": "Small Text",
    "label": "Verification Feedback"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "closed_date",
-   "fieldtype": "Datetime",
-   "label": "Closed Date",
-   "read_only": 1
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "closing_remarks",
-   "fieldtype": "Small Text",
-   "label": "Closing Remarks"
   },
   {
    "default": "Organizational Asset",
@@ -260,12 +234,6 @@
    "fieldname": "section_maintenance_details",
    "fieldtype": "Section Break",
    "label": "Maintenance Details"
-  },
-  {
-   "fieldname": "category",
-   "fieldtype": "Link",
-   "label": "Category",
-   "options": "Maintenance Category"
   },
   {
    "fieldname": "section_equipment_details",
@@ -379,11 +347,6 @@
    "label": "Root Cause Analysis"
   },
   {
-   "fieldname": "section_verification",
-   "fieldtype": "Section Break",
-   "label": "Verification"
-  },
-  {
    "allow_on_submit": 1,
    "fieldname": "verification_date",
    "fieldtype": "Datetime",
@@ -391,14 +354,45 @@
    "read_only": 1
   },
   {
-   "fieldname": "section_closure",
-   "fieldtype": "Section Break",
-   "label": "Closure"
+   "fieldname": "column_break_edkr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_oaxo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_hgdr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "resolution_column",
+   "fieldtype": "Column Break",
+   "label": "Resolution"
+  },
+  {
+   "fieldname": "verification_column",
+   "fieldtype": "Column Break",
+   "label": "Verification"
+  },
+  {
+   "fieldname": "column_break_isch",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "prioity",
+   "fieldtype": "Rating",
+   "label": "priority"
+  },
+  {
+   "fieldname": "equipment_name",
+   "fieldtype": "Data",
+   "label": "Equipment Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-21 11:25:45.070271",
+ "modified": "2026-09-21 13:01:49.094985",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance Request",
