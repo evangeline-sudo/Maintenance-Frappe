@@ -1,0 +1,13 @@
+{
+ "creation": "2026-09-21 18:00:00",
+ "doctype": "Number Card",
+ "document_type": "Maintenance Request",
+ "filters_json": "[[\"Maintenance Request\",\"status\",\"not in\",[\"Resolved\",\"Closed\",\"Rejected\"]]]",
+ "function": "Count",
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Open Requests",
+ "module": "Maintenance Management",
+ "name": "Open Maintenance Requests",
+ "show_percentage_stats": 0
+}

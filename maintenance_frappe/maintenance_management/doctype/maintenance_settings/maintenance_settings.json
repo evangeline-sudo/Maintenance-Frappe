@@ -1,0 +1,67 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-09-21 17:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enable_email_notifications",
+  "auto_assign_technician",
+  "default_sla_hours"
+ ],
+ "fields": [
+  {
+   "default": "1",
+   "fieldname": "enable_email_notifications",
+   "fieldtype": "Check",
+   "label": "Enable Email Notifications"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_assign_technician",
+   "fieldtype": "Check",
+   "label": "Auto Assign Technician"
+  },
+  {
+   "default": "24",
+   "fieldname": "default_sla_hours",
+   "fieldtype": "Int",
+   "label": "Default SLA Hours"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-21 18:29:23.000000",
+ "modified_by": "Administrator",
+ "module": "Maintenance Management",
+ "name": "Maintenance Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

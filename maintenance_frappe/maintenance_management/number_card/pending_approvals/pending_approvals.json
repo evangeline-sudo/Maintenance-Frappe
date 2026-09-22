@@ -1,0 +1,23 @@
+{
+ "creation": "2026-09-21 22:43:57.928571",
+ "currency": "INR",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Maintenance Request",
+ "filters_json": "[[\"Maintenance Request\",\"approval_status\",\"=\",\"Pending\"]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Pending Approvals",
+ "modified": "2026-09-21 22:43:57.928571",
+ "modified_by": "Administrator",
+ "module": "Maintenance Management",
+ "name": "Pending Approvals",
+ "owner": "Administrator",
+ "report_function": "Sum",
+ "show_full_number": 0,
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Daily",
+ "type": "Document Type"
+}

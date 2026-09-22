@@ -1,0 +1,549 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:MR-{#####}",
+ "creation": "2026-09-11 00:00:00",
+ "default_view": "List",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "section_break_blwi",
+  "description",
+  "section_maintenance_details",
+  "employee",
+  "employee_name",
+  "department",
+  "unit",
+  "request_date",
+  "responsible_person",
+  "column_break_ykcz",
+  "equipment_category",
+  "priority",
+  "equipment",
+  "issue_category",
+  "ownership_type",
+  "maintenance_type",
+  "status",
+  "section_equipment_details",
+  "requester_details_column",
+  "equipment_name",
+  "section_non_organizational_details",
+  "external_ownership_type",
+  "external_owner_name",
+  "external_contact_person",
+  "column_break_isch",
+  "external_contact_phone",
+  "contract_reference",
+  "warranty_amc_status",
+  "section_approval_assignment",
+  "unit_head",
+  "approval_status",
+  "approval_date",
+  "column_break_oaxo",
+  "approval_notes",
+  "assigned_to",
+  "assigned_date",
+  "section_diagnosis",
+  "diagnosis_notes",
+  "estimated_completion_time",
+  "estimated_cost",
+  "section_work_details",
+  "work_logs",
+  "parts_used",
+  "column_break_hgdr",
+  "total_parts_cost",
+  "total_maintenance_cost",
+  "total_labour_cost",
+  "status_history",
+  "section_resolution",
+  "resolution_column",
+  "resolution_date",
+  "resolution_notes",
+  "root_cause",
+  "verification_column",
+  "verification_status",
+  "verification_feedback",
+  "verification_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "width": "200"
+  },
+  {
+   "fieldname": "section_break_blwi",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_maintenance_details",
+   "fieldtype": "Section Break",
+   "label": "Maintenance Details"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Department",
+   "read_only": 1
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Unit",
+   "read_only": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "request_date",
+   "fieldtype": "Date",
+   "label": "Request Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "responsible_person",
+   "fieldtype": "Link",
+   "label": "Technician",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ykcz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "IT Equipment",
+   "fieldname": "equipment_category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Category",
+   "options": "IT Equipment\nElectrical Equipment\nVehicle\nMachine\nFurniture\nBuilding/Facility\nMedical Equipment\nOffice Equipment\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Rating",
+   "label": "Priority"
+  },
+  {
+   "fieldname": "equipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Equipment",
+   "options": "Equipment"
+  },
+  {
+   "fieldname": "issue_category",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Issue Category",
+   "options": "Issue Category"
+  },
+  {
+   "default": "Organizational Asset",
+   "fieldname": "ownership_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Ownership Type",
+   "options": "Organizational Asset\nNon-Organizational Asset",
+   "reqd": 1
+  },
+  {
+   "fieldname": "maintenance_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Maintenance Type",
+   "options": "IT\nNon-IT\nProfessional-Specialized",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Submitted",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Submitted\nPending Approval\nApproved\nAssigned\nIn Progress\nOn Hold\nResolved\nRejected\nClosed",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_parts_cost",
+   "fieldtype": "Currency",
+   "label": "Total Parts Cost",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_labour_cost",
+   "fieldtype": "Currency",
+   "label": "Total Labour Cost",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_maintenance_cost",
+   "fieldtype": "Currency",
+   "label": "Total Maintenance Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_equipment_details",
+   "fieldtype": "Section Break",
+   "label": "Equipment Details"
+  },
+  {
+   "fieldname": "requester_details_column",
+   "fieldtype": "Column Break",
+   "label": "Requester Details"
+  },
+  {
+   "fieldname": "equipment_name",
+   "fieldtype": "Data",
+   "label": "Equipment Name"
+  },
+  {
+   "depends_on": "eval:doc.ownership_type=='Non-Organizational Asset'",
+   "fieldname": "section_non_organizational_details",
+   "fieldtype": "Section Break",
+   "label": "Non-Organizational Details"
+  },
+  {
+   "fieldname": "external_ownership_type",
+   "fieldtype": "Select",
+   "label": "External Ownership Type",
+   "mandatory_depends_on": "eval:doc.ownership_type=='Non-Organizational Asset'",
+   "options": "Building Owner Equipment\nRented Equipment\nCustomer Equipment\nVendor Equipment\nThird-Party Equipment\nCommunity/Common Facility\nExternal Service Equipment\nOther"
+  },
+  {
+   "fieldname": "external_owner_name",
+   "fieldtype": "Data",
+   "label": "External Owner / Provider Name",
+   "mandatory_depends_on": "eval:doc.ownership_type=='Non-Organizational Asset'"
+  },
+  {
+   "fieldname": "external_contact_person",
+   "fieldtype": "Data",
+   "label": "External Contact Person"
+  },
+  {
+   "fieldname": "column_break_isch",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "external_contact_phone",
+   "fieldtype": "Data",
+   "label": "External Contact Phone/Email"
+  },
+  {
+   "fieldname": "contract_reference",
+   "fieldtype": "Data",
+   "label": "Contract / Lease / AMC Ref"
+  },
+  {
+   "default": "N/A",
+   "fieldname": "warranty_amc_status",
+   "fieldtype": "Select",
+   "label": "Warranty / AMC Status",
+   "options": "Under Warranty\nUnder AMC\nRental/Leased\nOut of Warranty\nN/A"
+  },
+  {
+   "fieldname": "section_approval_assignment",
+   "fieldtype": "Section Break",
+   "label": "Approval & Assignment"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Pending",
+   "fieldname": "approval_status",
+   "fieldtype": "Select",
+   "label": "Approval Status",
+   "options": "Pending\nApproved\nRejected\nHold",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "approval_date",
+   "fieldtype": "Datetime",
+   "label": "Approval Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_oaxo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "approval_notes",
+   "fieldtype": "Small Text",
+   "label": "Approval Notes"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned To",
+   "options": "User"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "assigned_date",
+   "fieldtype": "Datetime",
+   "label": "Assigned Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_diagnosis",
+   "fieldtype": "Section Break",
+   "label": "Diagnosis"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "diagnosis_notes",
+   "fieldtype": "Small Text",
+   "label": "Diagnosis Notes"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "estimated_completion_time",
+   "fieldtype": "Datetime",
+   "label": "Estimated Completion Time"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "estimated_cost",
+   "fieldtype": "Currency",
+   "label": "Estimated Cost"
+  },
+  {
+   "fieldname": "section_work_details",
+   "fieldtype": "Section Break",
+   "label": "Work Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "work_logs",
+   "fieldtype": "Table",
+   "label": "Work Logs",
+   "options": "Maintenance Work Log"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "parts_used",
+   "fieldtype": "Table",
+   "label": "Parts Used",
+   "options": "Maintenance Parts Used"
+  },
+  {
+   "fieldname": "column_break_hgdr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "status_history",
+   "fieldtype": "Table",
+   "label": "Status History",
+   "options": "Maintenance Status History",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_resolution",
+   "fieldtype": "Section Break",
+   "label": "Resolution"
+  },
+  {
+   "fieldname": "resolution_column",
+   "fieldtype": "Column Break",
+   "label": "Resolution"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "resolution_date",
+   "fieldtype": "Datetime",
+   "label": "Resolution Date",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "resolution_notes",
+   "fieldtype": "Small Text",
+   "label": "Resolution Notes"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "root_cause",
+   "fieldtype": "Small Text",
+   "label": "Root Cause Analysis"
+  },
+  {
+   "fieldname": "verification_column",
+   "fieldtype": "Column Break",
+   "label": "Verification"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Pending",
+   "fieldname": "verification_status",
+   "fieldtype": "Select",
+   "label": "Verification Status",
+   "options": "Pending\nVerified\nRework Required"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "verification_feedback",
+   "fieldtype": "Small Text",
+   "label": "Verification Feedback"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "verification_date",
+   "fieldtype": "Datetime",
+   "label": "Verification Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "unit_head",
+   "fieldtype": "Link",
+   "label": "Manger",
+   "options": "User"
+  }
+ ],
+ "icon": "tool",
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-22 09:48:47.764590",
+ "modified_by": "Administrator",
+ "module": "Maintenance Management",
+ "name": "Maintenance Request",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Administrator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Technician",
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "row_format": "Dynamic",
+ "search_fields": "employee,title,maintenance_type,ownership_type,equipment_category,priority",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Blue",
+   "title": "Submitted"
+  },
+  {
+   "color": "Orange",
+   "title": "Pending Approval"
+  },
+  {
+   "color": "Green",
+   "title": "Approved"
+  },
+  {
+   "color": "Cyan",
+   "title": "Assigned"
+  },
+  {
+   "color": "Purple",
+   "title": "In Progress"
+  },
+  {
+   "color": "Yellow",
+   "title": "On Hold"
+  },
+  {
+   "color": "Green",
+   "title": "Resolved"
+  },
+  {
+   "color": "Red",
+   "title": "Rejected"
+  },
+  {
+   "color": "DarkGray",
+   "title": "Closed"
+  }
+ ],
+ "track_changes": 1
+}

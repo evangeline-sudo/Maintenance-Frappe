@@ -1,0 +1,13 @@
+{
+ "creation": "2026-09-21 18:00:00",
+ "doctype": "Number Card",
+ "document_type": "Maintenance Request",
+ "filters_json": "[]",
+ "function": "Count",
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Total Requests",
+ "module": "Maintenance Management",
+ "name": "Total Maintenance Requests",
+ "show_percentage_stats": 0
+}

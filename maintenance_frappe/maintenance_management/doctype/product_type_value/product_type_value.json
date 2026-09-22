@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "creation": "2026-09-09 15:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "product_type",
+  "product_value",
+  "description",
+  "purchased_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "product_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_value",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Value",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "description"
+  },
+  {
+   "fieldname": "purchased_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Purchased Date"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-21 15:38:00.000000",
+ "modified_by": "Administrator",
+ "module": "Maintenance Management",
+ "name": "Product Type Value",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}
