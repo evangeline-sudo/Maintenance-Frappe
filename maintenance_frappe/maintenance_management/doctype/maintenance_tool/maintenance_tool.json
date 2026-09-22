@@ -1,0 +1,130 @@
+{
+ "allow_rename": 1,
+ "autoname": "field:tool_id",
+ "creation": "2026-09-15 21:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tool_id",
+  "tool_name",
+  "tool_type",
+  "serial_number",
+  "location",
+  "responsible_person",
+  "condition",
+  "status",
+  "calibration_required",
+  "calibration_due_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "tool_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tool ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "tool_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tool Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tool_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tool Type"
+  },
+  {
+   "fieldname": "serial_number",
+   "fieldtype": "Data",
+   "label": "Serial Number"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "responsible_person",
+   "fieldtype": "Link",
+   "label": "Responsible Person",
+   "options": "Responsible Person"
+  },
+  {
+   "default": "Good",
+   "fieldname": "condition",
+   "fieldtype": "Select",
+   "label": "Condition",
+   "options": "Good\nNeeds Maintenance\nDamaged"
+  },
+  {
+   "default": "Available",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Available\nIn Use\nUnder Calibration\nRetired"
+  },
+  {
+   "default": "0",
+   "fieldname": "calibration_required",
+   "fieldtype": "Check",
+   "label": "Calibration Required"
+  },
+  {
+   "fieldname": "calibration_due_date",
+   "fieldtype": "Date",
+   "label": "Calibration Due Date"
+  }
+ ],
+ "module": "Maintenance Management",
+ "name": "Maintenance Tool",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Technician",
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance User"
+  }
+ ]
+}

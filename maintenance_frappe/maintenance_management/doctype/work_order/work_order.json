@@ -1,0 +1,282 @@
+{
+ "allow_rename": 1,
+ "autoname": "format:WO-{#####}",
+ "creation": "2026-09-15 21:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "maintenance_request",
+  "pm_plan",
+  "equipment",
+  "equipment_name",
+  "location",
+  "department",
+  "maintenance_type",
+  "priority",
+  "assigned_team",
+  "assigned_technician",
+  "planned_start",
+  "planned_end",
+  "actual_start",
+  "actual_end",
+  "problem_description",
+  "diagnosis",
+  "work_performed",
+  "resolution",
+  "status",
+  "downtime_hours",
+  "labor_cost",
+  "parts_cost",
+  "tool_cost",
+  "vendor_cost",
+  "total_cost",
+  "parts_used",
+  "tools_used",
+  "checklist_items",
+  "verification_status",
+  "closing_remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "maintenance_request",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Maintenance Request",
+   "options": "Maintenance Request"
+  },
+  {
+   "fieldname": "pm_plan",
+   "fieldtype": "Link",
+   "label": "Preventive Maintenance Plan",
+   "options": "Preventive Maintenance Plan"
+  },
+  {
+   "fieldname": "equipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Equipment",
+   "options": "Equipment",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "equipment.equipment_name",
+   "fieldname": "equipment_name",
+   "fieldtype": "Read Only",
+   "label": "Equipment Name"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "default": "Corrective",
+   "fieldname": "maintenance_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Maintenance Type",
+   "options": "Corrective\nPreventive\nPredictive\nEmergency\nRoutine\nBreakdown\nInspection\nCalibration\nServicing"
+  },
+  {
+   "default": "Medium",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nCritical"
+  },
+  {
+   "fieldname": "assigned_team",
+   "fieldtype": "Link",
+   "label": "Assigned Team",
+   "options": "Maintenance Team"
+  },
+  {
+   "fieldname": "assigned_technician",
+   "fieldtype": "Link",
+   "label": "Assigned Technician",
+   "options": "Responsible Person"
+  },
+  {
+   "fieldname": "planned_start",
+   "fieldtype": "Datetime",
+   "label": "Planned Start"
+  },
+  {
+   "fieldname": "planned_end",
+   "fieldtype": "Datetime",
+   "label": "Planned End"
+  },
+  {
+   "fieldname": "actual_start",
+   "fieldtype": "Datetime",
+   "label": "Actual Start"
+  },
+  {
+   "fieldname": "actual_end",
+   "fieldtype": "Datetime",
+   "label": "Actual End"
+  },
+  {
+   "fieldname": "problem_description",
+   "fieldtype": "Text Editor",
+   "label": "Problem Description"
+  },
+  {
+   "fieldname": "diagnosis",
+   "fieldtype": "Text Editor",
+   "label": "Diagnosis"
+  },
+  {
+   "fieldname": "work_performed",
+   "fieldtype": "Text Editor",
+   "label": "Work Performed"
+  },
+  {
+   "fieldname": "resolution",
+   "fieldtype": "Text Editor",
+   "label": "Resolution Summary"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nScheduled\nIn Progress\nOn Hold\nResolved\nCompleted\nCancelled"
+  },
+  {
+   "default": "0",
+   "fieldname": "downtime_hours",
+   "fieldtype": "Float",
+   "label": "Downtime (Hours)"
+  },
+  {
+   "default": "0",
+   "fieldname": "labor_cost",
+   "fieldtype": "Currency",
+   "label": "Labor Cost"
+  },
+  {
+   "default": "0",
+   "fieldname": "parts_cost",
+   "fieldtype": "Currency",
+   "label": "Parts Cost",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "tool_cost",
+   "fieldtype": "Currency",
+   "label": "Tool Cost",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "vendor_cost",
+   "fieldtype": "Currency",
+   "label": "Vendor Cost"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_cost",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "parts_used",
+   "fieldtype": "Table",
+   "label": "Parts Used",
+   "options": "Work Order Part"
+  },
+  {
+   "fieldname": "tools_used",
+   "fieldtype": "Table",
+   "label": "Tools Used",
+   "options": "Work Order Tool"
+  },
+  {
+   "fieldname": "checklist_items",
+   "fieldtype": "Table",
+   "label": "Checklist Items",
+   "options": "Work Order Checklist Item"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "verification_status",
+   "fieldtype": "Select",
+   "label": "Verification Status",
+   "options": "Pending\nVerified\nRework Required"
+  },
+  {
+   "fieldname": "closing_remarks",
+   "fieldtype": "Text",
+   "label": "Closing Remarks"
+  }
+ ],
+ "module": "Maintenance Management",
+ "name": "Work Order",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Unit Head",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Technician",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance User",
+   "write": 1
+  }
+ ]
+}

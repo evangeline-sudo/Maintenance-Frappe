@@ -1,0 +1,125 @@
+{
+ "allow_rename": 1,
+ "autoname": "format:RCA-{#####}",
+ "creation": "2026-09-15 21:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "equipment",
+  "work_order",
+  "failure_category",
+  "failure_type",
+  "failure_mode",
+  "failure_cause",
+  "root_cause",
+  "effect",
+  "corrective_action",
+  "preventive_action"
+ ],
+ "fields": [
+  {
+   "fieldname": "equipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Equipment",
+   "options": "Equipment",
+   "reqd": 1
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Work Order",
+   "options": "Work Order"
+  },
+  {
+   "fieldname": "failure_category",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Failure Category"
+  },
+  {
+   "fieldname": "failure_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Failure Type"
+  },
+  {
+   "fieldname": "failure_mode",
+   "fieldtype": "Data",
+   "label": "Failure Mode"
+  },
+  {
+   "fieldname": "failure_cause",
+   "fieldtype": "Data",
+   "label": "Failure Cause"
+  },
+  {
+   "fieldname": "root_cause",
+   "fieldtype": "Text Editor",
+   "label": "Root Cause Analysis",
+   "reqd": 1
+  },
+  {
+   "fieldname": "effect",
+   "fieldtype": "Text",
+   "label": "Effect / Consequence"
+  },
+  {
+   "fieldname": "corrective_action",
+   "fieldtype": "Text Editor",
+   "label": "Corrective Action"
+  },
+  {
+   "fieldname": "preventive_action",
+   "fieldtype": "Text Editor",
+   "label": "Preventive Action"
+  }
+ ],
+ "module": "Maintenance Management",
+ "name": "Maintenance Root Cause Analysis",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Technician",
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance User"
+  }
+ ]
+}

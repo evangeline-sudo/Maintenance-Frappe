@@ -159,7 +159,7 @@ scheduler_events = {
 	"daily": [
 		"maintenance_frappe.api.maintenance.process_preventive_maintenance_due",
 		"maintenance_frappe.api.maintenance.check_contract_expiries_and_stock",
-		"maintenance_frappe.m_maintenance.doctype.preventive_maintenance_plan.preventive_maintenance_plan.process_due_plans"
+		"maintenance_frappe.maintenance_management.doctype.preventive_maintenance_plan.preventive_maintenance_plan.process_due_plans"
 	]
 }
 

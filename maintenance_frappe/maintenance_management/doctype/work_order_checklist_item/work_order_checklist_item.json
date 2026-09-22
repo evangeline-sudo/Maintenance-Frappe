@@ -1,0 +1,51 @@
+{
+ "creation": "2026-09-15 21:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "istable": 1,
+ "field_order": [
+  "inspection_item",
+  "expected_result",
+  "actual_result",
+  "status",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "inspection_item",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Inspection Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "expected_result",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Expected Result"
+  },
+  {
+   "fieldname": "actual_result",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Actual Result"
+  },
+  {
+   "default": "Pass",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Pass\nFail\nN/A"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "module": "Maintenance Management",
+ "name": "Work Order Checklist Item",
+ "permissions": []
+}

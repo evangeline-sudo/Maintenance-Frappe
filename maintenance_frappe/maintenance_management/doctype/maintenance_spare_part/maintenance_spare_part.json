@@ -1,0 +1,136 @@
+{
+ "allow_rename": 1,
+ "autoname": "field:part_id",
+ "creation": "2026-09-15 21:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "part_id",
+  "part_name",
+  "part_number",
+  "category",
+  "unit",
+  "quantity_available",
+  "minimum_stock",
+  "reorder_level",
+  "storage_location",
+  "unit_cost",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "part_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Part ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "part_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Part Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "part_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Part Number"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Category"
+  },
+  {
+   "default": "Nos",
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "label": "Unit"
+  },
+  {
+   "default": "0",
+   "fieldname": "quantity_available",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quantity Available"
+  },
+  {
+   "default": "5",
+   "fieldname": "minimum_stock",
+   "fieldtype": "Float",
+   "label": "Minimum Stock"
+  },
+  {
+   "default": "10",
+   "fieldname": "reorder_level",
+   "fieldtype": "Float",
+   "label": "Reorder Level"
+  },
+  {
+   "fieldname": "storage_location",
+   "fieldtype": "Data",
+   "label": "Storage Location"
+  },
+  {
+   "default": "0",
+   "fieldname": "unit_cost",
+   "fieldtype": "Currency",
+   "label": "Unit Cost"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  }
+ ],
+ "module": "Maintenance Management",
+ "name": "Maintenance Spare Part",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Technician",
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance User"
+  }
+ ]
+}
