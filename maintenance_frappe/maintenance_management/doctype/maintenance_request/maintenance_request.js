@@ -33,7 +33,7 @@ frappe.ui.form.on('Maintenance Request', {
 
 		frm.set_query('assigned_to', function() {
 			return {
-				query: 'maintenance_frappe.m_maintenance.doctype.maintenance_request.maintenance_request.get_technician_users'
+				query: 'maintenance_frappe.maintenance_management.doctype.maintenance_request.maintenance_request.get_technician_users'
 			};
 		});
 
@@ -104,7 +104,7 @@ frappe.ui.form.on('Maintenance Request', {
 	auto_set_logged_in_employee: function(frm) {
 		if (frm.is_new() && !frm.doc.employee) {
 			frappe.call({
-				method: 'maintenance_frappe.m_maintenance.doctype.maintenance_request.maintenance_request.get_logged_in_employee',
+				method: 'maintenance_frappe.maintenance_management.doctype.maintenance_request.maintenance_request.get_logged_in_employee',
 				callback: function(r) {
 					if (r.message && r.message.name) {
 						frm.set_value('employee', r.message.name);
@@ -239,12 +239,6 @@ frappe.ui.form.on('Maintenance Request', {
 						if (r.message.user_id) {
 							frm.set_value('unit_head', r.message.user_id);
 						}
-						if (r.message.department && !frm.doc.department) {
-							frm.set_value('department', r.message.department);
-						}
-						if (r.message.unit && !frm.doc.unit) {
-							frm.set_value('unit', r.message.unit);
-						}
 						frm.trigger('set_field_states');
 					}
 				}
@@ -284,13 +278,8 @@ frappe.ui.form.on('Maintenance Request', {
 					if (eq.equipment_name) {
 						frm.set_value('equipment_name', eq.equipment_name);
 					}
-					if (eq.serial_number || eq.equipment_id) {
-						
-					}
 					if (eq.location) {
 						frm.set_value('equipment_location', eq.location);
-
-						
 						if (!frm.doc.location) {
 							frm.set_value('location', eq.location);
 						}
@@ -308,8 +297,6 @@ frappe.ui.form.on('Maintenance Request', {
 			});
 		} else {
 			frm.set_value('equipment_name', '');
-			
-			
 		}
 	},
 

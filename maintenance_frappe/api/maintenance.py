@@ -2,8 +2,50 @@ import frappe
 from frappe import _
 
 
+def ensure_page_permissions():
+	"""Ensure Employee, Manager, Maintenance Manager, Technician, and All roles have Read access to Page and Workspace across DocPerm and Custom DocPerm."""
+	target_roles = ["All", "Employee", "Manager", "Maintenance Manager", "Technician", "System Manager"]
+	for doctype in ["Page", "Workspace"]:
+		# 1. Standard DocPerm
+		for role in target_roles:
+			if not frappe.db.exists("DocPerm", {"parent": doctype, "role": role}):
+				try:
+					perm = frappe.get_doc({
+						"doctype": "DocPerm",
+						"parent": doctype,
+						"parenttype": "DocType",
+						"parentfield": "permissions",
+						"role": role,
+						"read": 1,
+						"select": 1
+					})
+					perm.insert(ignore_permissions=True)
+				except Exception:
+					pass
+
+		# 2. Custom DocPerm (if custom permissions exist for Page/Workspace)
+		if frappe.db.table_exists("Custom DocPerm"):
+			if frappe.db.exists("Custom DocPerm", {"parent": doctype}):
+				for role in target_roles:
+					if not frappe.db.exists("Custom DocPerm", {"parent": doctype, "role": role}):
+						try:
+							c_perm = frappe.get_doc({
+								"doctype": "Custom DocPerm",
+								"parent": doctype,
+								"parenttype": "DocType",
+								"parentfield": "permissions",
+								"role": role,
+								"read": 1,
+								"select": 1
+							})
+							c_perm.insert(ignore_permissions=True)
+						except Exception:
+							pass
+
+
 def filter_employee_sidebar(bootinfo):
 	"""Limit the Maintenance sidebar for standard Employee users while preserving section headers."""
+	ensure_page_permissions()
 	roles = set(frappe.get_roles())
 	elevated_roles = {
 		"Administrator",

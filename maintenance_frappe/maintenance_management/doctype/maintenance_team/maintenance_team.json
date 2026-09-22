@@ -2,7 +2,7 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "field:team_code",
- "creation": "2026-09-09 15:00:00.000000",
+ "creation": "2026-09-09 15:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -10,7 +10,7 @@
   "team_code",
   "team_lead",
   "is_active",
-  "description"
+  "team_members"
  ],
  "fields": [
   {
@@ -45,14 +45,16 @@
    "label": "Is Active"
   },
   {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
+   "fieldname": "team_members",
+   "fieldtype": "Table",
+   "label": "Team Members",
+   "options": "Team Member"
   }
  ],
+ "icon": "users",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-09 15:00:00.000000",
+ "modified": "2026-09-22 09:49:13.125933",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance Team",
@@ -89,7 +91,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Unit Head",
+   "role": "Manger",
    "write": 1
   },
   {
@@ -111,7 +113,8 @@
    "role": "Maintenance User"
   }
  ],
- "quick_entry": 0,
+ "quick_entry": 1,
+ "row_format": "Dynamic",
  "search_fields": "team_name,team_code,team_lead",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

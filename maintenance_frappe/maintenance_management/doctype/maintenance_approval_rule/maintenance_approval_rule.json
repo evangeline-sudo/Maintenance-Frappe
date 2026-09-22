@@ -40,9 +40,8 @@
   },
   {
    "fieldname": "priority",
-   "fieldtype": "Select",
-   "label": "Priority",
-   "options": "Low\nMedium\nHigh\nCritical"
+   "fieldtype": "Rating",
+   "label": "Priority"
   },
   {
    "fieldname": "maintenance_type",

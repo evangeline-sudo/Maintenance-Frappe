@@ -84,12 +84,10 @@
    "options": "Corrective\nPreventive\nPredictive\nEmergency\nRoutine\nBreakdown\nInspection\nCalibration\nServicing"
   },
   {
-   "default": "Medium",
    "fieldname": "priority",
-   "fieldtype": "Select",
+   "fieldtype": "Rating",
    "in_list_view": 1,
-   "label": "Priority",
-   "options": "Low\nMedium\nHigh\nCritical"
+   "label": "Priority"
   },
   {
    "fieldname": "assigned_team",

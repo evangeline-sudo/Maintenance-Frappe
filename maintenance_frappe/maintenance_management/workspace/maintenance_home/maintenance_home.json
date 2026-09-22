@@ -145,7 +145,7 @@
  "modified": "2026-09-22 11:25:00.000000",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
- "name": "Maintenance",
+ "name": "Maintenance Home",
  "number_cards": [
   {
    "label": "Total Requests",
@@ -214,3 +214,4 @@
  "title": "Home",
  "type": "Workspace"
 }
+

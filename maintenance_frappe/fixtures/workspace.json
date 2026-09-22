@@ -1,35 +1,18 @@
 [
  {
   "app": "maintenance_frappe",
-  "charts": [
-   {
-    "chart_name": "Maintenance Requests by Status",
-    "label": "Requests by Status"
-   },
-   {
-    "chart_name": "Request Priority",
-    "label": "Request Priority"
-   },
-   {
-    "chart_name": "Requests by Issue Category",
-    "label": "Requests by Issue Category"
-   },
-   {
-    "chart_name": "Requests by Equipment Category",
-    "label": "Requests by Equipment Category"
-   }
-  ],
-  "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Key Metrics\",\"level\":4}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Open Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending Approvals\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Equipment\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Maintenance Teams\"}},{\"type\":\"header\",\"data\":{\"text\":\"Quick Actions\",\"level\":4}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"+ New Maintenance Request\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"View My Requests\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pending Approvals\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Assigned Requests\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Equipment Master\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Teams\"}},{\"type\":\"header\",\"data\":{\"text\":\"Analytics & Charts\",\"level\":4}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Maintenance Requests by Status\"}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Request Priority\"}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Requests by Issue Category\"}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Requests by Equipment Category\"}},{\"type\":\"header\",\"data\":{\"text\":\"Modules & Masters\",\"level\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Equipment & Masters\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Teams & Rules\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Reports\"}}]",
+  "charts": [],
+  "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Key Metrics\",\"level\":4}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Open Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending Approvals\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Equipment\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Maintenance Teams\"}},{\"type\":\"header\",\"data\":{\"text\":\"Quick Actions\",\"level\":4}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"+ New Maintenance Request\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"View My Requests\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pending Approvals\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Assigned Requests\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Equipment Master\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Teams\"}},{\"type\":\"header\",\"data\":{\"text\":\"Modules & Masters\",\"level\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Equipment & Masters\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Teams & Rules\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Reports\"}}]",
   "custom_blocks": [],
   "docstatus": 0,
   "doctype": "Workspace",
   "external_link": null,
   "for_user": "",
   "hide_custom": 0,
-  "icon": "tool",
+  "icon": "home",
   "indicator_color": "blue",
   "is_hidden": 0,
-  "label": "Maintenance",
+  "label": "Home",
   "link_to": null,
   "link_type": "DocType",
   "links": [
@@ -229,9 +212,9 @@
     "type": "Link"
    }
   ],
-  "modified": "2026-09-21 22:54:36.936735",
+  "modified": "2026-09-22 11:25:00.000000",
   "module": "Maintenance Management",
-  "name": "Maintenance",
+  "name": "Maintenance Home",
   "number_cards": [
    {
     "label": "Total Requests",
@@ -346,7 +329,76 @@
     "url": null
    }
   ],
-  "title": "Maintenance",
+  "title": "Home",
+  "type": "Workspace"
+ },
+ {
+  "app": "maintenance_frappe",
+  "charts": [
+   {
+    "chart_name": "Maintenance Requests by Status",
+    "label": "Requests by Status"
+   },
+   {
+    "chart_name": "Request Priority",
+    "label": "Request Priority"
+   },
+   {
+    "chart_name": "Requests by Issue Category",
+    "label": "Requests by Issue Category"
+   },
+   {
+    "chart_name": "Requests by Equipment Category",
+    "label": "Requests by Equipment Category"
+   }
+  ],
+  "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Key Metrics\",\"level\":4}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Open Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending Approvals\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Equipment\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Maintenance Teams\"}},{\"type\":\"header\",\"data\":{\"text\":\"Analytics & Charts\",\"level\":4}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Maintenance Requests by Status\"}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Request Priority\"}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Requests by Issue Category\"}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Requests by Equipment Category\"}}]",
+  "custom_blocks": [],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "external_link": null,
+  "for_user": "",
+  "hide_custom": 0,
+  "icon": "dashboard",
+  "indicator_color": "blue",
+  "is_hidden": 0,
+  "label": "Dashboard",
+  "link_to": null,
+  "link_type": "DocType",
+  "links": [],
+  "modified": "2026-09-22 11:25:00.000000",
+  "module": "Maintenance Management",
+  "name": "Maintenance Dashboard",
+  "number_cards": [
+   {
+    "label": "Total Requests",
+    "number_card_name": "Total Requests"
+   },
+   {
+    "label": "Open Requests",
+    "number_card_name": "Open Requests"
+   },
+   {
+    "label": "Pending Approvals",
+    "number_card_name": "Pending Approvals"
+   },
+   {
+    "label": "Active Equipment",
+    "number_card_name": "Active Equipment"
+   },
+   {
+    "label": "Maintenance Teams",
+    "number_card_name": "Maintenance Teams"
+   }
+  ],
+  "parent_page": null,
+  "public": 1,
+  "quick_lists": [],
+  "restrict_to_domain": null,
+  "roles": [],
+  "sequence_id": 0.0,
+  "shortcuts": [],
+  "title": "Dashboard",
   "type": "Workspace"
  }
 ]

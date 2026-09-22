@@ -204,6 +204,12 @@ scheduler_events = {
 # before_request = ["maintenance_frappe.utils.before_request"]
 # after_request = ["maintenance_frappe.utils.after_request"]
 
+# Migration Events
+# ------------------
+before_migrate = [
+	"maintenance_frappe.patches.v1_0.fix_priority_rating_default.execute"
+]
+
 # Boot session
 # ------------------
 boot_session = ["maintenance_frappe.api.maintenance.filter_employee_sidebar"]

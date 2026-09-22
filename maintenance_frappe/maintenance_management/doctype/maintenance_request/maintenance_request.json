@@ -149,11 +149,9 @@
    "reqd": 1
   },
   {
-   "default": "Medium",
    "fieldname": "priority",
-   "fieldtype": "Select",
-   "label": "Priority",
-   "options": "Low\nMedium\nHigh\nCritical"
+   "fieldtype": "Rating",
+   "label": "Priority"
   },
   {
    "fieldname": "equipment",
@@ -445,7 +443,7 @@
  "icon": "tool",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-22 08:44:43.901988",
+ "modified": "2026-09-22 09:48:47.764590",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance Request",
@@ -480,7 +478,18 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Unit Head",
+   "role": "Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
    "write": 1
   },
   {
@@ -491,15 +500,6 @@
    "report": 1,
    "role": "Technician",
    "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Supervisor",
-   "write": 1
   }
  ],
  "quick_entry": 1,
@@ -507,6 +507,43 @@
  "search_fields": "employee,title,maintenance_type,ownership_type,equipment_category,priority",
  "sort_field": "creation",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Blue",
+   "title": "Submitted"
+  },
+  {
+   "color": "Orange",
+   "title": "Pending Approval"
+  },
+  {
+   "color": "Green",
+   "title": "Approved"
+  },
+  {
+   "color": "Cyan",
+   "title": "Assigned"
+  },
+  {
+   "color": "Purple",
+   "title": "In Progress"
+  },
+  {
+   "color": "Yellow",
+   "title": "On Hold"
+  },
+  {
+   "color": "Green",
+   "title": "Resolved"
+  },
+  {
+   "color": "Red",
+   "title": "Rejected"
+  },
+  {
+   "color": "DarkGray",
+   "title": "Closed"
+  }
+ ],
  "track_changes": 1
 }
