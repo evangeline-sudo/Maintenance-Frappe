@@ -13,7 +13,6 @@ def execute(filters=None):
 		{"label": _("Equipment Name"), "fieldname": "equipment_name", "fieldtype": "Data", "width": 160},
 		{"label": _("Employee"), "fieldname": "employee", "fieldtype": "Link", "options": "Employee", "width": 130},
 		{"label": _("Department"), "fieldname": "department", "fieldtype": "Link", "options": "Department", "width": 130},
-		{"label": _("Unit"), "fieldname": "unit", "fieldtype": "Data", "width": 110},
 		{"label": _("Assigned To"), "fieldname": "assigned_to", "fieldtype": "Link", "options": "User", "width": 140},
 		{"label": _("Total Cost"), "fieldname": "total_maintenance_cost", "fieldtype": "Currency", "width": 130},
 		{"label": _("Created On"), "fieldname": "creation", "fieldtype": "Datetime", "width": 140}
@@ -29,8 +28,6 @@ def execute(filters=None):
 			conditions["maintenance_type"] = filters["maintenance_type"]
 		if filters.get("department"):
 			conditions["department"] = filters["department"]
-		if filters.get("unit"):
-			conditions["unit"] = filters["unit"]
 		if filters.get("employee"):
 			conditions["employee"] = filters["employee"]
 		if filters.get("from_date") and filters.get("to_date"):
@@ -42,7 +39,7 @@ def execute(filters=None):
 		fields=[
 			"name", "title", "status", "priority", "maintenance_type",
 			"ownership_type", "equipment", "equipment_name", "employee",
-			"department", "unit", "assigned_to", "total_maintenance_cost", "creation"
+			"department", "assigned_to", "total_maintenance_cost", "creation"
 		],
 		order_by="creation desc"
 	)

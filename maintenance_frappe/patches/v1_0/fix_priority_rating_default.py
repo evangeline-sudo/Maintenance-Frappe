@@ -52,6 +52,12 @@ def execute():
 	# Ensure production_item, bom_no, and manufacturing fields are not required for Work Order
 	clear_work_order_mandatory_fields()
 
+	# Fix Table field options on Work Order parent in tabDocField
+	fix_work_order_child_table_options()
+
+	# Fix Responsible Person link options in tabDocField
+	fix_responsible_person_options()
+
 	# Ensure Page and Workspace read permissions for standard maintenance roles
 	ensure_page_permissions()
 
@@ -74,6 +80,26 @@ def clear_work_order_mandatory_fields():
 			""")
 	except Exception as e:
 		frappe.log_error(f"Error clearing Work Order mandatory fields: {e}")
+
+
+def fix_work_order_child_table_options():
+	"""Fix Table field options on Work Order parent in tabDocField to point to Maintenance child tables."""
+	try:
+		frappe.db.sql("""
+			UPDATE `tabDocField`
+			SET options = CASE
+				WHEN fieldname = 'parts_used' THEN 'Maintenance Parts Used'
+				WHEN fieldname = 'tools_used' THEN 'Maintenance Tool'
+				WHEN fieldname = 'checklist_items' THEN 'Maintenance Checklist Item'
+				ELSE options
+			END
+			WHERE parent = 'Work Order' AND fieldtype = 'Table'
+		""")
+		for deleted_dt in ['Work Order Part', 'Work Order Tool', 'Work Order Checklist Item']:
+			if frappe.db.exists('DocType', deleted_dt):
+				frappe.db.sql("DELETE FROM `tabDocType` WHERE name = %s", deleted_dt)
+	except Exception as e:
+		frappe.log_error(f"Error fixing Work Order child table options: {e}")
 
 
 def ensure_page_permissions():
@@ -115,3 +141,29 @@ def ensure_page_permissions():
 							c_perm.insert(ignore_permissions=True)
 						except Exception:
 							pass
+
+
+def fix_responsible_person_options():
+	"""Fix Link field options in tabDocField where options = 'Responsible Person' to point to 'User' or 'Employee'."""
+	try:
+		frappe.db.sql("""
+			UPDATE `tabDocField`
+			SET options = 'User'
+			WHERE options = 'Responsible Person' AND fieldname IN ('assigned_technician', 'responsible_person', 'assigned_to')
+		""")
+		frappe.db.sql("""
+			UPDATE `tabDocField`
+			SET options = 'Employee'
+			WHERE options = 'Responsible Person' AND fieldname NOT IN ('assigned_technician', 'responsible_person', 'assigned_to')
+		""")
+		if frappe.db.table_exists("Custom Field"):
+			frappe.db.sql("""
+				UPDATE `tabCustom Field`
+				SET options = 'User'
+				WHERE options = 'Responsible Person' AND fieldname IN ('assigned_technician', 'responsible_person', 'assigned_to')
+			""")
+		if frappe.db.exists("DocType", "Responsible Person"):
+			frappe.db.sql("DELETE FROM `tabDocType` WHERE name = 'Responsible Person'")
+	except Exception as e:
+		frappe.log_error(f"Error fixing Responsible Person options: {e}")
+

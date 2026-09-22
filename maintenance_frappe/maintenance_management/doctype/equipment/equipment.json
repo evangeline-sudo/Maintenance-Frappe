@@ -15,7 +15,6 @@
   "used_in_location",
   "section_used_by",
   "used_by",
-  "unit",
   "department",
   "employee_link",
   "section_description_tab",
@@ -94,21 +93,13 @@
    "fieldtype": "Section Break"
   },
   {
-   "default": "Unit",
+   "default": "Department",
    "fieldname": "used_by",
    "fieldtype": "Select",
    "label": "Used By",
-   "options": "Unit\nDepartment\nEmployee"
-  },
-  {
-   "depends_on": "eval:doc.used_by=='Unit'",
-   "fieldname": "unit",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Unit",
-   "options": "Unit"
-  },
-  {
+   "options": "Department\nEmployee"
+   },
+    {
    "depends_on": "eval:doc.used_by=='Department'",
    "fieldname": "department",
    "fieldtype": "Link",
@@ -246,12 +237,7 @@
    "fieldtype": "Section Break",
    "label": "Location & Organization"
   },
-  {
-   "fieldname": "unit",
-   "fieldtype": "Data",
-   "in_standard_filter": 1,
-   "label": "Unit"
-  },
+
   {
    "fieldname": "col_break_maint_right",
    "fieldtype": "Column Break"

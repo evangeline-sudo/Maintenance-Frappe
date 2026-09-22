@@ -52,8 +52,7 @@ def filter_employee_sidebar(bootinfo):
 		"System Manager",
 		"Maintenance Manager",
 		"Maintenance User",
-		"Unit Head",
-		"Supervisor",
+		"Manager",
 		"Technician",
 		"Maintenance Technician",
 	}
@@ -162,10 +161,6 @@ def verify_maintenance_request(request_id, verification_status, feedback=""):
 
 @frappe.whitelist()
 def close_maintenance_request(request_id, closing_remarks="", verified_by=""):
-	"""
-	API endpoint to close a maintenance request
-	Only Supervisor or Unit Head can close
-	"""
 	request_doc = frappe.get_doc("Maintenance Request", request_id)
 	if not frappe.has_permission("Maintenance Request", "write", request_doc):
 		frappe.throw(_("You don't have permission to close this request"))
@@ -247,11 +242,7 @@ def get_maintenance_dashboard_data():
 		group_by="department"
 	)
 
-	by_unit = frappe.db.get_list(
-		"Maintenance Request",
-		fields=["unit", "count(*) as count"],
-		group_by="unit"
-	)
+	
 
 	by_status = frappe.db.get_list(
 		"Maintenance Request",
@@ -282,7 +273,6 @@ def get_maintenance_dashboard_data():
 			group_by="maintenance_type"
 		),
 		"by_department": by_department,
-		"by_unit": by_unit,
 		"by_equipment_category": frappe.db.get_list(
 			"Maintenance Request",
 			fields=["equipment_category", "count(*) as count"],

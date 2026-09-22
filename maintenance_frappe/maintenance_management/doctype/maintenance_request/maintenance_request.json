@@ -17,7 +17,6 @@
   "employee",
   "employee_name",
   "department",
-  "unit",
   "request_date",
   "responsible_person",
   "column_break_ykcz",
@@ -95,10 +94,9 @@
   {
    "fieldname": "employee",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Employee",
-   "options": "Employee",
-   "read_only": 1,
-   "reqd": 1
+   "options": "Employee"
   },
   {
    "fieldname": "employee_name",
@@ -112,13 +110,6 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Department",
-   "read_only": 1
-  },
-  {
-   "fieldname": "unit",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Unit",
    "read_only": 1
   },
   {
@@ -436,7 +427,7 @@
   {
    "fieldname": "unit_head",
    "fieldtype": "Link",
-   "label": "Manger",
+   "label": "Unit Head",
    "options": "User"
   }
  ],
@@ -541,7 +532,7 @@
    "title": "Rejected"
   },
   {
-   "color": "DarkGray",
+   "color": "Gray",
    "title": "Closed"
   }
  ],

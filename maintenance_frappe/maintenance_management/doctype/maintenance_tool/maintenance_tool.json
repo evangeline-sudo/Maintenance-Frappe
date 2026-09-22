@@ -52,7 +52,7 @@
    "fieldname": "responsible_person",
    "fieldtype": "Link",
    "label": "Responsible Person",
-   "options": "Responsible Person"
+   "options": "Employee"
   },
   {
    "default": "Good",

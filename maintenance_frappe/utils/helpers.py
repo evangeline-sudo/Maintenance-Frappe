@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 
 
 def get_pending_approval_requests(unit_head=None):
-	"""Get maintenance requests pending approval for a unit head"""
+	"""Get maintenance requests pending approval for a manager"""
 	filters = {"approval_status": "Pending"}
 	if unit_head:
-		filters["unit_head"] = unit_head
+		filters["manager"] = unit_head
 
 	return frappe.get_list(
 		"Maintenance Request",
@@ -221,10 +221,11 @@ def get_resolution_time_average(maintenance_type=None):
 
 
 def send_approval_notification(request_id):
-	"""Send notification to Unit Head for approval"""
+	"""Send notification to Manager for approval"""
 	request_doc = frappe.get_doc("Maintenance Request", request_id)
 
-	if not request_doc.unit_head:
+	target_manager = getattr(request_doc, "manager", None) or getattr(request_doc, "unit_head", None)
+	if not target_manager:
 		return
 
 	subject = f"Maintenance Request {request_id} - Approval Required"
@@ -243,7 +244,7 @@ def send_approval_notification(request_id):
 	"""
 
 	frappe.sendmail(
-		recipients=[request_doc.unit_head],
+		recipients=[target_manager],
 		subject=subject,
 		message=message
 	)
