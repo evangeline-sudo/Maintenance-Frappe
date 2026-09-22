@@ -158,7 +158,8 @@ has_permission = {
 scheduler_events = {
 	"daily": [
 		"maintenance_frappe.api.maintenance.process_preventive_maintenance_due",
-		"maintenance_frappe.api.maintenance.check_contract_expiries_and_stock"
+		"maintenance_frappe.api.maintenance.check_contract_expiries_and_stock",
+		"maintenance_frappe.m_maintenance.doctype.preventive_maintenance_plan.preventive_maintenance_plan.process_due_plans"
 	]
 }
 
@@ -202,6 +203,10 @@ scheduler_events = {
 # ----------------
 # before_request = ["maintenance_frappe.utils.before_request"]
 # after_request = ["maintenance_frappe.utils.after_request"]
+
+# Boot session
+# ------------------
+boot_session = ["maintenance_frappe.api.maintenance.filter_employee_sidebar"]
 
 # Job Events
 # ----------
@@ -249,12 +254,24 @@ scheduler_events = {
 # Fixtures
 # --------
 fixtures = [
-	{"dt": "Workspace", "filters": [["name", "=", "Maintenance"]]},
-	{"dt": "Workspace Sidebar", "filters": [["name", "=", "Maintenance"]]},
-	{"dt": "Dashboard", "filters": [["name", "=", "Maintenance"]]},
-	{"dt": "Number Card", "filters": [["module", "=", "Maintenance"]]},
-	{"dt": "Dashboard Chart", "filters": [["module", "=", "Maintenance"]]},
-	{"dt": "Desktop Icon", "filters": [["name", "=", "Maintenance"]]}
+	{"dt": "Equipment Category"},
+	{"dt": "Issue Category"},
+	{
+		"dt": "Email Template",
+		"filters": [
+			["name", "in", [
+				"Maintenance Request Submitted",
+				"Maintenance Approval Required",
+				"Maintenance Request Approved",
+				"Maintenance Request Rejected",
+				"Maintenance Request Assigned",
+				"Maintenance Work Resolved",
+				"Maintenance Rework Requested",
+				"Maintenance Request Closed"
+			]]
+		]
+	},
+	{"dt": "Role", "filters": [["name", "in", ["Maintenance User", "Maintenance Manager", "Maintenance Technician", "Unit Head"]]]}
 ]
 
 

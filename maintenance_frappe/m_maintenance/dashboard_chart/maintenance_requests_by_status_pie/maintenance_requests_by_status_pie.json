@@ -5,7 +5,7 @@
  "chart_type": "Group By",
  "type": "Pie",
  "document_type": "Maintenance Request",
- "group_by_based_on": "status",
+ "group_by_based_on": "approval_status",
  "group_by_type": "Count",
  "filters_json": "{}",
  "module": "Maintenance",

@@ -37,7 +37,7 @@
  "links": [],
  "modified": "2026-09-09 15:00:00.000000",
  "modified_by": "Administrator",
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Maintenance Cause",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
@@ -62,8 +62,18 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Maintenance User",
+   "role": "Maintenance Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Technician",
    "write": 1
   },
   {
@@ -72,10 +82,10 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "All"
+   "role": "Maintenance User"
   }
  ],
- "quick_entry": 1,
+ "quick_entry": 0,
  "search_fields": "cause_name",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

@@ -14,7 +14,7 @@
  "letter_head": null,
  "modified": "2026-09-16 09:31:10.759473",
  "modified_by": "Administrator",
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "AMC Contract Expiry Report",
  "owner": "Administrator",
  "prepared_report": 0,

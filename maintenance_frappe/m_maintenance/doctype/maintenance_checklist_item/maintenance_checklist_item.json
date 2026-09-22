@@ -43,7 +43,7 @@
    "label": "Instructions"
   }
  ],
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Maintenance Checklist Item",
  "permissions": []
 }

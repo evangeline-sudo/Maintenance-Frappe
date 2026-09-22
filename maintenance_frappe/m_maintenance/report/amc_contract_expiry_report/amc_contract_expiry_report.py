@@ -4,7 +4,7 @@ from frappe import _
 def execute(filters=None):
     columns = [
         {"label": "Contract ID", "fieldname": "name", "fieldtype": "Link", "options": "Maintenance Contract", "width": 140},
-        {"label": "Vendor", "fieldname": "vendor", "fieldtype": "Link", "options": "Maintenance Vendor", "width": 150},
+        {"label": "Supplier / Vendor", "fieldname": "vendor", "fieldtype": "Link", "options": "Supplier", "width": 150},
         {"label": "Type", "fieldname": "contract_type", "fieldtype": "Data", "width": 130},
         {"label": "End Date", "fieldname": "end_date", "fieldtype": "Date", "width": 130},
         {"label": "Status", "fieldname": "status", "fieldtype": "Data", "width": 110}

@@ -2,16 +2,54 @@ import frappe
 from frappe import _
 
 
+def filter_employee_sidebar(bootinfo):
+	"""Limit the Maintenance sidebar for standard Employee users while preserving section headers."""
+	roles = set(frappe.get_roles())
+	elevated_roles = {
+		"Administrator",
+		"System Manager",
+		"Maintenance Manager",
+		"Maintenance User",
+		"Unit Head",
+		"Supervisor",
+		"Technician",
+		"Maintenance Technician",
+	}
+	if "Employee" not in roles or roles & elevated_roles:
+		return
+
+	allowed_links = {"Maintenance Request", "Equipment", "Issue Category"}
+	for sidebar_name, sidebar in bootinfo.get("workspace_sidebar_item", {}).items():
+		is_maintenance_sidebar = (
+			sidebar_name.lower() == "maintenance"
+			or str(sidebar.get("label") or "").lower() == "maintenance"
+			or str(sidebar.get("module") or "").lower() == "maintenance"
+		)
+		if not is_maintenance_sidebar:
+			continue
+
+		sidebar["items"] = [
+			item
+			for item in sidebar.get("items", [])
+			if item.get("type") == "Card Break"
+			or (item.get("link_type") == "DocType" and item.get("link_to") in allowed_links)
+		]
+
+
+def _get_authorized_request_doc(request_id, ptype="write", action="update"):
+	request_doc = frappe.get_doc("Maintenance Request", request_id)
+	if not frappe.has_permission("Maintenance Request", ptype, request_doc):
+		frappe.throw(_("You don't have permission to {0} this request").format(action))
+	return request_doc
+
+
 @frappe.whitelist()
 def approve_maintenance_request(request_id, notes=""):
 	"""
 	API endpoint to approve a maintenance request
-	Only Unit Head can approve
+	Only Manager can approve
 	"""
-	request_doc = frappe.get_doc("Maintenance Request", request_id)
-	if not frappe.has_permission("Maintenance Request", "write", request_doc):
-		frappe.throw(_("You don't have permission to approve this request"))
-
+	request_doc = _get_authorized_request_doc(request_id, "write", "approve")
 	request_doc.approve_request(notes)
 	return {"status": "success", "message": f"Request {request_id} approved"}
 
@@ -20,12 +58,9 @@ def approve_maintenance_request(request_id, notes=""):
 def reject_maintenance_request(request_id, notes=""):
 	"""
 	API endpoint to reject a maintenance request
-	Only Unit Head can reject
+	Only Manager can reject
 	"""
-	request_doc = frappe.get_doc("Maintenance Request", request_id)
-	if not frappe.has_permission("Maintenance Request", "write", request_doc):
-		frappe.throw(_("You don't have permission to reject this request"))
-
+	request_doc = _get_authorized_request_doc(request_id, "write", "reject")
 	request_doc.reject_request(notes)
 	return {"status": "success", "message": f"Request {request_id} rejected"}
 
@@ -36,10 +71,7 @@ def assign_maintenance_request(request_id, technician):
 	API endpoint to assign a maintenance request to a technician
 	Only Admin can assign
 	"""
-	request_doc = frappe.get_doc("Maintenance Request", request_id)
-	if not frappe.has_permission("Maintenance Request", "write", request_doc):
-		frappe.throw(_("You don't have permission to assign this request"))
-
+	request_doc = _get_authorized_request_doc(request_id, "write", "assign")
 	request_doc.assign_to_technician(technician)
 	return {"status": "success", "message": f"Request {request_id} assigned to {technician}"}
 
@@ -50,10 +82,7 @@ def start_maintenance_work(request_id):
 	API endpoint to start work on a maintenance request
 	Only assigned technician can start work
 	"""
-	request_doc = frappe.get_doc("Maintenance Request", request_id)
-	if not frappe.has_permission("Maintenance Request", "write", request_doc):
-		frappe.throw(_("You don't have permission to start work on this request"))
-
+	request_doc = _get_authorized_request_doc(request_id, "write", "start work on")
 	request_doc.start_work()
 	return {"status": "success", "message": f"Work started on request {request_id}"}
 
@@ -63,10 +92,7 @@ def record_diagnosis(request_id, diagnosis_notes, estimated_cost=0, estimated_co
 	"""
 	API endpoint to record technician diagnosis and cost/time estimation
 	"""
-	request_doc = frappe.get_doc("Maintenance Request", request_id)
-	if not frappe.has_permission("Maintenance Request", "write", request_doc):
-		frappe.throw(_("You don't have permission to update diagnosis on this request"))
-
+	request_doc = _get_authorized_request_doc(request_id, "write", "update diagnosis on")
 	request_doc.save_diagnosis(diagnosis_notes, float(estimated_cost or 0), estimated_completion_time)
 	return {"status": "success", "message": f"Diagnosis recorded for request {request_id}"}
 
@@ -77,10 +103,7 @@ def mark_maintenance_resolved(request_id, resolution_notes="", root_cause=""):
 	API endpoint to mark a maintenance request as resolved
 	Only assigned technician can mark as resolved
 	"""
-	request_doc = frappe.get_doc("Maintenance Request", request_id)
-	if not frappe.has_permission("Maintenance Request", "write", request_doc):
-		frappe.throw(_("You don't have permission to mark this request as resolved"))
-
+	request_doc = _get_authorized_request_doc(request_id, "write", "mark resolved")
 	request_doc.mark_resolved(resolution_notes, root_cause)
 	return {"status": "success", "message": f"Request {request_id} marked as resolved"}
 
@@ -90,10 +113,7 @@ def verify_maintenance_request(request_id, verification_status, feedback=""):
 	"""
 	API endpoint to record verification by Supervisor / Requester
 	"""
-	request_doc = frappe.get_doc("Maintenance Request", request_id)
-	if not frappe.has_permission("Maintenance Request", "write", request_doc):
-		frappe.throw(_("You don't have permission to verify this request"))
-
+	request_doc = _get_authorized_request_doc(request_id, "write", "verify")
 	request_doc.verify_request(verification_status, feedback, frappe.session.user)
 	return {"status": "success", "message": f"Verification saved for request {request_id}"}
 

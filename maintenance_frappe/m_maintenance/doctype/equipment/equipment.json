@@ -1,8 +1,8 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:equipment_id",
- "creation": "2026-09-09 15:00:00.000000",
+ "autoname": "field:equipment_name",
+ "creation": "2026-09-09 15:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -14,6 +14,7 @@
   "column_break_basic",
   "equipment_type",
   "product_type",
+  "maintenance_type",
   "asset_id",
   "ownership",
   "location_and_org_section",
@@ -45,7 +46,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Equipment Name",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "equipment_category",
@@ -57,23 +59,21 @@
    "reqd": 1
   },
   {
-   "default": "Active",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Active\nUnder Maintenance\nRetired\nDisposed",
+   "options": "\nActive\nUnder Maintenance\nRetired\nDisposed",
    "reqd": 1
   },
   {
-   "default": "Medium",
    "fieldname": "criticality",
    "fieldtype": "Select",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Criticality",
-   "options": "Low\nMedium\nHigh\nCritical"
+   "options": "\nLow\nMedium\nHigh\nCritical"
   },
   {
    "fieldname": "column_break_basic",
@@ -93,9 +93,9 @@
   {
    "fieldname": "maintenance_type",
    "fieldtype": "Select",
+   "in_standard_filter": 1,
    "label": "Maintenance Type",
-   "options": "IT\nNon-IT\nProfessional/Specialized",
-   "in_standard_filter": 1
+   "options": "IT\nNon-IT\nProfessional/Specialized"
   },
   {
    "fieldname": "asset_id",
@@ -128,7 +128,7 @@
   },
   {
    "fieldname": "location",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "in_standard_filter": 1,
    "label": "Location",
    "options": "Maintenance Location"
@@ -185,9 +185,9 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-09 15:00:00.000000",
+ "modified": "2026-09-20 13:14:56.736253",
  "modified_by": "Administrator",
- "module": "Maintenance Management",
+ "module": "m_maintenance",
  "name": "Equipment",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
@@ -212,8 +212,18 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Maintenance User",
+   "role": "Maintenance Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Technician",
    "write": 1
   },
   {
@@ -222,10 +232,20 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "All"
+   "role": "Maintenance User"
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1
   }
  ],
- "quick_entry": 1,
+ "quick_entry": 0,
+ "row_format": "Dynamic",
  "search_fields": "equipment_id,equipment_name,equipment_category,location,department",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
