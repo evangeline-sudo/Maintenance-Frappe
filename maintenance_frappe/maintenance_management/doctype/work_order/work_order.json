@@ -99,7 +99,7 @@
    "fieldname": "assigned_technician",
    "fieldtype": "Link",
    "label": "Assigned Technician",
-   "options": "Responsible Person"
+   "options": "User"
   },
   {
    "fieldname": "planned_start",
@@ -193,19 +193,19 @@
    "fieldname": "parts_used",
    "fieldtype": "Table",
    "label": "Parts Used",
-   "options": "Work Order Part"
+   "options": "Maintenance Parts Used"
   },
   {
    "fieldname": "tools_used",
    "fieldtype": "Table",
    "label": "Tools Used",
-   "options": "Work Order Tool"
+   "options": "Maintenance Tool"
   },
   {
    "fieldname": "checklist_items",
    "fieldtype": "Table",
    "label": "Checklist Items",
-   "options": "Work Order Checklist Item"
+   "options": "Maintenance Checklist Item"
   },
   {
    "default": "Pending",

@@ -25,12 +25,6 @@ frappe.ui.form.on('Maintenance Request', {
 			};
 		});
 
-		frm.set_query('unit_head', function() {
-			return {
-				query: 'maintenance_frappe.maintenance_management.doctype.maintenance_request.maintenance_request.get_manager_users'
-			};
-		});
-
 		frm.set_query('assigned_to', function() {
 			return {
 				query: 'maintenance_frappe.maintenance_management.doctype.maintenance_request.maintenance_request.get_technician_users'
@@ -134,12 +128,6 @@ frappe.ui.form.on('Maintenance Request', {
 							if (d.department && !frm.doc.department) {
 								frm.set_value('department', d.department);
 							}
-							if (d.unit && !frm.doc.unit) {
-								frm.set_value('unit', d.unit);
-							}
-							if (d.unit_head && !frm.doc.unit_head) {
-								frm.set_value('unit_head', d.unit_head);
-							}
 							frm.trigger('set_field_states');
 						}
 					}
@@ -233,11 +221,8 @@ frappe.ui.form.on('Maintenance Request', {
 						if (r.message.department) {
 							frm.set_value('department', r.message.department);
 						}
-						if (r.message.unit) {
-							frm.set_value('unit', r.message.unit);
-						}
 						if (r.message.user_id) {
-							frm.set_value('unit_head', r.message.user_id);
+							frm.set_value('manager', r.message.user_id);
 						}
 						frm.trigger('set_field_states');
 					}
@@ -246,11 +231,10 @@ frappe.ui.form.on('Maintenance Request', {
 		} else {
 			frm.set_value('employee_name', '');
 			frm.set_value('department', '');
-			frm.set_value('unit', '');
 		}
 	},
 
-	unit_head: function(frm) {
+	manager: function(frm) {
 		frm.trigger('set_field_states');
 		frm.trigger('set_section_visibilities');
 	},
@@ -305,10 +289,9 @@ frappe.ui.form.on('Maintenance Request', {
 		 * Four Role-based Visibility Tiers:
 		 *   1. Maintenance Manager: Full system access & control over all fields/sections.
 		 *   2. Maintenance User (Technician): Work execution, work logs, parts used & resolution editable.
-		 *   3. Manager : Department/unit review, approval & assignment fields.
+		 *   3. Manager : Department/Manager review, approval & assignment fields.
 		 *   4. Employee (Employee Portal):
 		 *      Visible: title, equipment_category (Category), issue_category (Issue Category),
-		 *               priority (Priority), employee_name, department, unit,
 		 *               request_date, responsible_person (Responsible), description
 		 *      Hidden:  employee (internal link), ownership_type, maintenance_type, status,
 		 *               cost totals, technical/approval sections
@@ -323,7 +306,7 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('Maintenance User') ||
 			user_roles.includes('Manager') ||
 			user_roles.includes('Technician') ||
-			(frm.doc.unit_head && current_user === frm.doc.unit_head)
+			(frm.doc.manager && current_user === frm.doc.manager)
 		);
 
 		let employee_only = !is_full_access;
@@ -337,7 +320,7 @@ frappe.ui.form.on('Maintenance Request', {
 
 		// ── Fields visible for Employee Portal ──────────────────────────────────
 		['title', 'equipment_category', 'issue_category', 'priority',
-		 'employee_name', 'department', 'unit', 'request_date', 'responsible_person', 'description'
+		 'employee_name', 'department', 'request_date', 'responsible_person', 'description'
 		].forEach(function(f) {
 			frm.set_df_property(f, 'hidden', 0);
 		});
@@ -360,7 +343,7 @@ frappe.ui.form.on('Maintenance Request', {
 		frm.set_df_property('status_history', 'hidden', employee_only ? 1 : 0);
 
 		// ── Requester fields: read-only for everyone (auto-filled) ───────────────
-		['employee_name', 'department', 'unit', 'request_date', 'responsible_person'].forEach(function(f) {
+		['employee_name', 'department', 'request_date', 'responsible_person'].forEach(function(f) {
 			frm.set_df_property(f, 'read_only', 1);
 		});
 
@@ -396,6 +379,7 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('System Manager') ||
 			user_roles.includes('Maintenance Manager') ||
 			user_roles.includes('Manager') ||
+			(frm.doc.manager && current_user === frm.doc.manager) ||
 			(frm.doc.unit_head && current_user === frm.doc.unit_head)
 		);
 
@@ -403,7 +387,7 @@ frappe.ui.form.on('Maintenance Request', {
 		if (is_assigned_technician && !is_privileged) {
 			// --- Approval & Assignment section: fully read-only for technician ---
 			let approval_assignment_fields = [
-				'unit_head', 'approval_status', 'approval_date',
+				'manager', 'unit_head', 'approval_status', 'approval_date',
 				'approval_notes', 'assigned_to', 'assigned_date'
 			];
 			approval_assignment_fields.forEach(function(fieldname) {
@@ -444,17 +428,15 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
 			user_roles.includes('Employee') ||
-			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
+			(frm.doc.manager && frappe.session.user === frm.doc.manager )
 		);
-
-		// Requester details are read-only so users cannot alter their logged-in requester info
+		// details are read-only so users cannot alter their logged-in requester info
 		frm.set_df_property('employee', 'read_only', 1);
 		frm.set_df_property('employee_name', 'read_only', 1);
 		frm.set_df_property('department', 'read_only', 1);
-		frm.set_df_property('unit', 'read_only', 1);
 		frm.set_df_property('request_date', 'read_only', 1);
 
-		// Approval Status & Verification Status can be changed directly by Admin, Maintenance Manager, or Unit Head
+		// Approval Status & Verification Status can be changed directly by Admin, Maintenance Manager, or Manager
 		frm.set_df_property('approval_status', 'read_only', is_authorized_approver ? 0 : 1);
 		frm.set_df_property('verification_status', 'read_only', is_authorized_approver ? 0 : 1);
 
@@ -477,7 +459,7 @@ frappe.ui.form.on('Maintenance Request', {
 			(frm.doc.manager && frappe.session.user === frm.doc.manager)
 		);
 
-		// 1. Pending / Hold Approval Actions - only for Maintenance Manager, System Manager, Admin, or assigned Unit Head
+		// 1. Pending / Hold Approval Actions - only for Maintenance Manager, System Manager, Admin, or assigned Manager
 		if ((frm.doc.approval_status === 'Pending' || frm.doc.approval_status === 'Hold' || frm.doc.status === 'Pending Approval') && can_approve) {
 			frm.add_custom_button(__('Approve'), function() {
 				frappe.prompt([

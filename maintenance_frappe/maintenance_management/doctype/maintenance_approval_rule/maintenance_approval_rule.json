@@ -10,7 +10,6 @@
  "engine": "InnoDB",
  "icon": "check",
  "field_order": [
-  "unit",
   "department",
   "category",
   "priority",
@@ -20,12 +19,6 @@
   "disabled"
  ],
  "fields": [
-  {
-   "fieldname": "unit",
-   "fieldtype": "Link",
-   "label": "Unit (Company)",
-   "options": "Company"
-  },
   {
    "fieldname": "department",
    "fieldtype": "Link",

@@ -29,6 +29,19 @@ EQUIPMENT_CATEGORY_ALIASES = {
 }
 
 
+
+
+def _clean_str_arg(val, default=""):
+	"""Safely extract string value from positional/keyword argument that might be a dict or non-string"""
+	if isinstance(val, str):
+		return val.strip()
+	elif isinstance(val, dict):
+		for k in ["approval_notes", "remarks", "notes", "reason", "feedback", "closing_remarks", "details", "diagnosis"]:
+			if isinstance(val.get(k), str) and val.get(k).strip():
+				return val.get(k).strip()
+	return default
+
+
 class MaintenanceRequest(Document):
 	"""
 	Maintenance Request DocType
@@ -55,6 +68,14 @@ class MaintenanceRequest(Document):
 			return "Low"
 		return "Medium"
 
+	@property
+	def manager(self):
+		return getattr(self, "unit_head", None)
+
+	@manager.setter
+	def manager(self, value):
+		self.unit_head = value
+
 	def _set_defaults(self):
 		super()._set_defaults()
 		self.auto_create_issue_category()
@@ -80,12 +101,13 @@ class MaintenanceRequest(Document):
 		if not getattr(self, "employee", None):
 			user_id = getattr(self, "owner", None) or frappe.session.user
 			if user_id and user_id != "Guest":
-				emp_data = frappe.db.get_value("Employee", {"user_id": user_id}, ["name", "employee_name", "department", "custom_unit", "company"], as_dict=True)
+				emp_data = frappe.db.get_value("Employee", {"user_id": user_id}, ["name", "employee_name", "department"], as_dict=True)
 				if emp_data:
 					self.employee = emp_data.name
 					self.employee_name = emp_data.employee_name
 					self.department = emp_data.department
-					self.unit = emp_data.get("custom_unit") or emp_data.get("company")
+				elif not getattr(self, "employee_name", None):
+					self.employee_name = frappe.db.get_value("User", user_id, "full_name") or user_id
 
 		self.auto_create_issue_category()
 		self.auto_handle_equipment()
@@ -132,7 +154,7 @@ class MaintenanceRequest(Document):
 		"""Send notification email using responsive HTML Email Templates or default messages.
 
 		Targeted Recipient Routing:
-		  - Submitted / Approval Required: Manager (users with role Manager, plus Unit Head if set)
+		  - Submitted / Approval Required: Manager (users with role Manager, plus Manager if set)
 		  - Approved: Maintenance Manager & Requester (Employee)
 		  - Rejected / Closed: Requester (Employee) & Maintenance Manager
 		  - Assigned: Assigned Technician & Requester (Employee)
@@ -161,13 +183,13 @@ class MaintenanceRequest(Document):
 		try:
 			recipients = []
 			employee_email = self.get_employee_email()
-			unit_head_email = self._resolve_user_email(getattr(self, "unit_head", None))
+			manager_email = self._resolve_user_email(getattr(self, "manager", getattr(self, "unit_head", None)))
 			technician_email = self._resolve_user_email(getattr(self, "assigned_to", None))
 
 			if event_type in ["Submitted", "Approval Required"]:
 				# Notify Manager for approval on request submission
-				if unit_head_email:
-					recipients.append(unit_head_email)
+				if manager_email:
+					recipients.append(manager_email)
 				manager_emails = self.get_role_emails("Manager")
 				recipients.extend(manager_emails)
 				if not recipients:
@@ -193,8 +215,8 @@ class MaintenanceRequest(Document):
 			elif event_type == "Resolved":
 				if employee_email:
 					recipients.append(employee_email)
-				if unit_head_email:
-					recipients.append(unit_head_email)
+				if manager_email:
+					recipients.append(manager_email)
 				recipients.extend(self.get_role_emails("Manager"))
 
 			elif event_type == "Rework Required":
@@ -471,8 +493,6 @@ class MaintenanceRequest(Document):
 					self.location = eq_doc.location
 			if getattr(eq_doc, "department", None):
 				self.department = eq_doc.department
-			if getattr(eq_doc, "unit", None):
-				self.unit = eq_doc.unit
 			if getattr(eq_doc, "equipment_category", None):
 				self.equipment_category = eq_doc.equipment_category
 			if getattr(eq_doc, "maintenance_type", None):
@@ -517,7 +537,6 @@ class MaintenanceRequest(Document):
 				"maintenance_type": self.maintenance_type if self.maintenance_type in ["IT", "Non-IT", "Professional-Specialized"] else "Non-IT",
 				
 				"department": getattr(self, "department", None),
-				"unit": getattr(self, "unit", None),
 				"status": "Active"
 			})
 			new_eq.insert(ignore_permissions=True)
@@ -571,29 +590,25 @@ class MaintenanceRequest(Document):
 			self.status = "In Progress"
 
 	def validate_employee(self):
-		"""Validate that employee exists, set employee_name, and auto-populate unit_head if missing and unit"""
+		"""Validate that employee exists and set employee_name"""
 		if not getattr(self, "employee", None) and frappe.session.user and frappe.session.user != "Guest":
 			emp_info = get_logged_in_employee(frappe.session.user)
 			if emp_info and emp_info.get("name"):
 				self.employee = emp_info.get("name")
 
-		if self.employee:
+		if getattr(self, "employee", None) and frappe.db.exists("Employee", self.employee):
 			emp = frappe.get_doc("Employee", self.employee)
 			self.employee_name = emp.employee_name
-			if getattr(emp, "department", None):
-				if hasattr(self, "department") and not getattr(self, "department", None):
-					self.department = emp.department
-			if getattr(emp, "unit", None):
-				if hasattr(self, "unit") and not getattr(self, "unit", None):
-					self.unit = emp.unit
-			if not getattr(self, "unit_head", None):
-				self.unit_head = self.fetch_employee_approver()
-
-			# Auto-populate unit_head (User) from employee details if not already set
-			if not self.unit_head:
+			if getattr(emp, "department", None) and not getattr(self, "department", None):
+				self.department = emp.department
+			if not getattr(self, "manager", None):
+				self.manager = self.fetch_employee_approver()
+			if not getattr(self, "manager", None):
 				manager_info = get_employee_manager_user(self.employee)
 				if manager_info and manager_info.get("user_id"):
-					self.unit_head = manager_info["user_id"]
+					self.manager = manager_info["user_id"]
+		elif not getattr(self, "employee_name", None) and frappe.session.user:
+			self.employee_name = frappe.db.get_value("User", frappe.session.user, "full_name") or frappe.session.user
 
 	def validate_approval_status_permissions(self):
 		"""
@@ -601,20 +616,21 @@ class MaintenanceRequest(Document):
 		- Maintenance Manager
 		- System Manager
 		- Administrator
-		- Assigned Manager User (self.unit_head)
+		- Assigned Manager User (self.manager)
 		"""
 		current_user = frappe.session.user
 		if current_user == "Administrator":
 			return
 
 		user_roles = frappe.get_roles(current_user)
-		is_manager = any(role in user_roles for role in ["Administrator", "System Manager", "Maintenance Manager", "Manager"])
-		is_unit_head = bool(self.unit_head and current_user == self.unit_head)
+		is_manager_role = any(role in user_roles for role in ["Administrator", "System Manager", "Maintenance Manager", "Manager"])
+		is_assigned_manager = bool(self.manager and current_user == self.manager)
+		is_authorized_manager = is_manager_role or is_assigned_manager
 
 		# If creating a new document
 		if self.is_new():
 			# Regular employee users submit with approval_status = 'Pending'
-			if not (is_manager or is_unit_head):
+			if not is_authorized_manager:
 				self.approval_status = "Pending"
 				if hasattr(self, "status") and self.status not in ["Pending Approval", "Draft"]:
 					self.status = "Pending Approval"
@@ -622,10 +638,10 @@ class MaintenanceRequest(Document):
 
 		# If updating an existing document and approval_status changed
 		if self.has_value_changed("approval_status"):
-			if not (is_manager or is_unit_head):
+			if not is_authorized_manager:
 				frappe.throw(
 					_("Only Maintenance Manager or the assigned Manager ({0}) can change the Approval Status.").format(
-						self.unit_head or _("Manager")
+						self.manager or _("Manager")
 					)
 				)
 
@@ -648,12 +664,12 @@ class MaintenanceRequest(Document):
 		user_roles = frappe.get_roles(current_user)
 		is_authorized = (
 			any(role in user_roles for role in ["System Manager", "Maintenance Manager", "Manager"]) or
-			bool(self.unit_head and current_user == self.unit_head)
+			bool(self.manager and current_user == self.manager)
 		)
 		if not is_authorized:
 			frappe.throw(
 				_("Only Maintenance Manager or the assigned Manager ({0}) can approve or reject this request.").format(
-					self.unit_head or _("Manager")
+					self.manager or _("Manager")
 				)
 			)
 		return True
@@ -724,7 +740,6 @@ class MaintenanceRequest(Document):
 		rule = frappe.db.get_value(
 			"Maintenance Approval Rule",
 			{
-				"unit": getattr(self, "unit", "") or "",
 				"department": getattr(self, "department", "") or "",
 				"category": getattr(self, "category", "") or "",
 				"priority": getattr(self, "priority", "Medium"),
@@ -743,9 +758,9 @@ class MaintenanceRequest(Document):
 		if requires_approval:
 			self.approval_status = "Pending"
 			self.update_status("Pending Approval", "Awaiting Manager approval")
-			if not self.unit_head:
-				self.unit_head = self.fetch_employee_approver()
-			if self.unit_head:
+			if not self.manager:
+				self.manager = self.fetch_employee_approver()
+			if self.manager:
 				self.create_approval_todo()
 			self.send_status_notification("Approval Required")
 		else:
@@ -772,11 +787,12 @@ class MaintenanceRequest(Document):
 		})
 
 	def create_approval_todo(self):
-		"""Create a ToDo for Unit Head approval"""
-		if self.unit_head:
+		"""Create a ToDo for Manager approval"""
+		target_manager = self.manager or self.unit_head
+		if target_manager:
 			todo = frappe.get_doc({
 				"doctype": "ToDo",
-				"owner": self.unit_head,
+				"owner": target_manager,
 				"description": f"Approval required for Maintenance Request {self.name}",
 				"reference_type": "Maintenance Request",
 				"reference_name": self.name,
@@ -786,14 +802,21 @@ class MaintenanceRequest(Document):
 
 	@frappe.whitelist()
 	def approve_request(self, remarks="", approval_notes="", *args, **kwargs):
-		"""Maintenance Manager or Unit Head approves the maintenance request"""
-		notes = approval_notes or remarks or kwargs.get("notes") or ""
+		"""Maintenance Manager approves the maintenance request"""
+		notes = (
+			_clean_str_arg(approval_notes) or 
+			_clean_str_arg(remarks) or 
+			_clean_str_arg(kwargs.get("notes")) or 
+			_clean_str_arg(kwargs.get("approval_notes")) or 
+			_clean_str_arg(kwargs.get("remarks")) or 
+			""
+		)
 		self.validate_approval_authority()
 
 		self.approval_status = "Approved"
 		self.approval_date = datetime.now()
 		if notes:
-			self.approval_notes = notes
+			self.approval_notes = str(notes)
 		self.update_status("Approved", f"Approved by {frappe.session.user}: {notes}")
 		self.save(ignore_permissions=True)
 		self.send_status_notification("Approved", ignore_permissions=True)
@@ -801,13 +824,20 @@ class MaintenanceRequest(Document):
 
 	@frappe.whitelist()
 	def reject_request(self, remarks="", approval_notes="", *args, **kwargs):
-		"""Maintenance Manager or Unit Head rejects the maintenance request"""
-		notes = approval_notes or remarks or kwargs.get("notes") or ""
+		"""Maintenance Manager rejects the maintenance request"""
+		notes = (
+			_clean_str_arg(approval_notes) or 
+			_clean_str_arg(remarks) or 
+			_clean_str_arg(kwargs.get("notes")) or 
+			_clean_str_arg(kwargs.get("approval_notes")) or 
+			_clean_str_arg(kwargs.get("remarks")) or 
+			""
+		)
 		self.validate_approval_authority()
 
 		self.approval_status = "Rejected"
 		if notes:
-			self.approval_notes = notes
+			self.approval_notes = str(notes)
 		self.closed_date = datetime.now()
 		self.update_status("Rejected", f"Rejected by {frappe.session.user}: {notes}")
 		self.save(ignore_permissions=True)
@@ -817,15 +847,15 @@ class MaintenanceRequest(Document):
 	@frappe.whitelist()
 	def assign_technician(self, team=None, technician=None, expected_date=None, remarks="", *args, **kwargs):
 		"""Admin/Supervisor assigns maintenance team and technician"""
-		if team:
+		if team and isinstance(team, str):
 			self.assigned_team = team
-		if technician:
+		if technician and isinstance(technician, str):
 			self.assigned_to = technician
-		if expected_date:
+		if expected_date and isinstance(expected_date, str):
 			self.estimated_completion_time = expected_date
 
 		self.assigned_date = datetime.now()
-		self.update_status("Assigned", f"Assigned to {technician or team} by {frappe.session.user}")
+		self.update_status("Assigned", f"Assigned to {technician or team or 'Technician'} by {frappe.session.user}")
 		self.save(ignore_permissions=True)
 		self.send_status_notification("Assigned")
 		frappe.msgprint(_("Maintenance Request {0} assigned").format(self.name))
@@ -840,12 +870,12 @@ class MaintenanceRequest(Document):
 	@frappe.whitelist()
 	def put_on_hold(self, reason="Parts Unavailable / Vendor Delay", approval_notes="", *args, **kwargs):
 		"""Put maintenance work on hold"""
-		notes = approval_notes or reason or ""
-		self.approval_status = "Hold"
-		self.update_status("On Hold", f"Put on hold by {frappe.session.user}: {notes}")
-		self.save(ignore_permissions=True)
-		frappe.msgprint(_("Maintenance Request {0} put on hold ({1})").format(self.name, notes))
-
+		notes = (
+			_clean_str_arg(approval_notes) or 
+			_clean_str_arg(reason) or 
+			_clean_str_arg(kwargs.get("reason")) or 
+			"Parts Unavailable / Vendor Delay"
+		)
 	@frappe.whitelist()
 	def resume_work(self, *args, **kwargs):
 		"""Resume maintenance work from hold"""
@@ -856,16 +886,21 @@ class MaintenanceRequest(Document):
 	@frappe.whitelist()
 	def resolve_maintenance(self, resolution_type=None, resolution_details="", diagnosis="", work_details="", failure_cause=None, *args, **kwargs):
 		"""Technician marks maintenance work as resolved"""
-		if resolution_type:
-			self.resolution_type = resolution_type
-		if resolution_details:
-			self.resolution_notes = resolution_details
-		if diagnosis:
-			self.diagnosis_notes = diagnosis
-		if work_details:
-			self.work_performed = work_details
-		if failure_cause:
-			self.root_cause = failure_cause
+		res_type = _clean_str_arg(resolution_type)
+		if res_type:
+			self.resolution_type = res_type
+		res_notes = _clean_str_arg(resolution_details)
+		if res_notes:
+			self.resolution_notes = res_notes
+		diag = _clean_str_arg(diagnosis)
+		if diag:
+			self.diagnosis_notes = diag
+		work_perf = _clean_str_arg(work_details)
+		if work_perf:
+			self.work_performed = work_perf
+		cause = _clean_str_arg(failure_cause)
+		if cause:
+			self.root_cause = cause
 
 		self.resolution_date = datetime.now()
 		self.update_status("Resolved", f"Marked resolved by {frappe.session.user}")
@@ -876,12 +911,13 @@ class MaintenanceRequest(Document):
 	@frappe.whitelist()
 	def verify_and_close(self, remarks="", *args, **kwargs):
 		"""Supervisor/Admin verifies completed work and closes request"""
+		notes = _clean_str_arg(remarks) or _clean_str_arg(kwargs.get("remarks")) or ""
 		self.verification_status = "Verified"
-		self.verification_feedback = remarks
+		self.verification_feedback = str(notes)
 		self.verification_date = datetime.now()
 		self.verified_by = frappe.session.user
 		self.closed_date = datetime.now()
-		self.closing_remarks = remarks
+		self.closing_remarks = str(notes)
 		self.update_status("Closed", f"Verified and closed by {frappe.session.user}")
 		self.save(ignore_permissions=True)
 		self.send_status_notification("Closed")
@@ -890,11 +926,12 @@ class MaintenanceRequest(Document):
 	@frappe.whitelist()
 	def request_rework(self, remarks="", *args, **kwargs):
 		"""Supervisor requests rework if inspection/verification fails"""
+		notes = _clean_str_arg(remarks) or _clean_str_arg(kwargs.get("remarks")) or ""
 		self.verification_status = "Rework Required"
-		self.verification_feedback = remarks
+		self.verification_feedback = str(notes)
 		self.verification_date = datetime.now()
 		self.verified_by = frappe.session.user
-		self.update_status("In Progress", f"Rework requested by {frappe.session.user}: {remarks}")
+		self.update_status("In Progress", f"Rework requested by {frappe.session.user}: {notes}")
 		self.save(ignore_permissions=True)
 		self.send_status_notification("Rework Required")
 		frappe.msgprint(_("Rework requested for Maintenance Request {0}").format(self.name))
@@ -1002,43 +1039,36 @@ def flt(val, default=0.0):
 
 def find_manager_by_role(emp):
 	"""
-	Search for a manager/unit head Employee based on the 'role' field in Employee DocType:
+	Search for a manager Employee based on the 'role' field in Employee DocType:
 	1. Check within the same unit / custom_unit or department.
 	2. If not found in same unit/dept, check across all active Employees.
-	3. Check by Frappe Has Role ('Unit Head', 'Maintenance Manager').
+	3. Check by Frappe Has Role ('Manager', 'Maintenance Manager').
 	"""
 	emp_name = getattr(emp, "name", "")
-	emp_unit = getattr(emp, "custom_unit", getattr(emp, "unit", None))
 	emp_dept = getattr(emp, "department", None)
 
-	# 1. First priority: look in the same unit / department for an Employee with manager/unit head role
+	# 1. First priority: look in the same department for an Employee with manager role
 	query_same_unit = """
 		SELECT name, employee_name, user_id, role
 		FROM `tabEmployee`
 		WHERE status = 'Active'
 		  AND name != %(emp_name)s
 		  AND (
-			role IN ('Unit Head', 'Maintenance Manager', 'Manager', 'Department Head', 'Supervisor')
-			OR role LIKE '%%Unit Head%%'
+			role IN ('Maintenance Manager', 'Manager', 'Department Head', 'Supervisor')
 			OR role LIKE '%%Manager%%'
-			OR custom_role IN ('Unit Head', 'Maintenance Manager', 'Manager', 'Department Head', 'Supervisor')
-			OR custom_role LIKE '%%Unit Head%%'
+			OR custom_role IN ('Maintenance Manager', 'Manager', 'Department Head', 'Supervisor')
 			OR custom_role LIKE '%%Manager%%'
-			OR designation LIKE '%%Unit Head%%'
 			OR designation LIKE '%%Manager%%'
 			OR is_manager = 1
 			OR custom_is_manager = 1
-			OR is_unit_head = 1
-			OR custom_is_unit_head = 1
+			OR is_manager = 1
+			OR custom_is_manager = 1
 		  )
-		  AND (
-			(%(emp_unit)s IS NOT NULL AND (custom_unit = %(emp_unit)s OR unit = %(emp_unit)s))
-			OR (%(emp_dept)s IS NOT NULL AND department = %(emp_dept)s)
-		  )
+		  AND (%(emp_dept)s IS NOT NULL AND department = %(emp_dept)s)
 		ORDER BY 
 			CASE 
-				WHEN role = 'Unit Head' OR custom_role = 'Unit Head' THEN 1
-				WHEN role LIKE '%%Unit Head%%' OR custom_role LIKE '%%Unit Head%%' THEN 2
+				WHEN role = 'Manager' OR custom_role = 'Manager' THEN 1
+				WHEN role LIKE '%%Manager%%' OR custom_role LIKE '%%Manager%%' THEN 2
 				WHEN role = 'Maintenance Manager' OR custom_role = 'Maintenance Manager' THEN 3
 				WHEN is_manager = 1 OR custom_is_manager = 1 THEN 4
 				ELSE 5 
@@ -1046,31 +1076,30 @@ def find_manager_by_role(emp):
 		LIMIT 1
 	"""
 	try:
-		mgr = frappe.db.sql(query_same_unit, {"emp_name": emp_name, "emp_unit": emp_unit, "emp_dept": emp_dept}, as_dict=True)
+		mgr = frappe.db.sql(query_same_unit, {"emp_name": emp_name, "emp_dept": emp_dept}, as_dict=True)
 		if mgr and mgr[0].get("user_id"):
 			return mgr[0]
 	except Exception:
 		pass
 
-	# 2. Second priority: look globally for an Employee with Unit Head or Maintenance Manager role
+	# 2. Second priority: look globally for an Employee with Manager or Maintenance Manager role
 	query_global = """
 		SELECT name, employee_name, user_id, role
 		FROM `tabEmployee`
 		WHERE status = 'Active'
 		  AND name != %(emp_name)s
 		  AND (
-			role IN ('Unit Head', 'Maintenance Manager')
-			OR role LIKE '%%Unit Head%%'
-			OR custom_role IN ('Unit Head', 'Maintenance Manager')
-			OR custom_role LIKE '%%Unit Head%%'
+			role IN ('Manager', 'Maintenance Manager')
+			OR role LIKE '%%Manager%%'
+			OR custom_role IN ('Manager', 'Maintenance Manager')
+			OR custom_role LIKE '%%Manager%%'
 			OR is_manager = 1
 			OR custom_is_manager = 1
-			OR is_unit_head = 1
 		  )
 		ORDER BY 
 			CASE 
-				WHEN role = 'Unit Head' OR custom_role = 'Unit Head' THEN 1
-				WHEN is_unit_head = 1 THEN 2
+				WHEN role = 'Manager' OR custom_role = 'Manager' THEN 1
+				WHEN is_manager = 1 OR custom_is_manager = 1 THEN 2
 				ELSE 3 
 			END ASC
 		LIMIT 1
@@ -1090,8 +1119,8 @@ def find_manager_by_role(emp):
 			JOIN `tabHas Role` hr ON hr.parent = e.user_id
 			WHERE e.status = 'Active'
 			  AND e.name != %(emp_name)s
-			  AND hr.role IN ('Unit Head', 'Maintenance Manager')
-			ORDER BY CASE WHEN hr.role = 'Unit Head' THEN 1 ELSE 2 END ASC
+			  AND hr.role IN ('Manager', 'Maintenance Manager')
+			ORDER BY CASE WHEN hr.role = 'Manager' THEN 1 ELSE 2 END ASC
 			LIMIT 1
 		""", {"emp_name": emp_name}, as_dict=True)
 		if users_with_role and users_with_role[0].get("user_id"):
@@ -1109,10 +1138,6 @@ def get_logged_in_employee(user_id=None):
 		return {}
 
 	fields = ["name", "employee_name", "department"]
-	if frappe.db.has_column("Employee", "unit"):
-		fields.append("unit")
-	elif frappe.db.has_column("Employee", "custom_unit"):
-		fields.append("custom_unit as unit")
 
 	# 1. Try matching user_id
 	emp = frappe.db.get_value("Employee", {"user_id": user}, fields, as_dict=True)
@@ -1123,10 +1148,10 @@ def get_logged_in_employee(user_id=None):
 		emp = frappe.db.get_value("Employee", {"personal_email": user}, fields, as_dict=True)
 
 	if emp:
-		# Fetch unit head / manager user
+		# Fetch Manager/ manager user
 		manager_info = get_employee_manager_user(emp.name)
 		if manager_info and manager_info.get("user_id"):
-			emp["unit_head"] = manager_info.get("user_id")
+			emp["manager"] = manager_info.get("user_id")
 		return emp
 
 	return {}
@@ -1142,20 +1167,18 @@ def get_logged_in_employee_details():
 	emp_data = frappe.db.get_value(
 		"Employee",
 		{"user_id": user_id},
-		["name", "employee_name", "department", "custom_unit", "company"],
+		["name", "employee_name", "department"],
 		as_dict=True
 	)
 	if not emp_data:
 		return {}
 
-	unit_val = emp_data.get("custom_unit") or emp_data.get("company")
 	manager_info = get_employee_manager_user(emp_data.name) or {}
 
 	return {
 		"employee": emp_data.name,
 		"employee_name": emp_data.employee_name,
 		"department": emp_data.department,
-		"unit": unit_val,
 		"unit_head": manager_info.get("user_id")
 	}
 
@@ -1163,11 +1186,11 @@ def get_logged_in_employee_details():
 @frappe.whitelist()
 def get_employee_manager_user(employee=None):
 	"""
-	Determine the Manager / Unit Head (User) based on Employee details and Role:
-	1. If the selected employee has 'is_manager' enabled or their Role is 'Unit Head' / 'Manager':
-	   The employee themselves is the manager/unit head; return their linked user_id.
+	Determine the Manager (User) based on Employee details and Role:
+	1. If the selected employee has 'is_manager' enabled or their Role is  'Manager':
+	   The employee themselves is the manager; return their linked user_id.
 	2. If not, check if the employee's 'reports_to' has a linked user_id.
-	3. Find the manager/unit head from the Employee 'role' field (in the same unit/department or globally).
+	3. Find the manager from the Employee 'role' field (in the same department or globally).
 	4. Fallback to Department Head in Department DocType.
 	"""
 	if not employee:
@@ -1181,11 +1204,10 @@ def get_employee_manager_user(employee=None):
 		"employee_name": emp.employee_name,
 		"employee_role": emp_role,
 		"department": getattr(emp, "department", None),
-		"unit": getattr(emp, "custom_unit", getattr(emp, "unit", None)),
 		"user_id": None
 	}
 
-	# Check 1: Is this employee themselves a Manager or Unit Head?
+	# Check 1: Is this employee themselves a Manager
 	# Enabled via is_manager / custom_is_manager / is_unit_head OR via role field
 	is_manager_flag = bool(
 		getattr(emp, "is_manager", 0) or 
@@ -1194,10 +1216,10 @@ def get_employee_manager_user(employee=None):
 		getattr(emp, "custom_is_unit_head", 0)
 	)
 	is_manager_role = (
-		"unit head" in emp_role_str or 
+		"Manager" in emp_role_str or 
 		"manager" in emp_role_str or 
 		"supervisor" in emp_role_str or
-		"head" in emp_role_str
+		"Manager" in emp_role_str
 	)
 
 	if (is_manager_flag or is_manager_role) and getattr(emp, "user_id", None):
@@ -1218,7 +1240,7 @@ def get_employee_manager_user(employee=None):
 			result["source"] = "reports_to"
 			return result
 
-	# Check 3: Find Manager / Unit Head from Employee Role fields
+	# Check 3: Find Manager  from Employee Role fields
 	mgr_by_role = find_manager_by_role(emp)
 	if mgr_by_role and mgr_by_role.get("user_id"):
 		result["user_id"] = mgr_by_role["user_id"]
@@ -1453,6 +1475,5 @@ def get_technician_users(doctype, txt, searchfield, start, page_len, filters):
 		)
 		ORDER BY u.name ASC LIMIT %(start)s, %(page_len)s
 	""", params)
-
 
 

@@ -106,7 +106,7 @@
    "fieldname": "assigned_technician",
    "fieldtype": "Link",
    "label": "Assigned Technician",
-   "options": "Responsible Person"
+   "options": "User"
   },
   {
    "fieldname": "checklist",

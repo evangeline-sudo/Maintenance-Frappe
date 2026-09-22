@@ -18,7 +18,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Submitted\nPending Approval\nApproved\nAssigned\nIn Progress\nResolved\nClosed",
+   "options": "Submitted\nPending Approval\nApproved\nAssigned\nIn Progress\nOn Hold\nResolved\nRejected\nHold\nClosed",
    "reqd": 1
   },
   {

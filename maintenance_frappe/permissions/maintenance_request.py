@@ -38,9 +38,9 @@ def get_permission_query_conditions(user=None):
 	# Creator/Owner check for any logged-in user
 	conditions.append("(`tabMaintenance Request`.`owner` = {0})".format(escaped_user))
 
-	# Manager can see requests where they are assigned as unit_head
+	# Manager can see requests where they are assigned as manager
 	if "Manager" in user_roles:
-		conditions.append("(`tabMaintenance Request`.`unit_head` = {0})".format(escaped_user))
+		conditions.append("(`tabMaintenance Request`.`manager` = {0})".format(escaped_user))
 
 	# Technicians can see assigned requests
 	if any(role in user_roles for role in ["Technician", "Maintenance Technician", "Maintenance User", "Supervisor"]):
@@ -87,8 +87,8 @@ def has_permission(doc=None, ptype=None, user=None, debug=False):
 	if getattr(doc, "owner", None) == user:
 		return True
 
-	# Manager can access requests where they are set as unit_head
-	if "Manager" in user_roles and getattr(doc, "unit_head", None) == user:
+	# Manager can access requests where they are set as manager
+	if "Manager" in user_roles and (getattr(doc, "manager", None) == user or getattr(doc, "unit_head", None) == user):
 		return True
 
 	# Technician / Maintenance User / Supervisor can access assigned requests
