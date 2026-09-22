@@ -7,7 +7,7 @@ const CATEGORY_MAINTENANCE_TYPE_MAP = {
 	'Building/Facility': ['Non-IT'],
 	'Office Equipment': ['Non-IT'],
 	'Medical Equipment': ['Professional-Specialized'],
-	'Other': ['Non-IT']
+	'Other': ['Non-IT', 'IT', 'Professional-Specialized']
 };
 
 frappe.ui.form.on('Maintenance Request', {
@@ -76,6 +76,10 @@ frappe.ui.form.on('Maintenance Request', {
 
 	refresh: function(frm) {
 		frm.trigger('setup_queries');
+		if (frm.is_new() && !frm.doc.equipment_category) {
+			frm.set_value('equipment_category', 'Other');
+		}
+		frm.trigger('autofill_employee_details');
 		frm.trigger('update_maintenance_type_options');
 		frm.trigger('setup_workflow_buttons');
 		frm.trigger('set_field_states');
@@ -86,6 +90,10 @@ frappe.ui.form.on('Maintenance Request', {
 	},
 
 	onload: function(frm) {
+		if (frm.is_new() && !frm.doc.equipment_category) {
+			frm.set_value('equipment_category', 'Other');
+		}
+		frm.trigger('autofill_employee_details');
 		frm.trigger('update_maintenance_type_options');
 		frm.trigger('set_section_visibilities');
 		if (frm.is_new() && !frm.doc.employee) {
@@ -103,6 +111,40 @@ frappe.ui.form.on('Maintenance Request', {
 					}
 				}
 			});
+		}
+	},
+
+	autofill_employee_details: function(frm) {
+		if (frm.is_new()) {
+			if (!frm.doc.request_date) {
+				frm.set_value('request_date', frappe.datetime.get_today());
+			}
+			if (!frm.doc.employee) {
+				frappe.call({
+					method: 'maintenance_frappe.maintenance_management.doctype.maintenance_request.maintenance_request.get_logged_in_employee_details',
+					callback: function(r) {
+						if (r.message) {
+							let d = r.message;
+							if (d.employee) {
+								frm.set_value('employee', d.employee);
+							}
+							if (d.employee_name && !frm.doc.employee_name) {
+								frm.set_value('employee_name', d.employee_name);
+							}
+							if (d.department && !frm.doc.department) {
+								frm.set_value('department', d.department);
+							}
+							if (d.unit && !frm.doc.unit) {
+								frm.set_value('unit', d.unit);
+							}
+							if (d.unit_head && !frm.doc.unit_head) {
+								frm.set_value('unit_head', d.unit_head);
+							}
+							frm.trigger('set_field_states');
+						}
+					}
+				});
+			}
 		}
 	},
 
@@ -169,8 +211,6 @@ frappe.ui.form.on('Maintenance Request', {
 						if (current_eq_cat && !matching_cats.includes(current_eq_cat)) {
 							frm.set_value('equipment', '');
 							frm.set_value('equipment_name', '');
-							frm.set_value('equipment_serial', '');
-							frm.set_value('equipment_location', '');
 						}
 					});
 				}
@@ -190,6 +230,12 @@ frappe.ui.form.on('Maintenance Request', {
 						if (r.message.employee_name) {
 							frm.set_value('employee_name', r.message.employee_name);
 						}
+						if (r.message.department) {
+							frm.set_value('department', r.message.department);
+						}
+						if (r.message.unit) {
+							frm.set_value('unit', r.message.unit);
+						}
 						if (r.message.user_id) {
 							frm.set_value('unit_head', r.message.user_id);
 						}
@@ -205,6 +251,8 @@ frappe.ui.form.on('Maintenance Request', {
 			});
 		} else {
 			frm.set_value('employee_name', '');
+			frm.set_value('department', '');
+			frm.set_value('unit', '');
 		}
 	},
 
@@ -237,11 +285,16 @@ frappe.ui.form.on('Maintenance Request', {
 						frm.set_value('equipment_name', eq.equipment_name);
 					}
 					if (eq.serial_number || eq.equipment_id) {
-						frm.set_value('equipment_serial', eq.serial_number || eq.equipment_id);
+						
 					}
 					if (eq.location) {
+<<<<<<< HEAD
 						frm.set_value('equipment_location', eq.location);
 						if (frm.fields_dict.location && !frm.doc.location) {
+=======
+						
+						if (!frm.doc.location) {
+>>>>>>> f50699e (Review changes 3)
 							frm.set_value('location', eq.location);
 						}
 					}
@@ -258,8 +311,8 @@ frappe.ui.form.on('Maintenance Request', {
 			});
 		} else {
 			frm.set_value('equipment_name', '');
-			frm.set_value('equipment_serial', '');
-			frm.set_value('equipment_location', '');
+			
+			
 		}
 	},
 
@@ -268,7 +321,7 @@ frappe.ui.form.on('Maintenance Request', {
 		 * Four Role-based Visibility Tiers:
 		 *   1. Maintenance Manager: Full system access & control over all fields/sections.
 		 *   2. Maintenance User (Technician): Work execution, work logs, parts used & resolution editable.
-		 *   3. Manager (Unit Head): Department/unit review, approval & assignment fields.
+		 *   3. Manager : Department/unit review, approval & assignment fields.
 		 *   4. Employee (Employee Portal):
 		 *      Visible: title, equipment_category (Category), issue_category (Issue Category),
 		 *               priority (Priority), employee_name, department, unit,
@@ -284,9 +337,7 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('System Manager') ||
 			user_roles.includes('Maintenance Manager') ||
 			user_roles.includes('Maintenance User') ||
-			user_roles.includes('Unit Head') ||
 			user_roles.includes('Manager') ||
-			user_roles.includes('Supervisor') ||
 			user_roles.includes('Technician') ||
 			(frm.doc.unit_head && current_user === frm.doc.unit_head)
 		);
@@ -360,7 +411,7 @@ frappe.ui.form.on('Maintenance Request', {
 			current_user === 'Administrator' ||
 			user_roles.includes('System Manager') ||
 			user_roles.includes('Maintenance Manager') ||
-			user_roles.includes('Supervisor') ||
+			user_roles.includes('Manager') ||
 			(frm.doc.unit_head && current_user === frm.doc.unit_head)
 		);
 
@@ -408,9 +459,16 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('System Manager') ||
 			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
-			user_roles.includes('Supervisor') ||
+			user_roles.includes('Employee') ||
 			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
 		);
+
+		// Requester details are read-only so users cannot alter their logged-in requester info
+		frm.set_df_property('employee', 'read_only', 1);
+		frm.set_df_property('employee_name', 'read_only', 1);
+		frm.set_df_property('department', 'read_only', 1);
+		frm.set_df_property('unit', 'read_only', 1);
+		frm.set_df_property('request_date', 'read_only', 1);
 
 		// Approval Status & Verification Status can be changed directly by Admin, Maintenance Manager, or Unit Head
 		frm.set_df_property('approval_status', 'read_only', is_authorized_approver ? 0 : 1);
@@ -497,6 +555,7 @@ frappe.ui.form.on('Maintenance Request', {
 					{
 						fieldname: 'responsible_person',
 						fieldtype: 'Link',
+<<<<<<< HEAD
 						options: 'User',
 						get_query: function() {
 							return {
@@ -504,6 +563,10 @@ frappe.ui.form.on('Maintenance Request', {
 							};
 						},
 						label: __('Assigned To (Technician)'),
+=======
+						options: 'Employee',
+						label: __('Responsible Person / Technician'),
+>>>>>>> f50699e (Review changes 3)
 						reqd: 1
 					},
 					{

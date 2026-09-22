@@ -28,9 +28,6 @@
   "ownership_type",
   "maintenance_type",
   "status",
-  "total_parts_cost",
-  "total_labour_cost",
-  "total_maintenance_cost",
   "section_equipment_details",
   "requester_details_column",
   "equipment_name",
@@ -58,6 +55,9 @@
   "work_logs",
   "parts_used",
   "column_break_hgdr",
+  "total_parts_cost",
+  "total_maintenance_cost",
+  "total_labour_cost",
   "status_history",
   "section_resolution",
   "resolution_column",
@@ -79,8 +79,7 @@
   },
   {
    "fieldname": "section_break_blwi",
-   "fieldtype": "Section Break",
-   "label": ""
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "description",
@@ -98,6 +97,7 @@
    "fieldtype": "Link",
    "label": "Employee",
    "options": "Employee",
+   "read_only": 1,
    "reqd": 1
   },
   {
@@ -129,11 +129,18 @@
    "read_only": 1
   },
   {
-   "fieldname": "column_break_ykcz",
-   "fieldtype": "Column Break",
-   "label": ""
+   "fieldname": "responsible_person",
+   "fieldtype": "Link",
+   "label": "Technician",
+   "options": "Employee",
+   "read_only": 1
   },
   {
+   "fieldname": "column_break_ykcz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "IT Equipment",
    "fieldname": "equipment_category",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -142,11 +149,11 @@
    "reqd": 1
   },
   {
+   "default": "Medium",
    "fieldname": "priority",
    "fieldtype": "Select",
    "label": "Priority",
-   "options": "Low\nMedium\nHigh\nCritical",
-   "default": "Medium"
+   "options": "Low\nMedium\nHigh\nCritical"
   },
   {
    "fieldname": "equipment",
@@ -159,10 +166,10 @@
   {
    "fieldname": "issue_category",
    "fieldtype": "Link",
-   "label": "Issue Category",
-   "options": "Issue Category",
    "in_list_view": 1,
-   "in_standard_filter": 1
+   "in_standard_filter": 1,
+   "label": "Issue Category",
+   "options": "Issue Category"
   },
   {
    "default": "Organizational Asset",
@@ -183,14 +190,15 @@
   },
   {
    "allow_on_submit": 1,
+   "default": "Submitted",
    "fieldname": "status",
    "fieldtype": "Select",
+   "hidden": 1,
    "in_list_view": 1,
    "label": "Status",
-   "options": "Submitted\nPending Approval\nApproved\nAssigned\nIn Progress\nResolved\nClosed",
+   "options": "Submitted\nPending Approval\nApproved\nAssigned\nIn Progress\nOn Hold\nResolved\nRejected\nClosed",
    "read_only": 1,
-   "reqd": 1,
-   "default": "Submitted"
+   "reqd": 1
   },
   {
    "allow_on_submit": 1,
@@ -254,8 +262,7 @@
   },
   {
    "fieldname": "column_break_isch",
-   "fieldtype": "Column Break",
-   "label": ""
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "external_contact_phone",
@@ -280,12 +287,6 @@
    "label": "Approval & Assignment"
   },
   {
-   "fieldname": "unit_head",
-   "fieldtype": "Link",
-   "label": "Manger",
-   "options": "User"
-  },
-  {
    "allow_on_submit": 1,
    "default": "Pending",
    "fieldname": "approval_status",
@@ -303,8 +304,7 @@
   },
   {
    "fieldname": "column_break_oaxo",
-   "fieldtype": "Column Break",
-   "label": ""
+   "fieldtype": "Column Break"
   },
   {
    "allow_on_submit": 1,
@@ -370,8 +370,7 @@
   },
   {
    "fieldname": "column_break_hgdr",
-   "fieldtype": "Column Break",
-   "label": ""
+   "fieldtype": "Column Break"
   },
   {
    "allow_on_submit": 1,
@@ -437,16 +436,16 @@
    "read_only": 1
   },
   {
-   "fieldname": "responsible_person",
+   "fieldname": "unit_head",
    "fieldtype": "Link",
-   "label": "Responsible",
-   "options": "Responsible Person",
-   "read_only": 1
+   "label": "Manger",
+   "options": "User"
   }
  ],
+ "icon": "tool",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-21 16:16:33.306811",
+ "modified": "2026-09-22 08:44:43.901988",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance Request",

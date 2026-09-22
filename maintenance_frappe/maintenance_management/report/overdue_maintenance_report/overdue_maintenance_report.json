@@ -18,7 +18,7 @@
  "name": "Overdue Maintenance Report",
  "owner": "Administrator",
  "prepared_report": 0,
- "ref_doctype": "Work Order",
+ "ref_doctype": "Maintenance Request",
  "report_name": "Overdue Maintenance Report",
  "report_type": "Script Report",
  "roles": [],

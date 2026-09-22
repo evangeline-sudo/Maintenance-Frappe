@@ -22,7 +22,9 @@ class Equipment(Document):
 				frappe.throw(_("Selected Equipment Category {0} is inactive.").format(self.equipment_category))
 
 		# Validate dates
-		if self.purchase_date and self.warranty_expiry_date:
-			if self.warranty_expiry_date < self.purchase_date:
-				frappe.throw(_("Warranty Expiry Date cannot be before Purchase Date"))
+		purchase_date = getattr(self, "date_of_purchase", None) or getattr(self, "purchase_date", None)
+		warranty_expiry = getattr(self, "warranty_expiry_date", None)
+		if purchase_date and warranty_expiry:
+			if str(warranty_expiry) < str(purchase_date):
+				frappe.throw(_("Warranty Expiry Date cannot be before Date of Purchase"))
 

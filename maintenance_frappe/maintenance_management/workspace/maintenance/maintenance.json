@@ -2,20 +2,24 @@
  "app": "maintenance_frappe",
  "charts": [
   {
-   "chart_name": "Equipment Status Breakdown Pie",
-   "label": "Equipment Status"
+   "chart_name": "Maintenance Requests by Status",
+   "label": "Requests by Status"
   },
   {
-   "chart_name": "Maintenance Requests by Priority Pie",
-   "label": "Requests by Priority"
+   "chart_name": "Request Priority",
+   "label": "Request Priority"
   },
   {
-   "chart_name": "Maintenance Types Breakdown Pie",
-   "label": "Requests by Type"
+   "chart_name": "Requests by Issue Category",
+   "label": "Requests by Issue Category"
+  },
+  {
+   "chart_name": "Requests by Equipment Category",
+   "label": "Requests by Equipment Category"
   }
  ],
- "content": "[{\"id\": \"W01\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Maintenance Workspace Navigation Center</b></span>\", \"col\": 12}}, {\"id\": \"C02\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Equipment Status Breakdown Pie\", \"col\": 4}}, {\"id\": \"C03\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Maintenance Requests by Priority Pie\", \"col\": 4}}, {\"id\": \"C04\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Maintenance Types Breakdown Pie\", \"col\": 4}}, {\"id\": \"W02\", \"type\": \"card\", \"data\": {\"card_name\": \"1. Asset & Infrastructure\", \"col\": 4}}, {\"id\": \"W03\", \"type\": \"card\", \"data\": {\"card_name\": \"2. Requests & Operations\", \"col\": 4}}, {\"id\": \"W04\", \"type\": \"card\", \"data\": {\"card_name\": \"3. Teams & Resources\", \"col\": 4}}, {\"id\": \"W05\", \"type\": \"card\", \"data\": {\"card_name\": \"4. Master Catalogs\", \"col\": 4}}, {\"id\": \"W06\", \"type\": \"card\", \"data\": {\"card_name\": \"5. Reports & Analytics\", \"col\": 4}}, {\"id\": \"W07\", \"type\": \"card\", \"data\": {\"card_name\": \"6. Settings & Configurations\", \"col\": 4}}]",
- "creation": "2026-09-17 09:05:35.191401",
+ "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Key Metrics\",\"level\":4}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Open Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending Approvals\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Equipment\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Maintenance Teams\"}},{\"type\":\"header\",\"data\":{\"text\":\"Quick Actions\",\"level\":4}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"+ New Maintenance Request\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"View My Requests\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pending Approvals\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Assigned Requests\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Equipment Master\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Teams\"}},{\"type\":\"header\",\"data\":{\"text\":\"Analytics & Charts\",\"level\":4}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Maintenance Requests by Status\"}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Request Priority\"}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Requests by Issue Category\"}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Requests by Equipment Category\"}},{\"type\":\"header\",\"data\":{\"text\":\"Modules & Masters\",\"level\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Equipment & Masters\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Teams & Rules\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Reports\"}}]",
+ "creation": "2026-09-21 22:54:36.936735",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
@@ -26,13 +30,34 @@
  "indicator_color": "blue",
  "is_hidden": 0,
  "label": "Maintenance",
+ "link_type": "DocType",
  "links": [
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": " Asset & Infrastructure",
+   "label": "Transactions",
    "link_count": 0,
-   "onboard": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Request",
+   "link_count": 0,
+   "link_to": "Maintenance Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Equipment & Masters",
+   "link_count": 0,
+   "link_type": "DocType",
+   "onboard": 0,
    "type": "Card Break"
   },
   {
@@ -42,7 +67,7 @@
    "link_count": 0,
    "link_to": "Equipment",
    "link_type": "DocType",
-   "onboard": 1,
+   "onboard": 0,
    "type": "Link"
   },
   {
@@ -58,9 +83,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Asset Warranty",
+   "label": "Issue Category",
    "link_count": 0,
-   "link_to": "Asset Warranty",
+   "link_to": "Issue Category",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -68,77 +93,10 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Asset Downtime",
+   "label": "Teams & Rules",
    "link_count": 0,
-   "link_to": "Asset Downtime",
    "link_type": "DocType",
    "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": " Requests & Operations",
-   "link_count": 0,
-   "onboard": 1,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Maintenance Request",
-   "link_count": 0,
-   "link_to": "Maintenance Request",
-   "link_type": "DocType",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Work Order",
-   "link_count": 0,
-   "link_to": "Work Order",
-   "link_type": "DocType",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Preventive Maintenance Plan",
-   "link_count": 0,
-   "link_to": "Preventive Maintenance Plan",
-   "link_type": "DocType",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Maintenance Checklist",
-   "link_count": 0,
-   "link_to": "Maintenance Checklist",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Maintenance Root Cause Analysis",
-   "link_count": 0,
-   "link_to": "Maintenance Root Cause Analysis",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": " Teams & Resources",
-   "link_count": 0,
-   "onboard": 1,
    "type": "Card Break"
   },
   {
@@ -154,9 +112,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Responsible Person",
+   "label": "Maintenance Approval Rule",
    "link_count": 0,
-   "link_to": "Responsible Person",
+   "link_to": "Maintenance Approval Rule",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -164,19 +122,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Maintenance Spare Part",
+   "label": "Maintenance Settings",
    "link_count": 0,
-   "link_to": "Maintenance Spare Part",
-   "link_type": "DocType",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Maintenance Tool",
-   "link_count": 0,
-   "link_to": "Maintenance Tool",
+   "link_to": "Maintenance Settings",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -184,78 +132,11 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Maintenance Contract",
+   "label": "Reports",
    "link_count": 0,
-   "link_to": "Maintenance Contract",
    "link_type": "DocType",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": " Master Catalogs",
-   "link_count": 0,
-   "onboard": 1,
+   "onboard": 0,
    "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Maintenance Category",
-   "link_count": 0,
-   "link_to": "Maintenance Category",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Issue Category",
-   "link_count": 0,
-   "link_to": "Issue Category",
-   "link_type": "DocType",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Failure Cause",
-   "link_count": 0,
-   "link_to": "Maintenance Cause",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Resolution Type",
-   "link_count": 0,
-   "link_to": "Maintenance Resolution Type",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": " Reports & Analytics",
-   "link_count": 0,
-   "onboard": 1,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Maintenance KPI Dashboard Report",
-   "link_count": 0,
-   "link_to": "Maintenance KPI Dashboard Report",
-   "link_type": "Report",
-   "onboard": 1,
-   "type": "Link"
   },
   {
    "hidden": 0,
@@ -264,70 +145,89 @@
    "link_count": 0,
    "link_to": "Maintenance Request Report",
    "link_type": "Report",
-   "onboard": 1,
+   "onboard": 0,
    "type": "Link"
   },
   {
    "hidden": 0,
    "is_query_report": 1,
-   "label": "Work Order Report",
+   "label": "Overdue Maintenance Report",
    "link_count": 0,
-   "link_to": "Work Order Report",
+   "link_to": "Overdue Maintenance Report",
    "link_type": "Report",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Equipment Maintenance History",
-   "link_count": 0,
-   "link_to": "Equipment Wise Maintenance Information",
-   "link_type": "Report",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Preventive Maintenance Schedule Report",
-   "link_count": 0,
-   "link_to": "Preventive Maintenance Report",
-   "link_type": "Report",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": " Settings & Configurations",
-   "link_count": 0,
-   "onboard": 1,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Maintenance Approval Rule",
-   "link_count": 0,
-   "link_to": "Maintenance Approval Rule",
-   "link_type": "DocType",
-   "onboard": 1,
+   "onboard": 0,
    "type": "Link"
   }
  ],
- "modified": "2026-09-17 10:45:28.078566",
+ "modified": "2026-09-21 22:54:36.936735",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance",
- "number_cards": [],
+ "number_cards": [
+  {
+   "label": "Total Requests",
+   "number_card_name": "Total Requests"
+  },
+  {
+   "label": "Open Requests",
+   "number_card_name": "Open Requests"
+  },
+  {
+   "label": "Pending Approvals",
+   "number_card_name": "Pending Approvals"
+  },
+  {
+   "label": "Active Equipment",
+   "number_card_name": "Active Equipment"
+  },
+  {
+   "label": "Maintenance Teams",
+   "number_card_name": "Maintenance Teams"
+  }
+ ],
  "owner": "Administrator",
- "parent_page": "",
  "public": 1,
  "quick_lists": [],
  "roles": [],
- "sequence_id": 1.0,
- "shortcuts": [],
+ "sequence_id": 0.0,
+ "shortcuts": [
+  {
+   "doc_view": "",
+   "label": "+ New Maintenance Request",
+   "link_to": "Maintenance Request",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "View My Requests",
+   "link_to": "Maintenance Request",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Pending Approvals",
+   "link_to": "Maintenance Request",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Assigned Requests",
+   "link_to": "Maintenance Request",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Equipment Master",
+   "link_to": "Equipment",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Maintenance Teams",
+   "link_to": "Maintenance Team",
+   "type": "DocType"
+  }
+ ],
  "title": "Maintenance",
  "type": "Workspace"
 }

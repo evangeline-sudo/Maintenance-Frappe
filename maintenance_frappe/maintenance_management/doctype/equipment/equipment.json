@@ -1,7 +1,11 @@
 {
  "actions": [],
  "allow_rename": 1,
+<<<<<<< HEAD
  "autoname": "field:equipment_name",
+=======
+ "autoname": "field:equipment_id",
+>>>>>>> f50699e (Review changes 3)
  "creation": "2026-09-09 15:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -38,14 +42,14 @@
   "installation_date",
   "column_break_dates",
   "warranty_expiry_date",
-  "amc_available",
-  "section_status_info"
+  "amc_available"
  ],
  "fields": [
   {
    "fieldname": "equipment_id",
    "fieldtype": "Data",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Equipment ID",
    "reqd": 1,
    "unique": 1
@@ -54,6 +58,7 @@
    "fieldname": "equipment_name",
    "fieldtype": "Data",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Equipment Name",
    "reqd": 1,
    "unique": 1
@@ -62,7 +67,6 @@
    "fieldname": "equipment_category",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Equipment Category",
    "options": "Equipment Category",
    "reqd": 1
@@ -75,33 +79,28 @@
    "fieldname": "maintenance_team",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Maintenance Team",
    "options": "Maintenance Team"
   },
   {
    "fieldname": "responsible_person",
    "fieldtype": "Link",
-   "in_standard_filter": 1,
    "label": "Technician",
-   "options": "Responsible Person"
+   "options": "Employee"
   },
   {
    "fieldname": "used_in_location",
-   "fieldtype": "Link",
-   "label": "Used in location",
-   "options": "Maintenance Location"
+   "fieldtype": "Data",
+   "label": "Used in location"
   },
   {
    "fieldname": "section_used_by",
-   "fieldtype": "Section Break",
-   "label": ""
+   "fieldtype": "Section Break"
   },
   {
    "default": "Unit",
    "fieldname": "used_by",
    "fieldtype": "Select",
-   "in_standard_filter": 1,
    "label": "Used By",
    "options": "Unit\nDepartment\nEmployee"
   },
@@ -110,15 +109,13 @@
    "fieldname": "unit",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Unit",
-   "options": "Cost Center"
+   "options": "Unit"
   },
   {
    "depends_on": "eval:doc.used_by=='Department'",
    "fieldname": "department",
    "fieldtype": "Link",
-   "in_standard_filter": 1,
    "label": "Department",
    "options": "Department"
   },
@@ -126,7 +123,6 @@
    "depends_on": "eval:doc.used_by=='Employee'",
    "fieldname": "employee_link",
    "fieldtype": "Link",
-   "in_standard_filter": 1,
    "label": "Employee",
    "options": "Employee"
   },
@@ -148,7 +144,6 @@
   {
    "fieldname": "vendor",
    "fieldtype": "Link",
-   "in_standard_filter": 1,
    "label": "Vendor",
    "options": "Supplier"
   },
@@ -170,7 +165,6 @@
   {
    "fieldname": "date_of_purchase",
    "fieldtype": "Date",
-   "in_list_view": 0,
    "label": "Date of Purchase"
   },
   {
@@ -215,7 +209,6 @@
    "fieldname": "criticality",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Criticality",
    "options": "\nLow\nMedium\nHigh\nCritical"
   },
@@ -295,11 +288,6 @@
    "fieldname": "amc_available",
    "fieldtype": "Check",
    "label": "AMC Available"
-  },
-  {
-   "fieldname": "section_status_info",
-   "fieldtype": "Section Break",
-   "label": ""
   }
  ],
  "index_web_pages_for_search": 1,
@@ -310,7 +298,7 @@
    "link_fieldname": "equipment"
   }
  ],
- "modified": "2026-09-21 15:35:00.000000",
+ "modified": "2026-09-22 08:55:13.755853",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Equipment",
@@ -369,6 +357,7 @@
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "search_fields": "equipment_id,equipment_name,status",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

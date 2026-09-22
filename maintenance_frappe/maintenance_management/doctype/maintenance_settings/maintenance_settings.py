@@ -1,5 +1,7 @@
 import frappe
 from frappe.model.document import Document
 
-class MaintenanceSparePart(Document):
+
+class MaintenanceSettings(Document):
 	pass
+

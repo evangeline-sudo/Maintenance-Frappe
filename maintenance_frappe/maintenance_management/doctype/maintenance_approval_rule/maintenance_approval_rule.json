@@ -8,6 +8,7 @@
  "document_type": "Setup",
  "editable_grid": 1,
  "engine": "InnoDB",
+ "icon": "check",
  "field_order": [
   "unit",
   "department",

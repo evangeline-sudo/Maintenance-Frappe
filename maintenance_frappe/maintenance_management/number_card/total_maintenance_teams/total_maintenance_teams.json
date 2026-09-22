@@ -1,13 +1,13 @@
 {
  "creation": "2026-09-21 18:00:00",
  "doctype": "Number Card",
- "document_type": "Maintenance Request",
+ "document_type": "Maintenance Team",
  "filters_json": "[]",
  "function": "Count",
  "is_public": 1,
  "is_standard": 1,
- "label": "Total Requests",
+ "label": "Maintenance Teams",
  "module": "Maintenance Management",
- "name": "Total Maintenance Requests",
+ "name": "Total Maintenance Teams",
  "show_percentage_stats": 0
 }

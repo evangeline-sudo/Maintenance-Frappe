@@ -5,6 +5,7 @@
  "creation": "2026-09-09 15:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
+ "icon": "tag",
  "field_order": [
   "issue_category_name",
   "equipment_category",

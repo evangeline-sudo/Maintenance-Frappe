@@ -1,13 +1,21 @@
 {
  "app": "maintenance_frappe",
+<<<<<<< HEAD
  "creation": "2026-09-20 20:22:14.407439",
  "docstatus": 0,
  "doctype": "Workspace Sidebar",
  "header_icon": "tool",
+=======
+ "creation": "2026-09-22 08:33:45.057087",
+ "docstatus": 0,
+ "doctype": "Workspace Sidebar",
+ "header_icon": "tools",
+>>>>>>> f50699e (Review changes 3)
  "idx": 0,
  "items": [
   {
    "child": 0,
+<<<<<<< HEAD
    "collapsible": 1,
    "icon": "bar-chart",
    "indent": 0,
@@ -26,18 +34,43 @@
    "keep_closed": 0,
    "label": "Maintenance",
    "link_type": "DocType",
+=======
+   "collapsible": 0,
+   "icon": "dashboard",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Dashboard",
+   "link_to": "Maintenance Management",
+   "link_type": "Workspace",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 0,
+   "collapsible": 0,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Transactions",
+>>>>>>> f50699e (Review changes 3)
    "show_arrow": 0,
    "type": "Section Break"
   },
   {
+<<<<<<< HEAD
    "child": 1,
    "collapsible": 1,
    "icon": "file-text",
+=======
+   "child": 0,
+   "collapsible": 0,
+   "icon": "tool",
+>>>>>>> f50699e (Review changes 3)
    "indent": 0,
    "keep_closed": 0,
    "label": "Maintenance Request",
    "link_to": "Maintenance Request",
    "link_type": "DocType",
+<<<<<<< HEAD
    "show_arrow": 0,
    "type": "Link"
   },
@@ -182,22 +215,22 @@
    "label": "Responsible Person",
    "link_to": "Responsible Person",
    "link_type": "DocType",
+=======
+>>>>>>> f50699e (Review changes 3)
    "show_arrow": 0,
    "type": "Link"
   },
   {
-   "child": 1,
-   "collapsible": 1,
-   "icon": "box",
+   "child": 0,
+   "collapsible": 0,
    "indent": 0,
    "keep_closed": 0,
-   "label": "Maintenance Spare Part",
-   "link_to": "Maintenance Spare Part",
-   "link_type": "DocType",
+   "label": "Equipment & Masters",
    "show_arrow": 0,
-   "type": "Link"
+   "type": "Section Break"
   },
   {
+<<<<<<< HEAD
    "child": 1,
    "collapsible": 1,
    "icon": "tool",
@@ -277,12 +310,22 @@
    "keep_closed": 0,
    "label": "Maintenance Resolution Type",
    "link_to": "Maintenance Resolution Type",
+=======
+   "child": 0,
+   "collapsible": 0,
+   "icon": "package",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Equipment",
+   "link_to": "Equipment",
+>>>>>>> f50699e (Review changes 3)
    "link_type": "DocType",
    "show_arrow": 0,
    "type": "Link"
   },
   {
    "child": 0,
+<<<<<<< HEAD
    "collapsible": 1,
    "icon": "settings",
    "indent": 1,
@@ -300,14 +343,61 @@
    "keep_closed": 0,
    "label": "Location",
    "link_to": "Location",
+=======
+   "collapsible": 0,
+   "icon": "grid",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Equipment Category",
+   "link_to": "Equipment Category",
+>>>>>>> f50699e (Review changes 3)
    "link_type": "DocType",
    "show_arrow": 0,
    "type": "Link"
   },
   {
+<<<<<<< HEAD
    "child": 1,
    "collapsible": 1,
    "icon": "shield-alert",
+=======
+   "child": 0,
+   "collapsible": 0,
+   "icon": "tag",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Issue Category",
+   "link_to": "Issue Category",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 0,
+   "collapsible": 0,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Teams & Rules",
+   "show_arrow": 0,
+   "type": "Section Break"
+  },
+  {
+   "child": 0,
+   "collapsible": 0,
+   "icon": "users",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Maintenance Team",
+   "link_to": "Maintenance Team",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 0,
+   "collapsible": 0,
+   "icon": "check",
+>>>>>>> f50699e (Review changes 3)
    "indent": 0,
    "keep_closed": 0,
    "label": "Maintenance Approval Rule",
@@ -317,21 +407,68 @@
    "type": "Link"
   },
   {
+<<<<<<< HEAD
    "child": 1,
    "collapsible": 1,
    "icon": "hash",
+=======
+   "child": 0,
+   "collapsible": 0,
+   "icon": "settings",
+>>>>>>> f50699e (Review changes 3)
    "indent": 0,
    "keep_closed": 0,
-   "label": "Product Type Value",
-   "link_to": "Product Type Value",
+   "label": "Maintenance Settings",
+   "link_to": "Maintenance Settings",
    "link_type": "DocType",
    "show_arrow": 0,
    "type": "Link"
+<<<<<<< HEAD
   }
  ],
  "modified": "2026-09-20 20:38:56.394857",
  "modified_by": "Administrator",
  "module": "m_maintenance",
+=======
+  },
+  {
+   "child": 0,
+   "collapsible": 0,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Reports",
+   "show_arrow": 0,
+   "type": "Section Break"
+  },
+  {
+   "child": 0,
+   "collapsible": 0,
+   "icon": "file-text",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Maintenance Request Report",
+   "link_to": "Maintenance Request Report",
+   "link_type": "Report",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 0,
+   "collapsible": 0,
+   "icon": "clock",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Overdue Maintenance Report",
+   "link_to": "Overdue Maintenance Report",
+   "link_type": "Report",
+   "show_arrow": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-09-22 08:36:07.277339",
+ "modified_by": "Administrator",
+ "module": "Maintenance Management",
+>>>>>>> f50699e (Review changes 3)
  "name": "Maintenance",
  "owner": "Administrator",
  "standard": 1,
