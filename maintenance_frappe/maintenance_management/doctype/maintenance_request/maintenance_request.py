@@ -636,27 +636,6 @@ class MaintenanceRequest(Document):
 		"""Maintenance Manager or Unit Head approves the maintenance request"""
 		notes = approval_notes or remarks or kwargs.get("notes") or ""
 		self.validate_approval_authority()
-<<<<<<< HEAD
-		if self.approval_status not in ["Pending", "Hold"] and self.status != "Pending Approval":
-			frappe.throw(_("Only pending or on-hold requests can be approved"))
-
-		self.approval_status = "Approved"
-		self.approval_date = datetime.now()
-		notes = approval_notes or remarks or ""
-		if hasattr(self, "approval_notes"):
-			self.approval_notes = notes
-
-		if getattr(self, "assigned_to", None):
-			self.update_status("Assigned", f"Approved and assigned to {self.assigned_to} by {frappe.session.user}: {notes}")
-			self.save(ignore_permissions=True)
-			self.send_status_notification("Approved")
-			self.send_status_notification("Assigned")
-		else:
-			self.update_status("Approved", f"Approved by {frappe.session.user}: {notes}")
-			self.save(ignore_permissions=True)
-			self.send_status_notification("Approved")
-
-=======
 
 		self.approval_status = "Approved"
 		self.approval_date = datetime.now()
@@ -665,7 +644,6 @@ class MaintenanceRequest(Document):
 		self.update_status("Approved", f"Approved by {frappe.session.user}: {notes}")
 		self.save(ignore_permissions=True)
 		self.send_status_notification("Approved", ignore_permissions=True)
->>>>>>> f50699e (Review changes 3)
 		frappe.msgprint(_("Maintenance Request {0} approved").format(self.name))
 
 	@frappe.whitelist()
@@ -673,18 +651,9 @@ class MaintenanceRequest(Document):
 		"""Maintenance Manager or Unit Head rejects the maintenance request"""
 		notes = approval_notes or remarks or kwargs.get("notes") or ""
 		self.validate_approval_authority()
-<<<<<<< HEAD
-		if self.approval_status not in ["Pending", "Hold"] and self.status != "Pending Approval":
-			frappe.throw(_("Only pending or on-hold requests can be rejected"))
-
-		self.approval_status = "Rejected"
-		notes = approval_notes or remarks or ""
-		if hasattr(self, "approval_notes"):
-=======
 
 		self.approval_status = "Rejected"
 		if notes:
->>>>>>> f50699e (Review changes 3)
 			self.approval_notes = notes
 		self.closed_date = datetime.now()
 		self.update_status("Rejected", f"Rejected by {frappe.session.user}: {notes}")

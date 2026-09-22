@@ -1,11 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
-<<<<<<< HEAD
- "autoname": "field:equipment_name",
-=======
  "autoname": "field:equipment_id",
->>>>>>> f50699e (Review changes 3)
  "creation": "2026-09-09 15:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",

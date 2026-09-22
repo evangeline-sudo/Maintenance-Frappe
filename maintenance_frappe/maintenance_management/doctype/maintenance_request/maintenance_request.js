@@ -288,13 +288,10 @@ frappe.ui.form.on('Maintenance Request', {
 						
 					}
 					if (eq.location) {
-<<<<<<< HEAD
 						frm.set_value('equipment_location', eq.location);
-						if (frm.fields_dict.location && !frm.doc.location) {
-=======
+
 						
 						if (!frm.doc.location) {
->>>>>>> f50699e (Review changes 3)
 							frm.set_value('location', eq.location);
 						}
 					}
@@ -555,18 +552,8 @@ frappe.ui.form.on('Maintenance Request', {
 					{
 						fieldname: 'responsible_person',
 						fieldtype: 'Link',
-<<<<<<< HEAD
-						options: 'User',
-						get_query: function() {
-							return {
-								query: 'maintenance_frappe.m_maintenance.doctype.maintenance_request.maintenance_request.get_technician_users'
-							};
-						},
-						label: __('Assigned To (Technician)'),
-=======
 						options: 'Employee',
 						label: __('Responsible Person / Technician'),
->>>>>>> f50699e (Review changes 3)
 						reqd: 1
 					},
 					{
