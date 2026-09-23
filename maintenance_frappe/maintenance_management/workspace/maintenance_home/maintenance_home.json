@@ -11,7 +11,7 @@
  "icon": "home",
  "idx": 0,
  "indicator_color": "blue",
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "Home",
  "link_type": "DocType",
  "links": [

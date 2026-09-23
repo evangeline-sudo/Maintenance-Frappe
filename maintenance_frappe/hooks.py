@@ -277,7 +277,12 @@ fixtures = [
 			]]
 		]
 	},
-	{"dt": "Role", "filters": [["name", "in", ["Maintenance User", "Maintenance Manager", "Maintenance Technician", "Unit Head"]]]}
+	{"dt": "Role", "filters": [["name", "in", ["Maintenance User", "Maintenance Manager", "Maintenance Technician", "Unit Head"]]]},
+	{"dt": "Workspace"},
+	{"dt": "Workspace Sidebar"},
+	{"dt": "Desktop Icon"},
+	{"dt": "Dashboard Chart"},
+	{"dt": "Number Card"}
 ]
 
 
