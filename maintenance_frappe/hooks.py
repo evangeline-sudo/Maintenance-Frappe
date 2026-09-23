@@ -210,6 +210,10 @@ before_migrate = [
 	"maintenance_frappe.patches.v1_0.fix_priority_rating_default.execute"
 ]
 
+after_migrate = [
+	"maintenance_frappe.api.maintenance.after_migrate_setup"
+]
+
 # Boot session
 # ------------------
 boot_session = ["maintenance_frappe.api.maintenance.filter_employee_sidebar"]

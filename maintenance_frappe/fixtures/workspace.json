@@ -11,7 +11,7 @@
   "hide_custom": 0,
   "icon": "home",
   "indicator_color": "blue",
-  "is_hidden": 1,
+  "is_hidden": 0,
   "label": "Home",
   "link_to": null,
   "link_type": "DocType",
@@ -214,7 +214,7 @@
   ],
   "modified": "2026-09-22 11:25:00.000000",
   "module": "Maintenance Management",
-  "name": "Maintenance Home",
+  "name": "Maintenance",
   "number_cards": [
    {
     "label": "Total Requests",
@@ -362,6 +362,7 @@
   "icon": "dashboard",
   "indicator_color": "blue",
   "is_hidden": 1,
+  "is_hidden": 0,
   "label": "Dashboard",
   "link_to": null,
   "link_type": "DocType",
@@ -392,6 +393,7 @@
    }
   ],
   "parent_page": null,
+  "parent_page": "Maintenance",
   "public": 1,
   "quick_lists": [],
   "restrict_to_domain": null,

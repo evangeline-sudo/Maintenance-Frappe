@@ -43,9 +43,289 @@ def ensure_page_permissions():
 							pass
 
 
+def sync_maintenance_dashboard_metrics():
+	"""Ensure standard Number Cards and Dashboard Charts exist in DB for Maintenance Dashboard."""
+	number_cards = [
+		{
+			"doctype": "Number Card",
+			"name": "Total Requests",
+			"label": "Total Requests",
+			"function": "Count",
+			"document_type": "Maintenance Request",
+			"filters_json": "[]",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Number Card",
+			"name": "Total Maintenance Requests",
+			"label": "Total Requests",
+			"function": "Count",
+			"document_type": "Maintenance Request",
+			"filters_json": "[]",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Number Card",
+			"name": "Open Requests",
+			"label": "Open Requests",
+			"function": "Count",
+			"document_type": "Maintenance Request",
+			"filters_json": '[["Maintenance Request", "status", "in", ["Draft", "Submitted", "Approved", "In Progress"]]]',
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Number Card",
+			"name": "Open Maintenance Requests",
+			"label": "Open Requests",
+			"function": "Count",
+			"document_type": "Maintenance Request",
+			"filters_json": '[["Maintenance Request", "status", "in", ["Draft", "Submitted", "Approved", "In Progress"]]]',
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Number Card",
+			"name": "Pending Approvals",
+			"label": "Pending Approvals",
+			"function": "Count",
+			"document_type": "Maintenance Request",
+			"filters_json": '[["Maintenance Request", "approval_status", "=", "Pending"]]',
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Number Card",
+			"name": "Active Equipment",
+			"label": "Active Equipment",
+			"function": "Count",
+			"document_type": "Equipment",
+			"filters_json": '[["Equipment", "status", "=", "Active"]]',
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Number Card",
+			"name": "Maintenance Teams",
+			"label": "Maintenance Teams",
+			"function": "Count",
+			"document_type": "Maintenance Team",
+			"filters_json": "[]",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Number Card",
+			"name": "Total Maintenance Teams",
+			"label": "Maintenance Teams",
+			"function": "Count",
+			"document_type": "Maintenance Team",
+			"filters_json": "[]",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+	]
+
+	for card in number_cards:
+		if not frappe.db.exists("Number Card", card["name"]):
+			try:
+				frappe.get_doc(card).insert(ignore_permissions=True)
+			except Exception:
+				pass
+		else:
+			frappe.db.set_value("Number Card", card["name"], "is_public", 1)
+
+	charts = [
+		{
+			"doctype": "Dashboard Chart",
+			"name": "Maintenance Requests by Status",
+			"chart_name": "Maintenance Requests by Status",
+			"chart_type": "Group By",
+			"document_type": "Maintenance Request",
+			"group_by_based_on": "status",
+			"group_by_type": "Count",
+			"type": "Pie",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Dashboard Chart",
+			"name": "Request Priority",
+			"chart_name": "Request Priority",
+			"chart_type": "Group By",
+			"document_type": "Maintenance Request",
+			"group_by_based_on": "priority",
+			"group_by_type": "Count",
+			"type": "Pie",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Dashboard Chart",
+			"name": "Requests by Issue Category",
+			"chart_name": "Requests by Issue Category",
+			"chart_type": "Group By",
+			"document_type": "Maintenance Request",
+			"group_by_based_on": "issue_category",
+			"group_by_type": "Count",
+			"type": "Bar",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Dashboard Chart",
+			"name": "Requests by Equipment Category",
+			"chart_name": "Requests by Equipment Category",
+			"chart_type": "Group By",
+			"document_type": "Maintenance Request",
+			"group_by_based_on": "equipment_category",
+			"group_by_type": "Count",
+			"type": "Bar",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Dashboard Chart",
+			"name": "Maintenance Types Breakdown Pie",
+			"chart_name": "Maintenance Types Breakdown Pie",
+			"chart_type": "Group By",
+			"document_type": "Maintenance Request",
+			"group_by_based_on": "maintenance_type",
+			"group_by_type": "Count",
+			"type": "Pie",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+		{
+			"doctype": "Dashboard Chart",
+			"name": "Equipment Status Breakdown Pie",
+			"chart_name": "Equipment Status Breakdown Pie",
+			"chart_type": "Group By",
+			"document_type": "Equipment",
+			"group_by_based_on": "status",
+			"group_by_type": "Count",
+			"type": "Pie",
+			"is_public": 1,
+			"is_standard": 1,
+			"module": "Maintenance Management",
+		},
+	]
+
+	for c in charts:
+		if not frappe.db.exists("Dashboard Chart", c["name"]):
+			try:
+				frappe.get_doc(c).insert(ignore_permissions=True)
+			except Exception:
+				pass
+		else:
+			frappe.db.set_value("Dashboard Chart", c["name"], "is_public", 1)
+
+	frappe.db.commit()
+
+
+def after_migrate_setup():
+	"""Run DB setup tasks safely during migrate post-sync."""
+	try:
+		ensure_page_permissions()
+		sync_maintenance_dashboard_metrics()
+		cleanup_redundant_desktop_icons_and_workspaces()
+	except Exception as e:
+		frappe.log_error(f"Error in after_migrate_setup: {e}")
+
+
+def cleanup_redundant_desktop_icons_and_workspaces():
+	"""Delete redundant desktop icons and hide extra workspaces in database, keeping 'Maintenance' intact."""
+	sync_maintenance_dashboard_metrics()
+	try:
+		frappe.db.sql("""
+			DELETE FROM `tabDesktop Icon`
+			WHERE name IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management')
+			   OR (label IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management') AND name != 'Maintenance')
+		""")
+		frappe.db.sql("""
+			UPDATE `tabWorkspace`
+			SET is_hidden = 1, parent_page = 'Maintenance'
+			SET is_hidden = 0, parent_page = 'Maintenance'
+			WHERE name = 'Maintenance Dashboard'
+		""")
+		frappe.db.sql("""
+			UPDATE `tabWorkspace`
+			SET is_hidden = 1
+			WHERE name IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management')
+			WHERE name IN ('Maintenance Home', 'Maintenance Management')
+		""")
+		frappe.db.sql("""
+			UPDATE `tabWorkspace`
+			SET is_hidden = 0
+			WHERE name = 'Maintenance'
+		""")
+		frappe.db.sql("""
+			DELETE FROM `tabWorkspace Sidebar`
+			WHERE name IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management')
+			   OR (title IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management') AND name != 'Maintenance')
+		""")
+		frappe.db.commit()
+	except Exception:
+		pass
+
+
 def filter_employee_sidebar(bootinfo):
-	"""Limit the Maintenance sidebar for standard Employee users while preserving section headers."""
+	"""Ensure 'Maintenance' sidebar and desktop icon exist while hiding extra icons on Desk."""
+	cleanup_redundant_desktop_icons_and_workspaces()
 	ensure_page_permissions()
+
+
+	# Remove ONLY extra desktop icons from bootinfo (Maintenance Home, Maintenance Dashboard, Maintenance Management)
+	# 1. Remove ONLY extra desktop icons from bootinfo (Maintenance Home, Maintenance Dashboard, Maintenance Management)
+	extra_icon_names = {"maintenance home", "maintenance dashboard", "maintenance management"}
+	for key in ("desktop_icon", "desktop_icons"):
+		if key not in bootinfo:
+			continue
+		if isinstance(bootinfo[key], dict):
+			bootinfo[key] = {
+				k: v for k, v in bootinfo[key].items()
+				if str(k).lower() not in extra_icon_names
+				and str(getattr(v, "get", lambda x: None)("name") or "").lower() not in extra_icon_names
+				and str(getattr(v, "get", lambda x: None)("label") or "").lower() not in extra_icon_names
+			}
+		elif isinstance(bootinfo[key], list):
+			bootinfo[key] = [
+				v for v in bootinfo[key]
+				if isinstance(v, dict) and str(v.get("name") or "").lower() not in extra_icon_names
+				and str(v.get("label") or "").lower() not in extra_icon_names
+			]
+
+	# 2. Standardize Workspace Sidebars so 'Maintenance' and 'Maintenance Dashboard' use full sidebar items
+	if "workspace_sidebar_item" in bootinfo:
+		master_items = None
+		ws_items = bootinfo["workspace_sidebar_item"]
+		# Look for full sidebar items in 'Maintenance' or any maintenance sidebar
+		for key in ("Maintenance", "maintenance", "Maintenance Management", "maintenance management"):
+			if key in ws_items and ws_items[key].get("items") and len(ws_items[key].get("items")) > 2:
+				master_items = ws_items[key].get("items")
+				break
+
+		if master_items:
+			for s_name, sidebar in ws_items.items():
+				if "maintenance" in str(s_name).lower() or str(sidebar.get("module") or "").lower() in ("maintenance", "maintenance management"):
+					sidebar["items"] = list(master_items)
+					sidebar["title"] = "Maintenance"
+
 	roles = set(frappe.get_roles())
 	elevated_roles = {
 		"Administrator",
@@ -59,20 +339,29 @@ def filter_employee_sidebar(bootinfo):
 	if "Employee" not in roles or roles & elevated_roles:
 		return
 
-	allowed_links = {"Maintenance Request", "Equipment", "Issue Category"}
+	allowed_links = {"Maintenance Request", "Equipment", "Issue Category", "Work Order", "Preventive Maintenance Plan"}
 	for sidebar_name, sidebar in bootinfo.get("workspace_sidebar_item", {}).items():
 		is_maintenance_sidebar = (
-			sidebar_name.lower() == "maintenance"
-			or str(sidebar.get("label") or "").lower() == "maintenance"
-			or str(sidebar.get("module") or "").lower() == "maintenance"
+			sidebar_name.lower() in ("maintenance", "maintenance management")
+			or str(sidebar.get("label") or "").lower() in ("maintenance", "maintenance management")
+			or str(sidebar.get("module") or "").lower() in ("maintenance", "maintenance management")
 		)
 		if not is_maintenance_sidebar:
 			continue
+		if "maintenance" in sidebar_name.lower():
+			sidebar["items"] = [
+				item
+				for item in sidebar.get("items", [])
+				if item.get("type") in ("Card Break", "Section Break")
+				or item.get("link_type") == "Workspace"
+				or (item.get("link_type") == "DocType" and item.get("link_to") in allowed_links)
+			]
 
 		sidebar["items"] = [
 			item
 			for item in sidebar.get("items", [])
-			if item.get("type") == "Card Break"
+			if item.get("type") in ("Card Break", "Section Break")
+			or item.get("link_type") == "Workspace"
 			or (item.get("link_type") == "DocType" and item.get("link_to") in allowed_links)
 		]
 

@@ -21,6 +21,7 @@ class WorkOrder(Document):
 	def validate(self):
 		self.flags.ignore_mandatory = True
 		self.calculate_total_cost()
+		self.sync_maintenance_request_details()
 		self.validate_equipment()
 
 	def calculate_total_cost(self):
@@ -31,14 +32,36 @@ class WorkOrder(Document):
 		vendor = float(getattr(self, "vendor_cost", 0.0) or 0.0)
 		self.total_cost = labor + parts + tools + vendor
 
+	def sync_maintenance_request_details(self):
+		"""Auto-fetch unit and department details from linked Maintenance Request"""
+		if getattr(self, "maintenance_request", None) and frappe.db.exists("Maintenance Request", self.maintenance_request):
+			mr = frappe.db.get_value(
+				"Maintenance Request",
+				self.maintenance_request,
+				["custom_unit", "department", "equipment"],
+				as_dict=True,
+			)
+			if mr:
+				if not getattr(self, "custom_unit", None) and mr.get("custom_unit"):
+					self.custom_unit = mr.custom_unit
+				if not getattr(self, "department", None) and mr.get("department"):
+					self.department = mr.department
+				if not getattr(self, "equipment", None) and mr.get("equipment"):
+					self.equipment = mr.equipment
+
 	def validate_equipment(self):
 		"""Auto-fetch equipment details if available"""
 		if getattr(self, "equipment", None) and frappe.db.exists("Equipment", self.equipment):
-			eq = frappe.db.get_value("Equipment", self.equipment, ["equipment_name", "location", "department"], as_dict=True)
+			eq = frappe.db.get_value(
+				"Equipment",
+				self.equipment,
+				["equipment_name", "used_in_location", "department"],
+				as_dict=True,
+			)
 			if eq:
 				if not getattr(self, "equipment_name", None) and eq.get("equipment_name"):
 					self.equipment_name = eq.equipment_name
-				if not getattr(self, "location", None) and eq.get("location"):
-					self.location = eq.location
+				if not getattr(self, "location", None) and eq.get("used_in_location"):
+					self.location = eq.used_in_location
 				if not getattr(self, "department", None) and eq.get("department"):
 					self.department = eq.department
