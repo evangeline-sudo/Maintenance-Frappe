@@ -361,7 +361,6 @@
   "hide_custom": 0,
   "icon": "dashboard",
   "indicator_color": "blue",
-  "is_hidden": 1,
   "is_hidden": 0,
   "label": "Dashboard",
   "link_to": null,
@@ -392,7 +391,6 @@
     "number_card_name": "Maintenance Teams"
    }
   ],
-  "parent_page": null,
   "parent_page": "Maintenance",
   "public": 1,
   "quick_lists": [],

@@ -28,7 +28,6 @@
  "icon": "dashboard",
  "idx": 0,
  "indicator_color": "blue",
- "is_hidden": 1,
  "is_hidden": 0,
  "label": "Dashboard",
  "link_type": "DocType",
@@ -69,4 +68,3 @@
  "title": "Dashboard",
  "type": "Workspace"
 }
-
