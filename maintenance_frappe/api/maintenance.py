@@ -260,13 +260,11 @@ def cleanup_redundant_desktop_icons_and_workspaces():
 		frappe.db.sql("""
 			UPDATE `tabWorkspace`
 			SET is_hidden = 1, parent_page = 'Maintenance'
-			SET is_hidden = 0, parent_page = 'Maintenance'
 			WHERE name = 'Maintenance Dashboard'
 		""")
 		frappe.db.sql("""
 			UPDATE `tabWorkspace`
 			SET is_hidden = 1
-			WHERE name IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management')
 			WHERE name IN ('Maintenance Home', 'Maintenance Management')
 		""")
 		frappe.db.sql("""
