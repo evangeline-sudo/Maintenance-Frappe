@@ -3,6 +3,7 @@ from frappe import _
 
 
 ALLOWED_ROLES = [
+	"All",
 	"Employee",
 	"Manager",
 	"Maintenance Manager",

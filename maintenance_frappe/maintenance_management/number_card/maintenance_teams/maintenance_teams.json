@@ -1,5 +1,5 @@
 {
- "creation": "2026-09-23 19:15:02.318200",
+ "creation": "2026-10-28 11:35:51.132104",
  "currency": "INR",
  "docstatus": 0,
  "doctype": "Number Card",
@@ -10,7 +10,7 @@
  "is_public": 1,
  "is_standard": 1,
  "label": "Maintenance Teams",
- "modified": "2026-09-23 19:15:02.318200",
+ "modified": "2026-10-28 11:35:51.132104",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance Teams",

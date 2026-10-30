@@ -3,9 +3,9 @@ from frappe import _
 
 
 def ensure_page_permissions():
-	"""Ensure Employee, Manager, Maintenance Manager, Technician, and All roles have Read access to Page and Workspace across DocPerm and Custom DocPerm."""
+	"""Ensure Employee, Manager, Maintenance Manager, Technician, and All roles have Read access to Page, Workspace, and Desktop Icon across DocPerm and Custom DocPerm."""
 	target_roles = ["All", "Employee", "Manager", "Maintenance Manager", "Technician", "System Manager"]
-	for doctype in ["Page", "Workspace"]:
+	for doctype in ["Page", "Workspace", "Desktop Icon"]:
 		# 1. Standard DocPerm
 		for role in target_roles:
 			if not frappe.db.exists("DocPerm", {"parent": doctype, "role": role}):
@@ -23,7 +23,7 @@ def ensure_page_permissions():
 				except Exception:
 					pass
 
-		# 2. Custom DocPerm (if custom permissions exist for Page/Workspace)
+		# 2. Custom DocPerm (if custom permissions exist for Page/Workspace/Desktop Icon)
 		if frappe.db.table_exists("Custom DocPerm"):
 			if frappe.db.exists("Custom DocPerm", {"parent": doctype}):
 				for role in target_roles:
@@ -248,14 +248,41 @@ def after_migrate_setup():
 		frappe.log_error(f"Error in after_migrate_setup: {e}")
 
 
+def after_install_setup():
+	"""Run DB setup tasks safely during app installation on a new system."""
+	after_migrate_setup()
+
+
 def cleanup_redundant_desktop_icons_and_workspaces():
-	"""Delete redundant desktop icons and hide extra workspaces in database, keeping 'Maintenance' intact."""
+	"""Delete redundant desktop icons and hide extra workspaces in database, keeping 'Maintenance' intact for all employees."""
 	sync_maintenance_dashboard_metrics()
 	try:
 		frappe.db.sql("""
 			DELETE FROM `tabDesktop Icon`
-			WHERE name IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management')
-			   OR (label IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management') AND name != 'Maintenance')
+			WHERE (
+				name IN (
+					'Maintenance-Frappe', 'Maintenance Frappe', 'maintenance_frappe',
+					'Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management'
+				)
+				OR (label IN (
+					'Maintenance-Frappe', 'Maintenance Frappe', 'maintenance_frappe',
+					'Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management'
+				) AND name != 'Maintenance')
+				OR (app = 'maintenance_frappe' AND name != 'Maintenance' AND label != 'Maintenance')
+			)
+		""")
+		frappe.db.sql("""
+			DELETE FROM `tabHas Role`
+			WHERE parenttype = 'Desktop Icon'
+			  AND parent IN (
+				'Maintenance-Frappe', 'Maintenance Frappe', 'maintenance_frappe',
+				'Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management'
+			  )
+		""")
+		frappe.db.sql("""
+			UPDATE `tabDesktop Icon`
+			SET hidden = 0
+			WHERE name = 'Maintenance'
 		""")
 		frappe.db.sql("""
 			UPDATE `tabWorkspace`
@@ -277,6 +304,21 @@ def cleanup_redundant_desktop_icons_and_workspaces():
 			WHERE name IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management')
 			   OR (title IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management') AND name != 'Maintenance')
 		""")
+
+		# Ensure 'All' and 'Employee' roles are associated with the 'Maintenance' Desktop Icon
+		for role in ("All", "Employee"):
+			if not frappe.db.exists("Has Role", {"parent": "Maintenance", "parenttype": "Desktop Icon", "role": role}):
+				try:
+					frappe.get_doc({
+						"doctype": "Has Role",
+						"parent": "Maintenance",
+						"parenttype": "Desktop Icon",
+						"parentfield": "roles",
+						"role": role
+					}).insert(ignore_permissions=True)
+				except Exception:
+					pass
+
 		frappe.db.commit()
 	except Exception:
 		pass
@@ -287,26 +329,65 @@ def filter_employee_sidebar(bootinfo):
 	cleanup_redundant_desktop_icons_and_workspaces()
 	ensure_page_permissions()
 
+	# 1. Remove ONLY extra desktop icons from bootinfo
+	extra_icon_names = {
+		"maintenance home",
+		"maintenance dashboard",
+		"maintenance management",
+		"maintenance-frappe",
+		"maintenance frappe",
+		"maintenance_frappe",
+	}
 
-	# Remove ONLY extra desktop icons from bootinfo (Maintenance Home, Maintenance Dashboard, Maintenance Management)
-	# 1. Remove ONLY extra desktop icons from bootinfo (Maintenance Home, Maintenance Dashboard, Maintenance Management)
-	extra_icon_names = {"maintenance home", "maintenance dashboard", "maintenance management"}
+	def is_redundant_icon(k, v):
+		name = str(getattr(v, "get", lambda x: None)("name") or k or "").lower()
+		label = str(getattr(v, "get", lambda x: None)("label") or "").lower()
+		app = str(getattr(v, "get", lambda x: None)("app") or "").lower()
+		if name in extra_icon_names or label in extra_icon_names:
+			return True
+		if app == "maintenance_frappe" and name != "maintenance" and label != "maintenance":
+			return True
+		return False
+
 	for key in ("desktop_icon", "desktop_icons"):
 		if key not in bootinfo:
 			continue
 		if isinstance(bootinfo[key], dict):
 			bootinfo[key] = {
 				k: v for k, v in bootinfo[key].items()
-				if str(k).lower() not in extra_icon_names
-				and str(getattr(v, "get", lambda x: None)("name") or "").lower() not in extra_icon_names
-				and str(getattr(v, "get", lambda x: None)("label") or "").lower() not in extra_icon_names
+				if not is_redundant_icon(k, v)
 			}
+			# Ensure 'Maintenance' is present for all employees
+			has_maintenance = any(str(k).lower() == "maintenance" or str(getattr(v, "get", lambda x: None)("name") or "").lower() == "maintenance" for k, v in bootinfo[key].items())
+			if not has_maintenance and frappe.db.exists("Desktop Icon", "Maintenance"):
+				try:
+					doc = frappe.get_cached_doc("Desktop Icon", "Maintenance")
+					bootinfo[key]["Maintenance"] = doc.as_dict()
+				except Exception:
+					pass
 		elif isinstance(bootinfo[key], list):
 			bootinfo[key] = [
 				v for v in bootinfo[key]
-				if isinstance(v, dict) and str(v.get("name") or "").lower() not in extra_icon_names
-				and str(v.get("label") or "").lower() not in extra_icon_names
+				if isinstance(v, dict) and not is_redundant_icon(v.get("name"), v)
 			]
+			# Ensure 'Maintenance' is present for all employees
+			has_maintenance = any(isinstance(v, dict) and str(v.get("name") or "").lower() == "maintenance" for v in bootinfo[key])
+			if not has_maintenance and frappe.db.exists("Desktop Icon", "Maintenance"):
+				try:
+					doc = frappe.get_cached_doc("Desktop Icon", "Maintenance")
+					bootinfo[key].append(doc.as_dict())
+				except Exception:
+					pass
+
+	# Remove any redundant app card from bootinfo['apps']
+	if "apps" in bootinfo and isinstance(bootinfo["apps"], list):
+		bootinfo["apps"] = [
+			app for app in bootinfo["apps"]
+			if not (isinstance(app, dict) and (
+				str(app.get("name") or "").lower() in ("maintenance_frappe", "maintenance-frappe")
+				or str(app.get("title") or "").lower() in extra_icon_names
+			))
+		]
 
 	# 2. Standardize Workspace Sidebars so 'Maintenance' and 'Maintenance Dashboard' use full sidebar items
 	if "workspace_sidebar_item" in bootinfo:

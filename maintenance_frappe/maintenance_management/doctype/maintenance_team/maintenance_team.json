@@ -54,7 +54,7 @@
  "icon": "users",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-22 09:49:13.125933",
+ "modified": "2026-10-23 12:38:51.487671",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance Team",
@@ -86,15 +86,6 @@
    "write": 1
   },
   {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Manger",
-   "write": 1
-  },
-  {
    "create": 1,
    "email": 1,
    "export": 1,
@@ -111,6 +102,18 @@
    "read": 1,
    "report": 1,
    "role": "Maintenance User"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manager",
+   "share": 1,
+   "write": 1
   }
  ],
  "quick_entry": 1,

@@ -1,5 +1,5 @@
 app_name = "maintenance_frappe"
-app_title = "Maintenance-Frappe"
+app_title = "Maintenance"
 app_publisher = "Evangeline "
 app_description = "To Maintain Software and Hardware "
 app_email = "evangelinerajeswari@gmail.com"
@@ -11,15 +11,16 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-add_to_apps_screen = [
-	{
-		"name": "maintenance_frappe",
-		"logo": "/assets/maintenance_frappe/logo.png",
-		"title": "Maintenance Management",
-		"route": "/app/maintenance",
-		"has_permission": "maintenance_frappe.permissions.maintenance_request.has_app_permission"
-	}
-]
+# Disabled to avoid duplicate desktop icons; standard 'Maintenance' desktop icon is used instead.
+# add_to_apps_screen = [
+# 	{
+# 		"name": "maintenance_frappe",
+# 		"logo": "/assets/maintenance_frappe/logo.png",
+# 		"title": "Maintenance",
+# 		"route": "/app/maintenance",
+# 		"has_permission": "maintenance_frappe.permissions.maintenance_request.has_app_permission"
+# 	}
+# ]
 
 # Includes in <head>
 # ------------------
@@ -86,7 +87,7 @@ add_to_apps_screen = [
 # ------------
 
 # before_install = "maintenance_frappe.install.before_install"
-# after_install = "maintenance_frappe.install.after_install"
+after_install = "maintenance_frappe.api.maintenance.after_install_setup"
 
 # Uninstallation
 # ------------
