@@ -307,11 +307,21 @@
   "link_to": "Tax & Benefits",
   "link_type": "Workspace Sidebar",
   "logo_url": "/assets/hrms/icons/desktop_icons/tax-benefits.svg",
-  "modified": "2026-01-01 20:07:01.316510",
+  "modified": "2026-10-30 17:48:06.719928",
   "name": "Tax & Benefits",
   "parent_icon": "Frappe HR",
   "restrict_removal": 0,
-  "roles": [],
+  "roles": [
+   {
+    "role": "Administrator"
+   },
+   {
+    "role": "HR Manager"
+   },
+   {
+    "role": "HR User"
+   }
+  ],
   "sidebar": null,
   "standard": 1
  },
@@ -329,11 +339,21 @@
   "link_to": "Payroll",
   "link_type": "Workspace Sidebar",
   "logo_url": "/assets/hrms/icons/desktop_icons/salary_payout.svg",
-  "modified": "2026-01-01 20:07:01.308523",
+  "modified": "2026-10-30 17:48:29.000408",
   "name": "Payroll",
   "parent_icon": "Frappe HR",
   "restrict_removal": 0,
-  "roles": [],
+  "roles": [
+   {
+    "role": "Administrator"
+   },
+   {
+    "role": "HR Manager"
+   },
+   {
+    "role": "HR User"
+   }
+  ],
   "sidebar": null,
   "standard": 1
  },
@@ -373,11 +393,21 @@
   "link_to": "Performance",
   "link_type": "Workspace Sidebar",
   "logo_url": "/assets/hrms/icons/desktop_icons/performance.svg",
-  "modified": "2026-01-01 20:07:01.295447",
+  "modified": "2026-10-30 17:43:37.503422",
   "name": "Performance",
   "parent_icon": "Frappe HR",
   "restrict_removal": 0,
-  "roles": [],
+  "roles": [
+   {
+    "role": "Administrator"
+   },
+   {
+    "role": "HR Manager"
+   },
+   {
+    "role": "HR User"
+   }
+  ],
   "sidebar": null,
   "standard": 1
  },
@@ -408,7 +438,7 @@
   "bg_color": null,
   "docstatus": 0,
   "doctype": "Desktop Icon",
-  "hidden": 0,
+  "hidden": 1,
   "icon": "customer",
   "icon_image": null,
   "icon_type": "Link",
@@ -417,11 +447,21 @@
   "link_to": "Tenure",
   "link_type": "Workspace Sidebar",
   "logo_url": "/assets/hrms/icons/desktop_icons/employee_lifecycle.svg",
-  "modified": "2026-01-01 20:07:01.267686",
+  "modified": "2026-10-30 17:44:08.733477",
   "name": "Tenure",
   "parent_icon": "Frappe HR",
   "restrict_removal": 0,
-  "roles": [],
+  "roles": [
+   {
+    "role": "Administrator"
+   },
+   {
+    "role": "HR Manager"
+   },
+   {
+    "role": "HR User"
+   }
+  ],
   "sidebar": null,
   "standard": 1
  },
@@ -430,7 +470,7 @@
   "bg_color": null,
   "docstatus": 0,
   "doctype": "Desktop Icon",
-  "hidden": 0,
+  "hidden": 1,
   "icon": "users",
   "icon_image": null,
   "icon_type": "Link",
@@ -439,11 +479,21 @@
   "link_to": "Recruitment",
   "link_type": "Workspace Sidebar",
   "logo_url": "/assets/hrms/icons/desktop_icons/recruitment.svg",
-  "modified": "2026-01-01 20:07:01.259701",
+  "modified": "2026-10-30 17:43:02.649896",
   "name": "Recruitment",
   "parent_icon": "Frappe HR",
   "restrict_removal": 0,
-  "roles": [],
+  "roles": [
+   {
+    "role": "Administrator"
+   },
+   {
+    "role": "HR Manager"
+   },
+   {
+    "role": "HR User"
+   }
+  ],
   "sidebar": null,
   "standard": 1
  },
@@ -461,7 +511,7 @@
   "link_to": "Home",
   "link_type": "Workspace Sidebar",
   "logo_url": null,
-  "modified": "2026-10-29 14:11:34.974613",
+  "modified": "2026-10-30 17:20:04.913121",
   "name": "Home",
   "parent_icon": "",
   "restrict_removal": 0,
@@ -562,7 +612,7 @@
   "bg_color": "blue",
   "docstatus": 0,
   "doctype": "Desktop Icon",
-  "hidden": 0,
+  "hidden": 1,
   "icon": null,
   "icon_image": null,
   "icon_type": "Link",
@@ -571,11 +621,21 @@
   "link_to": "Organization",
   "link_type": "Workspace Sidebar",
   "logo_url": null,
-  "modified": "2026-02-24 17:59:39.885360",
+  "modified": "2026-10-30 17:44:41.610459",
   "name": "Organization",
   "parent_icon": "",
   "restrict_removal": 0,
-  "roles": [],
+  "roles": [
+   {
+    "role": "Administrator"
+   },
+   {
+    "role": "HR Manager"
+   },
+   {
+    "role": "HR User"
+   }
+  ],
   "sidebar": null,
   "standard": 1
  },
@@ -599,28 +659,22 @@
   "restrict_removal": 0,
   "roles": [
    {
-    "role": "All"
+    "role": "Employee"
    },
    {
-    "role": "Employee"
+    "role": "Manager"
+   },
+   {
+    "role": "System Manager"
    },
    {
     "role": "Maintenance User"
    },
    {
+    "role": "All"
+   },
+   {
     "role": "Maintenance Manager"
-   },
-   {
-    "role": "Maintenance Technician"
-   },
-   {
-    "role": "Technician"
-   },
-   {
-    "role": "Project Manager"
-   },
-   {
-    "role": "System Manager"
    }
   ],
   "sidebar": "Maintenance",

@@ -3,8 +3,18 @@ from frappe import _
 
 
 def ensure_page_permissions():
-	"""Ensure Employee, Manager, Maintenance Manager, Technician, and All roles have Read access to Page, Workspace, and Desktop Icon across DocPerm and Custom DocPerm."""
-	target_roles = ["All", "Employee", "Manager", "Maintenance Manager", "Technician", "System Manager"]
+	"""Ensure standard roles have Read access to Page, Workspace, and Desktop Icon across DocPerm and Custom DocPerm."""
+	target_roles = [
+		"All",
+		"Employee",
+		"Manager",
+		"Maintenance Manager",
+		"Maintenance User",
+		"Technician",
+		"Maintenance Technician",
+		"Project Manager",
+		"System Manager",
+	]
 	for doctype in ["Page", "Workspace", "Desktop Icon"]:
 		# 1. Standard DocPerm
 		for role in target_roles:
@@ -254,7 +264,7 @@ def after_install_setup():
 
 
 def cleanup_redundant_desktop_icons_and_workspaces():
-	"""Delete redundant desktop icons and hide extra workspaces in database, keeping 'Maintenance' intact for all employees."""
+	"""Delete redundant desktop icons and hide extra workspaces in database, keeping 'Maintenance' intact for all users."""
 	sync_maintenance_dashboard_metrics()
 	try:
 		frappe.db.sql("""
@@ -276,7 +286,8 @@ def cleanup_redundant_desktop_icons_and_workspaces():
 			WHERE parenttype = 'Desktop Icon'
 			  AND parent IN (
 				'Maintenance-Frappe', 'Maintenance Frappe', 'maintenance_frappe',
-				'Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management'
+				'Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management',
+				'Maintenance'
 			  )
 		""")
 		frappe.db.sql("""
@@ -305,8 +316,16 @@ def cleanup_redundant_desktop_icons_and_workspaces():
 			   OR (title IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management') AND name != 'Maintenance')
 		""")
 
-		# Ensure 'All' and 'Employee' roles are associated with the 'Maintenance' Desktop Icon
-		for role in ("All", "Employee"):
+		# Ensure target maintenance roles are associated with the 'Maintenance' Desktop Icon
+		target_desktop_roles = [
+			"System Manager",
+			"Maintenance Manager",
+			"Manager",
+			"Maintenance User",
+			"Employee",
+			"All",
+		]
+		for role in target_desktop_roles:
 			if not frappe.db.exists("Has Role", {"parent": "Maintenance", "parenttype": "Desktop Icon", "role": role}):
 				try:
 					frappe.get_doc({
@@ -319,6 +338,8 @@ def cleanup_redundant_desktop_icons_and_workspaces():
 				except Exception:
 					pass
 
+		frappe.clear_document_cache("Desktop Icon", "Maintenance")
+		frappe.clear_document_cache("Workspace", "Maintenance")
 		frappe.db.commit()
 	except Exception:
 		pass
@@ -357,7 +378,7 @@ def filter_employee_sidebar(bootinfo):
 				k: v for k, v in bootinfo[key].items()
 				if not is_redundant_icon(k, v)
 			}
-			# Ensure 'Maintenance' is present for all employees
+			# Ensure 'Maintenance' is present for all users
 			has_maintenance = any(str(k).lower() == "maintenance" or str(getattr(v, "get", lambda x: None)("name") or "").lower() == "maintenance" for k, v in bootinfo[key].items())
 			if not has_maintenance and frappe.db.exists("Desktop Icon", "Maintenance"):
 				try:
@@ -365,12 +386,28 @@ def filter_employee_sidebar(bootinfo):
 					bootinfo[key]["Maintenance"] = doc.as_dict()
 				except Exception:
 					pass
+
+			# Explicitly ensure Maintenance icon is visible and unhidden with authorized maintenance roles
+			target_roles_list = [
+				{"role": "System Manager"},
+				{"role": "Maintenance Manager"},
+				{"role": "Manager"},
+				{"role": "Maintenance User"},
+				{"role": "Employee"},
+				{"role": "All"}
+			]
+			for k, v in bootinfo[key].items():
+				if str(k).lower() == "maintenance" or str(getattr(v, "get", lambda x: None)("name") or "").lower() == "maintenance":
+					if isinstance(v, dict):
+						v["hidden"] = 0
+						v["roles"] = target_roles_list
+
 		elif isinstance(bootinfo[key], list):
 			bootinfo[key] = [
 				v for v in bootinfo[key]
 				if isinstance(v, dict) and not is_redundant_icon(v.get("name"), v)
 			]
-			# Ensure 'Maintenance' is present for all employees
+			# Ensure 'Maintenance' is present for all users
 			has_maintenance = any(isinstance(v, dict) and str(v.get("name") or "").lower() == "maintenance" for v in bootinfo[key])
 			if not has_maintenance and frappe.db.exists("Desktop Icon", "Maintenance"):
 				try:
@@ -378,6 +415,20 @@ def filter_employee_sidebar(bootinfo):
 					bootinfo[key].append(doc.as_dict())
 				except Exception:
 					pass
+
+			# Explicitly ensure Maintenance icon is visible and unhidden with authorized maintenance roles
+			target_roles_list = [
+				{"role": "System Manager"},
+				{"role": "Maintenance Manager"},
+				{"role": "Manager"},
+				{"role": "Maintenance User"},
+				{"role": "Employee"},
+				{"role": "All"}
+			]
+			for v in bootinfo[key]:
+				if isinstance(v, dict) and str(v.get("name") or "").lower() == "maintenance":
+					v["hidden"] = 0
+					v["roles"] = target_roles_list
 
 	# Remove any redundant app card from bootinfo['apps']
 	if "apps" in bootinfo and isinstance(bootinfo["apps"], list):

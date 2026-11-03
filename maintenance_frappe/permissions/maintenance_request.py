@@ -7,7 +7,10 @@ ALLOWED_ROLES = [
 	"Employee",
 	"Manager",
 	"Maintenance Manager",
+	"Maintenance User",
 	"Technician",
+	"Maintenance Technician",
+	"Project Manager",
 	"System Manager",
 	"Administrator",
 ]
@@ -26,8 +29,8 @@ def get_permission_query_conditions(user=None):
 
 	user_roles = frappe.get_roles(user)
 
-	# System Manager, Administrator, Manager, and Maintenance Manager can see all requests
-	if any(role in user_roles for role in ["System Manager", "Administrator", "Manager", "Maintenance Manager"]):
+	# System Manager, Administrator, and Maintenance Manager have all access to all maintenance requests
+	if any(role in user_roles for role in ["System Manager", "Administrator", "Maintenance Manager"]):
 		return ""
 
 	if not any(role in user_roles for role in ALLOWED_ROLES):
@@ -39,12 +42,16 @@ def get_permission_query_conditions(user=None):
 	# Creator/Owner check for any logged-in user
 	conditions.append("(`tabMaintenance Request`.`owner` = {0})".format(escaped_user))
 
-	# Manager can see requests where they are assigned as manager
+	# Manager: approve when employee raised maintenance request (can see requests where they are manager/unit_head, or awaiting approval)
 	if "Manager" in user_roles:
-		conditions.append("(`tabMaintenance Request`.`manager` = {0})".format(escaped_user))
+		conditions.append("(`tabMaintenance Request`.`manager` = {0} OR `tabMaintenance Request`.`unit_head` = {0} OR `tabMaintenance Request`.`approval_status` = 'Pending')".format(escaped_user))
 
 	# Technicians can see assigned requests
-	if any(role in user_roles for role in ["Technician", "Maintenance Technician", "Maintenance User", "Supervisor"]):
+	if any(role in user_roles for role in ["Technician", "Maintenance Technician", "Supervisor"]):
+		conditions.append("(`tabMaintenance Request`.`assigned_to` = {0})".format(escaped_user))
+
+	# Maintenance User can see assigned requests
+	if "Maintenance User" in user_roles:
 		conditions.append("(`tabMaintenance Request`.`assigned_to` = {0})".format(escaped_user))
 
 	# Employee can see their own requests linked via Employee record
@@ -74,8 +81,8 @@ def has_permission(doc=None, ptype=None, user=None, debug=False):
 
 	user_roles = frappe.get_roles(user)
 
-	# System Manager, Administrator, Manager, and Maintenance Manager have all permissions
-	if any(role in user_roles for role in ["System Manager", "Administrator", "Manager", "Maintenance Manager"]):
+	# System Manager, Administrator, and Maintenance Manager have all permissions
+	if any(role in user_roles for role in ["System Manager", "Administrator", "Maintenance Manager"]):
 		return True
 
 	if not any(role in user_roles for role in ALLOWED_ROLES):
@@ -88,16 +95,27 @@ def has_permission(doc=None, ptype=None, user=None, debug=False):
 	if getattr(doc, "owner", None) == user:
 		return True
 
-	# Manager can access requests where they are set as manager
-	if "Manager" in user_roles and (getattr(doc, "manager", None) == user or getattr(doc, "unit_head", None) == user):
-		return True
+	# Manager: can approve and access requests when employee raised them
+	if "Manager" in user_roles:
+		if (
+			not getattr(doc, "manager", None)
+			or getattr(doc, "manager", None) == user
+			or getattr(doc, "unit_head", None) == user
+			or getattr(doc, "approval_status", None) == "Pending"
+		):
+			return True
 
-	# Technician / Maintenance User / Supervisor can access assigned requests
+	# Technician / Maintenance Technician / Supervisor can access assigned requests
 	if (
-		any(role in user_roles for role in ["Technician", "Maintenance Technician", "Maintenance User", "Supervisor"])
+		any(role in user_roles for role in ["Technician", "Maintenance Technician", "Supervisor"])
 		and getattr(doc, "assigned_to", None) == user
 	):
 		return True
+
+	# Maintenance User can access their own or assigned requests
+	if "Maintenance User" in user_roles:
+		if getattr(doc, "assigned_to", None) == user or getattr(doc, "owner", None) == user:
+			return True
 
 	# Employee can access their own requests
 	if "Employee" in user_roles:

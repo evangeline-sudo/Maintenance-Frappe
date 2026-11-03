@@ -22,7 +22,8 @@ def execute():
 			WHERE parenttype = 'Desktop Icon'
 			  AND parent IN (
 				'Maintenance-Frappe', 'Maintenance Frappe', 'maintenance_frappe',
-				'Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management'
+				'Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management',
+				'Maintenance'
 			  )
 		""")
 		frappe.db.sql("""
@@ -40,6 +41,30 @@ def execute():
 			SET is_hidden = 0
 			WHERE name = 'Maintenance'
 		""")
+
+		target_desktop_roles = [
+			"System Manager",
+			"Maintenance Manager",
+			"Manager",
+			"Maintenance User",
+			"Employee",
+			"All",
+		]
+		for role in target_desktop_roles:
+			if not frappe.db.exists("Has Role", {"parent": "Maintenance", "parenttype": "Desktop Icon", "role": role}):
+				try:
+					frappe.get_doc({
+						"doctype": "Has Role",
+						"parent": "Maintenance",
+						"parenttype": "Desktop Icon",
+						"parentfield": "roles",
+						"role": role
+					}).insert(ignore_permissions=True)
+				except Exception:
+					pass
+
+		frappe.clear_document_cache("Desktop Icon", "Maintenance")
+		frappe.clear_document_cache("Workspace", "Maintenance")
 		frappe.db.commit()
 	except Exception:
 		pass

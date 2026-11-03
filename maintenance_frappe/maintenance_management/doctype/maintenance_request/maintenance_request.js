@@ -427,8 +427,7 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('System Manager') ||
 			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
-			user_roles.includes('Employee') ||
-			(frm.doc.manager && frappe.session.user === frm.doc.manager )
+			(frm.doc.manager && frappe.session.user === frm.doc.manager)
 		);
 		// details are read-only so users cannot alter their logged-in requester info
 		frm.set_df_property('employee', 'read_only', 1);
