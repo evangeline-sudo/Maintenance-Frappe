@@ -22,14 +22,13 @@ def execute():
 			WHERE parenttype = 'Desktop Icon'
 			  AND parent IN (
 				'Maintenance-Frappe', 'Maintenance Frappe', 'maintenance_frappe',
-				'Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management',
-				'Maintenance'
+				'Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management'
 			  )
 		""")
 		frappe.db.sql("""
 			UPDATE `tabDesktop Icon`
 			SET hidden = 0
-			WHERE name = 'Maintenance'
+			WHERE name = 'Maintenance' OR label = 'Maintenance'
 		""")
 		frappe.db.sql("""
 			UPDATE `tabWorkspace`
@@ -65,7 +64,8 @@ def execute():
 
 		frappe.clear_document_cache("Desktop Icon", "Maintenance")
 		frappe.clear_document_cache("Workspace", "Maintenance")
+		frappe.cache.delete_key("desktop_icons")
+		frappe.cache.delete_key("bootinfo")
 		frappe.db.commit()
 	except Exception:
 		pass
-
