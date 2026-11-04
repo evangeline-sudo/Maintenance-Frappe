@@ -1,18 +1,18 @@
 {
  "app": "maintenance_frappe",
  "charts": [],
- "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Key Metrics\",\"level\":4}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Open Requests\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending Approvals\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Equipment\"}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Maintenance Teams\"}},{\"type\":\"header\",\"data\":{\"text\":\"Quick Actions\",\"level\":4}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"+ New Maintenance Request\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"View My Requests\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pending Approvals\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Assigned Requests\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Equipment Master\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Teams\"}},{\"type\":\"header\",\"data\":{\"text\":\"Modules & Masters\",\"level\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Equipment & Masters\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Teams & Rules\"}},{\"type\":\"card\",\"data\":{\"card_name\":\"Reports\"}}]",
+ "content": "[{\"type\": \"header\", \"data\": {\"text\": \"Key Metrics\", \"level\": 4}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Requests\"}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Requests\"}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Pending Approvals\"}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Equipment\"}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Maintenance Teams\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Quick Actions\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"+ New Maintenance Request\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"View My Requests\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Pending Approvals\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Approved Requests\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Assigned Requests\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Equipment Master\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Maintenance Teams\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Modules & Masters\", \"level\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Transactions\"}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Equipment & Masters\"}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Teams & Rules\"}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Reports\"}}]",
  "creation": "2026-09-22 11:25:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
  "hide_custom": 0,
- "icon": "home",
+ "icon": "tool",
  "idx": 0,
  "indicator_color": "blue",
  "is_hidden": 0,
- "label": "Home",
+ "label": "Maintenance",
  "link_type": "DocType",
  "links": [
   {
@@ -30,6 +30,26 @@
    "label": "Maintenance Request",
    "link_count": 0,
    "link_to": "Maintenance Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Work Order",
+   "link_count": 0,
+   "link_to": "Work Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Preventive Maintenance Plan",
+   "link_count": 0,
+   "link_to": "Preventive Maintenance Plan",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -194,6 +214,12 @@
   },
   {
    "doc_view": "",
+   "label": "Approved Requests",
+   "link_to": "Maintenance Request",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
    "label": "Assigned Requests",
    "link_to": "Maintenance Request",
    "type": "DocType"
@@ -211,6 +237,6 @@
    "type": "DocType"
   }
  ],
- "title": "Home",
+ "title": "Maintenance",
  "type": "Workspace"
 }

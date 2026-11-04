@@ -1,4 +1,5 @@
 import frappe
+from maintenance_frappe.api.maintenance import ensure_page_permissions
 
 def execute():
 	"""
@@ -89,7 +90,7 @@ def fix_work_order_child_table_options():
 			UPDATE `tabDocField`
 			SET options = CASE
 				WHEN fieldname = 'parts_used' THEN 'Maintenance Parts Used'
-				WHEN fieldname = 'tools_used' THEN 'Maintenance Tool'
+				WHEN fieldname = 'tools_used' THEN 'Work Order Tool'
 				WHEN fieldname = 'checklist_items' THEN 'Maintenance Checklist Item'
 				ELSE options
 			END
@@ -100,47 +101,6 @@ def fix_work_order_child_table_options():
 				frappe.db.sql("DELETE FROM `tabDocType` WHERE name = %s", deleted_dt)
 	except Exception as e:
 		frappe.log_error(f"Error fixing Work Order child table options: {e}")
-
-
-def ensure_page_permissions():
-	"""Ensure Employee, Manager, Maintenance Manager, Technician, and All roles have Read access to Page and Workspace across DocPerm and Custom DocPerm."""
-	target_roles = ["All", "Employee", "Manager", "Maintenance Manager", "Technician", "System Manager"]
-	for doctype in ["Page", "Workspace"]:
-		# 1. Standard DocPerm
-		for role in target_roles:
-			if not frappe.db.exists("DocPerm", {"parent": doctype, "role": role}):
-				try:
-					perm = frappe.get_doc({
-						"doctype": "DocPerm",
-						"parent": doctype,
-						"parenttype": "DocType",
-						"parentfield": "permissions",
-						"role": role,
-						"read": 1,
-						"select": 1
-					})
-					perm.insert(ignore_permissions=True)
-				except Exception:
-					pass
-
-		# 2. Custom DocPerm (if custom permissions exist for Page/Workspace)
-		if frappe.db.table_exists("Custom DocPerm"):
-			if frappe.db.exists("Custom DocPerm", {"parent": doctype}):
-				for role in target_roles:
-					if not frappe.db.exists("Custom DocPerm", {"parent": doctype, "role": role}):
-						try:
-							c_perm = frappe.get_doc({
-								"doctype": "Custom DocPerm",
-								"parent": doctype,
-								"parenttype": "DocType",
-								"parentfield": "permissions",
-								"role": role,
-								"read": 1,
-								"select": 1
-							})
-							c_perm.insert(ignore_permissions=True)
-						except Exception:
-							pass
 
 
 def fix_responsible_person_options():

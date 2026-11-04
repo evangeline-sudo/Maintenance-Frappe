@@ -199,7 +199,7 @@
    "fieldname": "tools_used",
    "fieldtype": "Table",
    "label": "Tools Used",
-   "options": "Maintenance Tool"
+   "options": "Work Order Tool"
   },
   {
    "fieldname": "checklist_items",

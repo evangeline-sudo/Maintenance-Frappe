@@ -11,21 +11,14 @@ frappe.ui.form.on('Equipment', {
 			};
 		});
 
-		frm.set_query('product_type', function() {
-			return {
-				filters: {
-					is_active: 1
-				}
-			};
-		});
-
-		frm.set_query('location', function() {
-			return {
-				filters: {
-					is_active: 1
-				}
-			};
-		});
+		if (frm.fields_dict.location) {
+			frm.set_query('location', function() {
+				return {
+					filters: {
+						is_active: 1
+					}
+				};
+			});
+		}
 	}
 });
-

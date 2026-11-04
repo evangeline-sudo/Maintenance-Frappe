@@ -44,7 +44,33 @@ def get_permission_query_conditions(user=None):
 
 	# Manager: approve when employee raised maintenance request (can see requests where they are manager/unit_head, or awaiting approval)
 	if "Manager" in user_roles:
-		conditions.append("(`tabMaintenance Request`.`manager` = {0} OR `tabMaintenance Request`.`unit_head` = {0} OR `tabMaintenance Request`.`approval_status` = 'Pending')".format(escaped_user))
+		manager_parts = []
+		has_manager_col = False
+		try:
+			if hasattr(frappe, "db") and hasattr(frappe.db, "has_column"):
+				has_manager_col = frappe.db.has_column("Maintenance Request", "manager")
+			elif hasattr(frappe, "get_meta"):
+				has_manager_col = frappe.get_meta("Maintenance Request").has_field("manager")
+		except Exception:
+			has_manager_col = False
+
+		if has_manager_col:
+			manager_parts.append("`tabMaintenance Request`.`manager` = {0}".format(escaped_user))
+
+		has_unit_head = True
+		try:
+			if hasattr(frappe, "db") and hasattr(frappe.db, "has_column"):
+				has_unit_head = frappe.db.has_column("Maintenance Request", "unit_head")
+			elif hasattr(frappe, "get_meta"):
+				has_unit_head = frappe.get_meta("Maintenance Request").has_field("unit_head")
+		except Exception:
+			has_unit_head = True
+
+		if has_unit_head:
+			manager_parts.append("`tabMaintenance Request`.`unit_head` = {0}".format(escaped_user))
+
+		manager_parts.append("`tabMaintenance Request`.`approval_status` = 'Pending'")
+		conditions.append("({0})".format(" OR ".join(manager_parts)))
 
 	# Technicians can see assigned requests
 	if any(role in user_roles for role in ["Technician", "Maintenance Technician", "Supervisor"]):

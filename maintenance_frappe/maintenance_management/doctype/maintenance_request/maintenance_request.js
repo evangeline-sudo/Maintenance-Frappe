@@ -31,14 +31,6 @@ frappe.ui.form.on('Maintenance Request', {
 			};
 		});
 
-		frm.set_query('category', function() {
-			let filters = { is_active: 1 };
-			if (frm.doc.maintenance_type) {
-				filters['maintenance_type'] = frm.doc.maintenance_type;
-			}
-			return { filters: filters };
-		});
-
 		frm.set_query('issue_category', function() {
 			return {
 				query: 'maintenance_frappe.maintenance_management.doctype.issue_category.issue_category.get_issue_categories',
@@ -49,22 +41,8 @@ frappe.ui.form.on('Maintenance Request', {
 			};
 		});
 
-		if (frm.fields_dict.location) {
-			frm.set_query('location', function() {
-				return { filters: { is_active: 1 } };
-			});
-		}
-
-		frm.set_query('assigned_team', function() {
-			return { filters: { is_active: 1 } };
-		});
-
 		frm.set_query('responsible_person', function() {
-			let filters = { is_active: 1 };
-			if (frm.doc.assigned_team) {
-				filters['maintenance_team'] = frm.doc.assigned_team;
-			}
-			return { filters: filters };
+			return { filters: { is_active: 1 } };
 		});
 	},
 
@@ -78,9 +56,6 @@ frappe.ui.form.on('Maintenance Request', {
 		frm.trigger('setup_workflow_buttons');
 		frm.trigger('set_field_states');
 		frm.trigger('set_section_visibilities');
-		if (frm.is_new() && !frm.doc.employee) {
-			frm.trigger('auto_set_logged_in_employee');
-		}
 	},
 
 	onload: function(frm) {
@@ -90,27 +65,11 @@ frappe.ui.form.on('Maintenance Request', {
 		frm.trigger('autofill_employee_details');
 		frm.trigger('update_maintenance_type_options');
 		frm.trigger('set_section_visibilities');
-		if (frm.is_new() && !frm.doc.employee) {
-			frm.trigger('auto_set_logged_in_employee');
-		}
-	},
-
-	auto_set_logged_in_employee: function(frm) {
-		if (frm.is_new() && !frm.doc.employee) {
-			frappe.call({
-				method: 'maintenance_frappe.maintenance_management.doctype.maintenance_request.maintenance_request.get_logged_in_employee',
-				callback: function(r) {
-					if (r.message && r.message.name) {
-						frm.set_value('employee', r.message.name);
-					}
-				}
-			});
-		}
 	},
 
 	autofill_employee_details: function(frm) {
 		if (frm.is_new()) {
-			if (!frm.doc.request_date) {
+			if (!frm.doc.request_date && frm.fields_dict.request_date) {
 				frm.set_value('request_date', frappe.datetime.get_today());
 			}
 			if (!frm.doc.employee) {
@@ -119,14 +78,17 @@ frappe.ui.form.on('Maintenance Request', {
 					callback: function(r) {
 						if (r.message) {
 							let d = r.message;
-							if (d.employee) {
+							if (d.employee && frm.fields_dict.employee) {
 								frm.set_value('employee', d.employee);
 							}
-							if (d.employee_name && !frm.doc.employee_name) {
+							if (d.employee_name && !frm.doc.employee_name && frm.fields_dict.employee_name) {
 								frm.set_value('employee_name', d.employee_name);
 							}
-							if (d.department && !frm.doc.department) {
+							if (d.department && !frm.doc.department && frm.fields_dict.department) {
 								frm.set_value('department', d.department);
+							}
+							if (d.unit_head && !frm.doc.unit_head && frm.fields_dict.unit_head) {
+								frm.set_value('unit_head', d.unit_head);
 							}
 							frm.trigger('set_field_states');
 						}
@@ -138,16 +100,10 @@ frappe.ui.form.on('Maintenance Request', {
 
 	ownership_type: function(frm) {
 		frm.trigger('setup_queries');
+		frm.trigger('set_section_visibilities');
 	},
 
 	maintenance_type: function(frm) {
-		if (frm.doc.category) {
-			frappe.db.get_value('Maintenance Category', frm.doc.category, 'maintenance_type').then(r => {
-				if (r && r.message && r.message.maintenance_type && r.message.maintenance_type !== frm.doc.maintenance_type) {
-					frm.set_value('category', null);
-				}
-			});
-		}
 		frm.trigger('setup_queries');
 	},
 
@@ -215,23 +171,37 @@ frappe.ui.form.on('Maintenance Request', {
 				},
 				callback: function(r) {
 					if (r.message) {
-						if (r.message.employee_name) {
+						if (r.message.employee_name && frm.fields_dict.employee_name) {
 							frm.set_value('employee_name', r.message.employee_name);
 						}
-						if (r.message.department) {
+						if (r.message.department && frm.fields_dict.department) {
 							frm.set_value('department', r.message.department);
 						}
 						if (r.message.user_id) {
-							frm.set_value('manager', r.message.user_id);
+							if (frm.fields_dict.unit_head) {
+								frm.set_value('unit_head', r.message.user_id);
+							}
+							if (frm.fields_dict.manager) {
+								frm.set_value('manager', r.message.user_id);
+							}
 						}
 						frm.trigger('set_field_states');
 					}
 				}
 			});
 		} else {
-			frm.set_value('employee_name', '');
-			frm.set_value('department', '');
+			if (frm.fields_dict.employee_name) {
+				frm.set_value('employee_name', '');
+			}
+			if (frm.fields_dict.department) {
+				frm.set_value('department', '');
+			}
 		}
+	},
+
+	unit_head: function(frm) {
+		frm.trigger('set_field_states');
+		frm.trigger('set_section_visibilities');
 	},
 
 	manager: function(frm) {
@@ -259,42 +229,47 @@ frappe.ui.form.on('Maintenance Request', {
 		if (frm.doc.equipment) {
 			frappe.db.get_doc('Equipment', frm.doc.equipment).then(eq => {
 				if (eq) {
-					if (eq.equipment_name) {
+					if (eq.equipment_name && frm.fields_dict.equipment_name) {
 						frm.set_value('equipment_name', eq.equipment_name);
 					}
-					if (eq.location) {
-						frm.set_value('equipment_location', eq.location);
-						if (!frm.doc.location) {
-							frm.set_value('location', eq.location);
+					let loc = eq.used_in_location || eq.location;
+					if (loc) {
+						if (frm.fields_dict.equipment_location) {
+							frm.set_value('equipment_location', loc);
+						}
+						if (frm.fields_dict.location && !frm.doc.location) {
+							frm.set_value('location', loc);
 						}
 					}
 					if (frm.fields_dict.asset && eq.asset_id && !frm.doc.asset) {
 						frm.set_value('asset', eq.asset_id);
 					}
-					if (!frm.doc.equipment_category && eq.equipment_category) {
+					if (!frm.doc.equipment_category && eq.equipment_category && frm.fields_dict.equipment_category) {
 						frm.set_value('equipment_category', eq.equipment_category);
 					}
-					if (!frm.doc.maintenance_type && eq.maintenance_type) {
+					if (!frm.doc.maintenance_type && eq.maintenance_type && frm.fields_dict.maintenance_type) {
 						frm.set_value('maintenance_type', eq.maintenance_type);
 					}
 				}
 			});
 		} else {
-			frm.set_value('equipment_name', '');
+			if (frm.fields_dict.equipment_name) {
+				frm.set_value('equipment_name', '');
+			}
 		}
 	},
 
 	set_section_visibilities: function(frm) {
 		/**
-		 * Four Role-based Visibility Tiers:
-		 *   1. Maintenance Manager: Full system access & control over all fields/sections.
-		 *   2. Maintenance User (Technician): Work execution, work logs, parts used & resolution editable.
-		 *   3. Manager : Department/Manager review, approval & assignment fields.
-		 *   4. Employee (Employee Portal):
-		 *      Visible: title, equipment_category (Category), issue_category (Issue Category),
-		 *               request_date, responsible_person (Responsible), description
-		 *      Hidden:  employee (internal link), ownership_type, maintenance_type, status,
-		 *               cost totals, technical/approval sections
+		 * Role-based Visibility Tiers:
+		 *   1. Full Access (Admin, System Manager, Maintenance Manager, Maintenance User, Manager, Technician):
+		 *      Full view of all sections and fields.
+		 *   2. Employee:
+		 *      Visible: Title, Description, Maintenance Details (Employee, Employee Name, Department,
+		 *               Request Date, Category, Priority, Equipment, Equipment Name, Issue Category,
+		 *               Ownership Type, Maintenance Type).
+		 *      Hidden:  Internal cost totals, workflow tables, and technical/approval sections
+		 *               (Approval & Assignment, Diagnosis, Work Details, Resolution).
 		 */
 		let user_roles = frappe.user_roles || [];
 		let current_user = frappe.session.user;
@@ -306,45 +281,68 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('Maintenance User') ||
 			user_roles.includes('Manager') ||
 			user_roles.includes('Technician') ||
-			(frm.doc.manager && current_user === frm.doc.manager)
+			(frm.doc.manager && current_user === frm.doc.manager) ||
+			(frm.doc.unit_head && current_user === frm.doc.unit_head)
 		);
 
 		let employee_only = !is_full_access;
 
-		// ── Fields hidden for Employee-only ─────────────────────────────────────
-		['employee', 'ownership_type', 'maintenance_type', 'status',
-		 'total_parts_cost', 'total_labour_cost', 'total_maintenance_cost'
+		// ── Core Sections: Always visible to all users ──────────────────────────
+		if (frm.fields_dict.section_maintenance_details) {
+			frm.set_df_property('section_maintenance_details', 'hidden', 0);
+		}
+		if (frm.fields_dict.section_equipment_details) {
+			frm.set_df_property('section_equipment_details', 'hidden', 0);
+		}
+
+		// ── Fields visible on the Maintenance Request form ──────────────────────
+		[
+			'title', 'description', 'employee', 'employee_name', 'department',
+			'request_date', 'equipment_category', 'priority', 'equipment',
+			'equipment_name', 'issue_category', 'ownership_type', 'maintenance_type'
 		].forEach(function(f) {
-			frm.set_df_property(f, 'hidden', employee_only ? 1 : 0);
+			if (frm.fields_dict[f]) {
+				frm.set_df_property(f, 'hidden', 0);
+			}
 		});
 
-		// ── Fields visible for Employee Portal ──────────────────────────────────
-		['title', 'equipment_category', 'issue_category', 'priority',
-		 'employee_name', 'department', 'request_date', 'responsible_person', 'description'
-		].forEach(function(f) {
-			frm.set_df_property(f, 'hidden', 0);
-		});
-
-		// ── Sections hidden for Employee-only ────────────────────────────────────
-		['section_maintenance_details',
-		 'section_equipment_details',
-		 'section_non_organizational_details',
-		 'section_approval_assignment',
-		 'section_diagnosis',
-		 'section_work_details',
-		 'section_resolution',
-		 'section_verification',
-		 'section_closure'
+		// ── Technical / Workflow Sections: Hidden for Employee-only ─────────────
+		[
+			'section_approval_assignment',
+			'section_diagnosis',
+			'section_work_details',
+			'section_resolution',
+			'section_verification',
+			'section_closure'
 		].forEach(function(section) {
-			frm.set_df_property(section, 'hidden', employee_only ? 1 : 0);
+			if (frm.fields_dict[section]) {
+				frm.set_df_property(section, 'hidden', employee_only ? 1 : 0);
+			}
 		});
 
-		// Status history table always hidden for employee-only
-		frm.set_df_property('status_history', 'hidden', employee_only ? 1 : 0);
+		// ── Internal cost totals & tables hidden for Employee-only ──────────────
+		[
+			'status_history',
+			'total_parts_cost',
+			'total_labour_cost',
+			'total_maintenance_cost'
+		].forEach(function(f) {
+			if (frm.fields_dict[f]) {
+				frm.set_df_property(f, 'hidden', employee_only ? 1 : 0);
+			}
+		});
 
-		// ── Requester fields: read-only for everyone (auto-filled) ───────────────
-		['employee_name', 'department', 'request_date', 'responsible_person'].forEach(function(f) {
-			frm.set_df_property(f, 'read_only', 1);
+		// ── Non-Organizational Details Section ──────────────────────────────────
+		if (frm.fields_dict.section_non_organizational_details) {
+			let show_non_org = (frm.doc.ownership_type === 'Non-Organizational Asset');
+			frm.set_df_property('section_non_organizational_details', 'hidden', show_non_org ? 0 : 1);
+		}
+
+		// ── Requester fields: read-only for employees (auto-filled) ──────────────
+		['employee', 'employee_name', 'department', 'request_date', 'responsible_person'].forEach(function(f) {
+			if (frm.fields_dict[f]) {
+				frm.set_df_property(f, 'read_only', 1);
+			}
 		});
 
 		// ── Apply technician-specific restrictions on top of the above ───────────
@@ -391,7 +389,9 @@ frappe.ui.form.on('Maintenance Request', {
 				'approval_notes', 'assigned_to', 'assigned_date'
 			];
 			approval_assignment_fields.forEach(function(fieldname) {
-				frm.set_df_property(fieldname, 'read_only', 1);
+				if (frm.fields_dict[fieldname]) {
+					frm.set_df_property(fieldname, 'read_only', 1);
+				}
 			});
 
 			// --- Diagnosis section: read-only for technician ---
@@ -427,7 +427,8 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('System Manager') ||
 			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
-			(frm.doc.manager && frappe.session.user === frm.doc.manager)
+			(frm.doc.manager && frappe.session.user === frm.doc.manager) ||
+			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
 		);
 		// details are read-only so users cannot alter their logged-in requester info
 		frm.set_df_property('employee', 'read_only', 1);
@@ -455,7 +456,8 @@ frappe.ui.form.on('Maintenance Request', {
 			user_roles.includes('System Manager') ||
 			user_roles.includes('Manager') ||
 			user_roles.includes('Maintenance Manager') ||
-			(frm.doc.manager && frappe.session.user === frm.doc.manager)
+			(frm.doc.manager && frappe.session.user === frm.doc.manager) ||
+			(frm.doc.unit_head && frappe.session.user === frm.doc.unit_head)
 		);
 
 		// 1. Pending / Hold Approval Actions - only for Maintenance Manager, System Manager, Admin, or assigned Manager

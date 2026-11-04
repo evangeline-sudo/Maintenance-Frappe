@@ -69,29 +69,7 @@ def sync_maintenance_dashboard_metrics():
 		},
 		{
 			"doctype": "Number Card",
-			"name": "Total Maintenance Requests",
-			"label": "Total Requests",
-			"function": "Count",
-			"document_type": "Maintenance Request",
-			"filters_json": "[]",
-			"is_public": 1,
-			"is_standard": 1,
-			"module": "Maintenance Management",
-		},
-		{
-			"doctype": "Number Card",
 			"name": "Open Requests",
-			"label": "Open Requests",
-			"function": "Count",
-			"document_type": "Maintenance Request",
-			"filters_json": '[["Maintenance Request", "status", "in", ["Draft", "Submitted", "Approved", "In Progress"]]]',
-			"is_public": 1,
-			"is_standard": 1,
-			"module": "Maintenance Management",
-		},
-		{
-			"doctype": "Number Card",
-			"name": "Open Maintenance Requests",
 			"label": "Open Requests",
 			"function": "Count",
 			"document_type": "Maintenance Request",
@@ -125,17 +103,6 @@ def sync_maintenance_dashboard_metrics():
 		{
 			"doctype": "Number Card",
 			"name": "Maintenance Teams",
-			"label": "Maintenance Teams",
-			"function": "Count",
-			"document_type": "Maintenance Team",
-			"filters_json": "[]",
-			"is_public": 1,
-			"is_standard": 1,
-			"module": "Maintenance Management",
-		},
-		{
-			"doctype": "Number Card",
-			"name": "Total Maintenance Teams",
 			"label": "Maintenance Teams",
 			"function": "Count",
 			"document_type": "Maintenance Team",
@@ -253,9 +220,29 @@ def after_migrate_setup():
 	try:
 		ensure_page_permissions()
 		sync_maintenance_dashboard_metrics()
+		fix_work_order_tools_and_checklists()
 		cleanup_redundant_desktop_icons_and_workspaces()
 	except Exception as e:
 		frappe.log_error(f"Error in after_migrate_setup: {e}")
+
+
+def fix_work_order_tools_and_checklists():
+	"""Ensure Work Order tools_used points to child table 'Work Order Tool' and tabDocField is synced."""
+	try:
+		if frappe.db.table_exists("DocField"):
+			frappe.db.sql("""
+				UPDATE `tabDocField`
+				SET options = 'Work Order Tool'
+				WHERE parent = 'Work Order' AND fieldname = 'tools_used'
+			""")
+		if frappe.db.table_exists("Custom Field"):
+			frappe.db.sql("""
+				UPDATE `tabCustom Field`
+				SET options = 'Work Order Tool'
+				WHERE dt = 'Work Order' AND fieldname = 'tools_used'
+			""")
+	except Exception as e:
+		frappe.log_error(f"Error updating Work Order child table options: {e}")
 
 
 def after_install_setup():
@@ -291,7 +278,12 @@ def cleanup_redundant_desktop_icons_and_workspaces():
 		""")
 		frappe.db.sql("""
 			UPDATE `tabDesktop Icon`
-			SET hidden = 0
+			SET hidden = 0,
+			    icon_type = 'Link',
+			    link_type = 'Workspace Sidebar',
+			    link_to = 'Maintenance',
+			    link = '/desk/maintenance',
+			    sidebar = NULL
 			WHERE name = 'Maintenance' OR label = 'Maintenance'
 		""")
 		frappe.db.sql("""
@@ -306,9 +298,18 @@ def cleanup_redundant_desktop_icons_and_workspaces():
 		""")
 		frappe.db.sql("""
 			UPDATE `tabWorkspace`
-			SET is_hidden = 0
+			SET is_hidden = 0,
+			    title = 'Maintenance',
+			    label = 'Maintenance',
+			    icon = 'tool'
 			WHERE name = 'Maintenance'
 		""")
+		if frappe.db.table_exists("Workspace Sidebar Item"):
+			frappe.db.sql("""
+				UPDATE `tabWorkspace Sidebar Item`
+				SET label = 'Maintenance', route = '/desk/maintenance'
+				WHERE parent = 'Maintenance' AND link_to = 'Maintenance' AND link_type = 'Workspace'
+			""")
 		frappe.db.sql("""
 			DELETE FROM `tabWorkspace Sidebar`
 			WHERE name IN ('Maintenance Home', 'Maintenance Dashboard', 'Maintenance Management')
@@ -335,12 +336,12 @@ def cleanup_redundant_desktop_icons_and_workspaces():
 					"bg_color": "blue",
 					"hidden": 0,
 					"icon": "tool",
-					"icon_type": "App",
-					"link": "/app/maintenance",
+					"icon_type": "Link",
+					"link": "/desk/maintenance",
 					"link_to": "Maintenance",
 					"link_type": "Workspace Sidebar",
 					"standard": 1,
-					"sidebar": "Maintenance",
+					"sidebar": None,
 					"restrict_removal": 0,
 					"roles": [{"role": r} for r in target_desktop_roles]
 				})
@@ -414,15 +415,16 @@ def filter_employee_sidebar(bootinfo):
 		"hidden": 0,
 		"icon": "tool",
 		"icon_image": "",
-		"icon_type": "App",
+		"icon_type": "Link",
 		"idx": 0,
-		"link": "/app/maintenance",
+		"link": "/desk/maintenance",
 		"link_to": "Maintenance",
 		"link_type": "Workspace Sidebar",
 		"logo_url": "",
 		"parent_icon": None,
 		"restrict_removal": 0,
 		"standard": 1,
+		"sidebar": None,
 		"roles": target_roles_list,
 	}
 
@@ -447,6 +449,11 @@ def filter_employee_sidebar(bootinfo):
 						doc = frappe.get_cached_doc("Desktop Icon", "Maintenance")
 						doc_dict = doc.as_dict()
 						doc_dict["hidden"] = 0
+						doc_dict["icon_type"] = "Link"
+						doc_dict["link"] = "/desk/maintenance"
+						doc_dict["link_to"] = "Maintenance"
+						doc_dict["link_type"] = "Workspace Sidebar"
+						doc_dict["sidebar"] = None
 						doc_dict["roles"] = target_roles_list
 						bootinfo[key]["Maintenance"] = doc_dict
 						has_maintenance = True
@@ -464,6 +471,11 @@ def filter_employee_sidebar(bootinfo):
 				):
 					if isinstance(v, dict):
 						v["hidden"] = 0
+						v["icon_type"] = "Link"
+						v["link"] = "/desk/maintenance"
+						v["link_to"] = "Maintenance"
+						v["link_type"] = "Workspace Sidebar"
+						v["sidebar"] = None
 						v["roles"] = target_roles_list
 
 		elif isinstance(bootinfo[key], list):
@@ -486,6 +498,11 @@ def filter_employee_sidebar(bootinfo):
 						doc = frappe.get_cached_doc("Desktop Icon", "Maintenance")
 						doc_dict = doc.as_dict()
 						doc_dict["hidden"] = 0
+						doc_dict["icon_type"] = "Link"
+						doc_dict["link"] = "/desk/maintenance"
+						doc_dict["link_to"] = "Maintenance"
+						doc_dict["link_type"] = "Workspace Sidebar"
+						doc_dict["sidebar"] = None
 						doc_dict["roles"] = target_roles_list
 						bootinfo[key].append(doc_dict)
 						has_maintenance = True
@@ -501,7 +518,21 @@ def filter_employee_sidebar(bootinfo):
 					or str(v.get("label") or "").lower() == "maintenance"
 				):
 					v["hidden"] = 0
+					v["icon_type"] = "Link"
+					v["link"] = "/desk/maintenance"
+					v["link_to"] = "Maintenance"
+					v["link_type"] = "Workspace Sidebar"
+					v["sidebar"] = None
 					v["roles"] = target_roles_list
+
+	# Ensure Maintenance workspace in bootinfo is unhidden and titled 'Maintenance' so route is /desk/maintenance
+	if "workspaces" in bootinfo and isinstance(bootinfo["workspaces"], dict):
+		for p in bootinfo["workspaces"].get("pages", []):
+			if isinstance(p, dict) and p.get("name") == "Maintenance":
+				p["title"] = "Maintenance"
+				p["label"] = "Maintenance"
+				p["icon"] = "tool"
+				p["is_hidden"] = 0
 
 	# Remove any redundant app card from bootinfo['apps']
 	if "apps" in bootinfo and isinstance(bootinfo["apps"], list):
@@ -528,6 +559,13 @@ def filter_employee_sidebar(bootinfo):
 				if "maintenance" in str(s_name).lower() or str(sidebar.get("module") or "").lower() in ("maintenance", "maintenance management"):
 					sidebar["items"] = list(master_items)
 					sidebar["title"] = "Maintenance"
+
+		for s_name, sidebar in ws_items.items():
+			if "maintenance" in str(s_name).lower() or str(sidebar.get("module") or "").lower() in ("maintenance", "maintenance management"):
+				for item in sidebar.get("items", []):
+					if isinstance(item, dict) and item.get("link_to") == "Maintenance" and item.get("link_type") == "Workspace":
+						item["label"] = "Maintenance"
+						item["route"] = "/desk/maintenance"
 
 	roles = set(frappe.get_roles())
 	elevated_roles = {
@@ -605,7 +643,7 @@ def assign_maintenance_request(request_id, technician):
 	Only Admin can assign
 	"""
 	request_doc = _get_authorized_request_doc(request_id, "write", "assign")
-	request_doc.assign_to_technician(technician)
+	request_doc.assign_technician(technician=technician)
 	return {"status": "success", "message": f"Request {request_id} assigned to {technician}"}
 
 
@@ -616,7 +654,7 @@ def start_maintenance_work(request_id):
 	Only assigned technician can start work
 	"""
 	request_doc = _get_authorized_request_doc(request_id, "write", "start work on")
-	request_doc.start_work()
+	request_doc.start_maintenance_work()
 	return {"status": "success", "message": f"Work started on request {request_id}"}
 
 
@@ -626,7 +664,12 @@ def record_diagnosis(request_id, diagnosis_notes, estimated_cost=0, estimated_co
 	API endpoint to record technician diagnosis and cost/time estimation
 	"""
 	request_doc = _get_authorized_request_doc(request_id, "write", "update diagnosis on")
-	request_doc.save_diagnosis(diagnosis_notes, float(estimated_cost or 0), estimated_completion_time)
+	request_doc.diagnosis_notes = diagnosis_notes
+	if estimated_cost:
+		request_doc.estimated_cost = float(estimated_cost or 0)
+	if estimated_completion_time:
+		request_doc.estimated_completion_time = estimated_completion_time
+	request_doc.save(ignore_permissions=True)
 	return {"status": "success", "message": f"Diagnosis recorded for request {request_id}"}
 
 
@@ -637,7 +680,7 @@ def mark_maintenance_resolved(request_id, resolution_notes="", root_cause=""):
 	Only assigned technician can mark as resolved
 	"""
 	request_doc = _get_authorized_request_doc(request_id, "write", "mark resolved")
-	request_doc.mark_resolved(resolution_notes, root_cause)
+	request_doc.resolve_maintenance(resolution_details=resolution_notes, failure_cause=root_cause)
 	return {"status": "success", "message": f"Request {request_id} marked as resolved"}
 
 
@@ -647,7 +690,9 @@ def verify_maintenance_request(request_id, verification_status, feedback=""):
 	API endpoint to record verification by Supervisor / Requester
 	"""
 	request_doc = _get_authorized_request_doc(request_id, "write", "verify")
-	request_doc.verify_request(verification_status, feedback, frappe.session.user)
+	request_doc.verification_status = verification_status
+	request_doc.verification_feedback = feedback
+	request_doc.verify_and_close(remarks=feedback)
 	return {"status": "success", "message": f"Verification saved for request {request_id}"}
 
 
@@ -657,7 +702,7 @@ def close_maintenance_request(request_id, closing_remarks="", verified_by=""):
 	if not frappe.has_permission("Maintenance Request", "write", request_doc):
 		frappe.throw(_("You don't have permission to close this request"))
 
-	request_doc.close_request(closing_remarks, verified_by)
+	request_doc.verify_and_close(remarks=closing_remarks)
 	return {"status": "success", "message": f"Request {request_id} closed"}
 
 
@@ -829,41 +874,183 @@ def process_preventive_maintenance_due():
 	"""
 	Scheduled job: Scans active Preventive Maintenance Plans due today or earlier and generates Work Orders
 	"""
-	from frappe.utils import getdate
-	today = getdate()
-	due_plans = frappe.get_all("Preventive Maintenance Plan", filters={
-		"status": "Active",
-		"next_due_date": ["<=", today]
-	})
-	
-	generated = []
-	for p in due_plans:
-		plan_doc = frappe.get_doc("Preventive Maintenance Plan", p.name)
-		wo_name = plan_doc.generate_work_order()
-		if wo_name:
-			generated.append(wo_name)
-	return generated
+	from maintenance_frappe.maintenance_management.doctype.preventive_maintenance_plan.preventive_maintenance_plan import process_due_plans
+	return process_due_plans()
 
 @frappe.whitelist()
 def check_contract_expiries_and_stock():
 	"""
-	Scheduled job: Check low stock spare parts and expiring warranties/contracts
+	Scheduled job: Check low stock spare parts and expiring warranties/contracts safely if tables exist
 	"""
 	from frappe.utils import add_days, getdate
 	expiring_date = add_days(getdate(), 30)
-	
-	expiring_contracts = frappe.get_all("Maintenance Contract", filters={
-		"status": "Active",
-		"end_date": ["<=", expiring_date]
-	})
-	
-	low_stock = frappe.db.sql("""
-		SELECT name, part_name, quantity_available, minimum_stock
-		FROM `tabMaintenance Spare Part`
-		WHERE quantity_available <= minimum_stock
-	""", as_dict=True)
+
+	expiring_contracts = []
+	if frappe.db.table_exists("Maintenance Contract"):
+		expiring_contracts = frappe.get_all("Maintenance Contract", filters={
+			"status": "Active",
+			"end_date": ["<=", expiring_date]
+		})
+
+	low_stock = []
+	if frappe.db.table_exists("Maintenance Spare Part"):
+		low_stock = frappe.db.sql("""
+			SELECT name, part_name, quantity_available, minimum_stock
+			FROM `tabMaintenance Spare Part`
+			WHERE quantity_available <= minimum_stock
+		""", as_dict=True)
 
 	return {
 		"expiring_contracts": len(expiring_contracts),
 		"low_stock_parts": len(low_stock)
+	}
+
+
+@frappe.whitelist()
+def get_employee_workspace_approvals(category="all"):
+	"""
+	API endpoint returning maintenance approval requests relevant to the current logged-in employee:
+	- 'pending': requests awaiting action or review
+	- 'approved': requests that have already been approved
+	- 'all': both categories separated
+	"""
+	user = frappe.session.user
+	if not user or user == "Guest":
+		return {"pending": [], "approved": [], "counts": {"pending": 0, "approved": 0, "total": 0}}
+
+	from frappe.utils import format_date, strip_html
+
+	user_roles = frappe.get_roles(user)
+	is_admin = "System Manager" in user_roles or "Administrator" == user
+	is_manager = "Manager" in user_roles or "Maintenance Manager" in user_roles
+
+	# Identify linked employee
+	emp = None
+	try:
+		from maintenance_frappe.maintenance_management.doctype.maintenance_request.maintenance_request import get_logged_in_employee
+		emp = get_logged_in_employee(user)
+	except Exception:
+		emp = None
+
+	employee_id = emp.get("name") if emp else None
+	employee_name = emp.get("employee_name") if emp else (frappe.db.get_value("User", user, "full_name") or user)
+
+	# Build base conditions based on employee authorization:
+	# 1. Requests raised by this employee (employee == employee_id or owner == user)
+	# 2. Requests where this user/employee is the approver/manager (unit_head == user or manager == user or unit_head == employee_id)
+	# 3. If System Manager / Admin, can see all requests
+	if not is_admin:
+		auth_conditions = []
+		if employee_id:
+			auth_conditions.append(f"`tabMaintenance Request`.`employee` = {frappe.db.escape(employee_id)}")
+		auth_conditions.append(f"`tabMaintenance Request`.`owner` = {frappe.db.escape(user)}")
+
+		if is_manager:
+			auth_conditions.append(f"`tabMaintenance Request`.`unit_head` = {frappe.db.escape(user)}")
+			if employee_id:
+				auth_conditions.append(f"`tabMaintenance Request`.`unit_head` = {frappe.db.escape(employee_id)}")
+			auth_conditions.append("`tabMaintenance Request`.`approval_status` = 'Pending'")
+
+		where_clause = " OR ".join(auth_conditions)
+	else:
+		where_clause = "1=1"
+
+	sql_query = f"""
+		SELECT
+			name,
+			title,
+			description,
+			request_date,
+			creation,
+			status,
+			approval_status,
+			equipment_category,
+			equipment,
+			equipment_name,
+			employee,
+			employee_name,
+			department,
+			unit_head,
+			approval_date,
+			approval_notes,
+			priority
+		FROM `tabMaintenance Request`
+		WHERE ({where_clause})
+		ORDER BY creation DESC
+	"""
+	raw_records = frappe.db.sql(sql_query, as_dict=True)
+
+	pending_list = []
+	approved_list = []
+
+	# Pre-fetch user full names for approver details
+	user_names = {}
+
+	for row in raw_records:
+		req_date = row.request_date or row.creation
+		formatted_date = format_date(req_date) if req_date else ""
+		formatted_approval_date = format_date(row.approval_date) if row.approval_date else ""
+
+		desc = strip_html(row.description or "")
+		if len(desc) > 130:
+			desc = desc[:127] + "..."
+
+		approver_id = row.unit_head
+		approver_display = "Pending Assignment"
+		if approver_id:
+			if approver_id not in user_names:
+				full_name = frappe.db.get_value("User", approver_id, "full_name")
+				if not full_name and frappe.db.exists("Employee", approver_id):
+					full_name = frappe.db.get_value("Employee", approver_id, "employee_name")
+				user_names[approver_id] = full_name or approver_id
+			approver_display = user_names[approver_id]
+
+		p_val = float(row.priority or 0)
+		if p_val >= 5:
+			p_label, p_color = "Critical", "danger"
+		elif p_val >= 3:
+			p_label, p_color = "High", "warning"
+		elif p_val >= 2:
+			p_label, p_color = "Medium", "info"
+		else:
+			p_label, p_color = "Low", "secondary"
+
+		can_act = False
+		if is_manager and row.approval_status == "Pending":
+			if row.unit_head in [user, employee_id] or not row.unit_head:
+				can_act = True
+
+		item = {
+			"name": row.name,
+			"title": row.title or row.name,
+			"description": desc or "No description provided.",
+			"date": formatted_date,
+			"status": row.status or "Submitted",
+			"approval_status": row.approval_status or "Pending",
+			"equipment_category": row.equipment_category or "Other",
+			"equipment_name": row.equipment_name or row.equipment or "General Facility",
+			"employee_name": row.employee_name or "Employee",
+			"department": row.department or "-",
+			"approver": approver_display,
+			"approval_date": formatted_approval_date,
+			"priority": p_label,
+			"priority_color": p_color,
+			"can_approve": can_act
+		}
+
+		if row.approval_status == "Approved" or row.status in ["Approved", "Assigned", "In Progress", "Resolved", "Closed"]:
+			approved_list.append(item)
+		elif row.approval_status == "Pending" or row.status in ["Submitted", "Pending Approval", "Pending", "Draft"]:
+			pending_list.append(item)
+
+	return {
+		"employee_name": employee_name,
+		"is_manager": is_manager,
+		"pending": pending_list,
+		"approved": approved_list,
+		"counts": {
+			"pending": len(pending_list),
+			"approved": len(approved_list),
+			"total": len(pending_list) + len(approved_list)
+		}
 	}

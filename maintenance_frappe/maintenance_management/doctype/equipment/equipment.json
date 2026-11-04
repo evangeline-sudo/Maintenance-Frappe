@@ -40,7 +40,6 @@
   "amc_available",
   "column_break_basic",
   "equipment_type",
-  "product_type",
   "maintenance_type",
   "asset_id",
   "ownership",
@@ -215,12 +214,6 @@
    "fieldname": "equipment_type",
    "fieldtype": "Data",
    "label": "Equipment Type"
-  },
-  {
-   "fieldname": "product_type",
-   "fieldtype": "Link",
-   "label": "Product Type",
-   "options": "Product Type Value"
   },
   {
    "fieldname": "maintenance_type",

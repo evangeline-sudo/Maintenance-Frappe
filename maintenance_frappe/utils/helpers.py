@@ -7,7 +7,13 @@ def get_pending_approval_requests(unit_head=None):
 	"""Get maintenance requests pending approval for a manager"""
 	filters = {"approval_status": "Pending"}
 	if unit_head:
-		filters["manager"] = unit_head
+		has_manager = False
+		try:
+			has_manager = frappe.db.has_column("Maintenance Request", "manager")
+		except Exception:
+			pass
+		field = "manager" if has_manager else "unit_head"
+		filters[field] = unit_head
 
 	return frappe.get_list(
 		"Maintenance Request",
@@ -112,64 +118,24 @@ def get_overdue_requests(days=7):
 
 
 def get_request_statistics():
-	"""Get overall maintenance request statistics"""
-	total = frappe.db.count("Maintenance Request")
+	"""Get overall maintenance request statistics reusing centralized dashboard aggregation"""
+	from maintenance_frappe.api.maintenance import get_maintenance_dashboard_data
+	dash_data = get_maintenance_dashboard_data()
 
-	stats = {
-		"total": total,
-		"by_status": {},
-		"by_priority": {},
-		"by_type": {},
-		"by_ownership": {},
-		"by_equipment_category": {}
+	def _to_dict(rows, key):
+		return {r[key]: r["count"] for r in rows if r.get(key)}
+
+	return {
+		"total": dash_data.get("total_requests", 0),
+		"by_status": _to_dict(dash_data.get("by_status", []), "status"),
+		"by_priority": _to_dict(dash_data.get("by_priority", []), "priority"),
+		"by_type": _to_dict(dash_data.get("by_type", []), "maintenance_type"),
+		"by_ownership": _to_dict(
+			frappe.db.get_list("Maintenance Request", fields=["ownership_type", "count(*) as count"], group_by="ownership_type"),
+			"ownership_type"
+		),
+		"by_equipment_category": _to_dict(dash_data.get("by_equipment_category", []), "equipment_category"),
 	}
-
-	# Status breakdown
-	status_data = frappe.db.get_list(
-		"Maintenance Request",
-		fields=["status", "count(*) as count"],
-		group_by="status"
-	)
-	for row in status_data:
-		stats["by_status"][row.status] = row.count
-
-	# Priority breakdown
-	priority_data = frappe.db.get_list(
-		"Maintenance Request",
-		fields=["priority", "count(*) as count"],
-		group_by="priority"
-	)
-	for row in priority_data:
-		stats["by_priority"][row.priority] = row.count
-
-	# Type breakdown
-	type_data = frappe.db.get_list(
-		"Maintenance Request",
-		fields=["maintenance_type", "count(*) as count"],
-		group_by="maintenance_type"
-	)
-	for row in type_data:
-		stats["by_type"][row.maintenance_type] = row.count
-
-	# Ownership breakdown
-	ownership_data = frappe.db.get_list(
-		"Maintenance Request",
-		fields=["ownership_type", "count(*) as count"],
-		group_by="ownership_type"
-	)
-	for row in ownership_data:
-		stats["by_ownership"][row.ownership_type] = row.count
-
-	# Equipment Category breakdown
-	category_data = frappe.db.get_list(
-		"Maintenance Request",
-		fields=["equipment_category", "count(*) as count"],
-		group_by="equipment_category"
-	)
-	for row in category_data:
-		stats["by_equipment_category"][row.equipment_category] = row.count
-
-	return stats
 
 
 def get_total_maintenance_costs(ownership_type=None):
@@ -221,126 +187,24 @@ def get_resolution_time_average(maintenance_type=None):
 
 
 def send_approval_notification(request_id):
-	"""Send notification to Manager for approval"""
+	"""Send notification to Manager for approval using standard email templates"""
 	request_doc = frappe.get_doc("Maintenance Request", request_id)
-
-	target_manager = getattr(request_doc, "manager", None) or getattr(request_doc, "unit_head", None)
-	if not target_manager:
-		return
-
-	subject = f"Maintenance Request {request_id} - Approval Required"
-	message = f"""
-	A new maintenance request requires your approval:
-
-	Request: {request_id}
-	Title: {request_doc.title}
-	Ownership: {request_doc.ownership_type}
-	Equipment Category: {request_doc.equipment_category}
-	Priority: {request_doc.priority}
-	Employee: {request_doc.employee_name}
-	Department: {request_doc.department}
-
-	Please review and approve or reject this request.
-	"""
-
-	frappe.sendmail(
-		recipients=[target_manager],
-		subject=subject,
-		message=message
-	)
+	request_doc.send_status_notification("Maintenance Approval Required")
 
 
 def send_assignment_notification(request_id):
-	"""Send notification to Technician for assignment"""
+	"""Send notification to Technician for assignment using standard email templates"""
 	request_doc = frappe.get_doc("Maintenance Request", request_id)
-
-	if not request_doc.assigned_to:
-		return
-
-	subject = f"Maintenance Request {request_id} - Assigned to You"
-	message = f"""
-	You have been assigned a new maintenance request:
-
-	Request: {request_id}
-	Title: {request_doc.title}
-	Ownership: {request_doc.ownership_type}
-	Equipment Category: {request_doc.equipment_category}
-	Priority: {request_doc.priority}
-	Employee: {request_doc.employee_name}
-	Department: {request_doc.department}
-
-	Please start work on this request.
-	"""
-
-	frappe.sendmail(
-		recipients=[request_doc.assigned_to],
-		subject=subject,
-		message=message
-	)
+	request_doc.send_status_notification("Maintenance Request Assigned")
 
 
 def send_resolution_notification(request_id):
-	"""Send notification to Employee that request is resolved"""
+	"""Send notification to Employee that request is resolved using standard email templates"""
 	request_doc = frappe.get_doc("Maintenance Request", request_id)
-
-	if not request_doc.employee:
-		return
-
-	user_email = frappe.db.get_value("Employee", request_doc.employee, "user_id")
-
-	if not user_email:
-		return
-
-	subject = f"Maintenance Request {request_id} - Resolved"
-	message = f"""
-	Your maintenance request has been resolved:
-
-	Request: {request_id}
-	Title: {request_doc.title}
-	Resolution Date: {request_doc.resolution_date}
-
-	Resolution Notes:
-	{request_doc.resolution_notes}
-
-	Your supervisor will verify and close this request.
-	"""
-
-	frappe.sendmail(
-		recipients=[user_email],
-		subject=subject,
-		message=message
-	)
+	request_doc.send_status_notification("Maintenance Work Resolved")
 
 
 def send_closure_notification(request_id):
-	"""Send notification to Employee that request is closed"""
+	"""Send notification to Employee that request is closed using standard email templates"""
 	request_doc = frappe.get_doc("Maintenance Request", request_id)
-
-	if not request_doc.employee:
-		return
-
-	user_email = frappe.db.get_value("Employee", request_doc.employee, "user_id")
-
-	if not user_email:
-		return
-
-	subject = f"Maintenance Request {request_id} - Closed"
-	message = f"""
-	Your maintenance request has been closed:
-
-	Request: {request_id}
-	Title: {request_doc.title}
-	Closed Date: {request_doc.closed_date}
-	Verified By: {request_doc.verified_by}
-
-	Closing Remarks:
-	{request_doc.closing_remarks}
-
-	Thank you for reporting this issue.
-	"""
-
-	frappe.sendmail(
-		recipients=[user_email],
-		subject=subject,
-		message=message
-	)
+	request_doc.send_status_notification("Maintenance Request Closed")

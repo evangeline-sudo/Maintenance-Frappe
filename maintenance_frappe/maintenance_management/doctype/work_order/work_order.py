@@ -12,6 +12,17 @@ class WorkOrder(Document):
 		super().__init__(*args, **kwargs)
 		self.flags.ignore_mandatory = True
 
+	def _load_child_table_from_db(self, fieldname, child_doctype):
+		"""Safely handle child table loading to prevent unknown column 'parent' crashes"""
+		if child_doctype == "Maintenance Tool":
+			child_doctype = "Work Order Tool"
+			if not hasattr(frappe, "db") or not frappe.db.table_exists("Work Order Tool"):
+				return []
+		try:
+			return super()._load_child_table_from_db(fieldname, child_doctype)
+		except Exception:
+			return []
+
 	def before_insert(self):
 		self.flags.ignore_mandatory = True
 
@@ -35,19 +46,43 @@ class WorkOrder(Document):
 	def sync_maintenance_request_details(self):
 		"""Auto-fetch unit and department details from linked Maintenance Request"""
 		if getattr(self, "maintenance_request", None) and frappe.db.exists("Maintenance Request", self.maintenance_request):
+			fields_to_fetch = ["department", "equipment"]
+			meta = frappe.get_meta("Maintenance Request")
+			if meta.has_field("custom_unit"):
+				fields_to_fetch.append("custom_unit")
+			if meta.has_field("maintenance_type"):
+				fields_to_fetch.append("maintenance_type")
+			if meta.has_field("priority"):
+				fields_to_fetch.append("priority")
+			if meta.has_field("description"):
+				fields_to_fetch.append("description")
+
 			mr = frappe.db.get_value(
 				"Maintenance Request",
 				self.maintenance_request,
-				["custom_unit", "department", "equipment"],
+				fields_to_fetch,
 				as_dict=True,
 			)
 			if mr:
-				if not getattr(self, "custom_unit", None) and mr.get("custom_unit"):
+				if hasattr(self, "custom_unit") and mr.get("custom_unit"):
 					self.custom_unit = mr.custom_unit
 				if not getattr(self, "department", None) and mr.get("department"):
 					self.department = mr.department
 				if not getattr(self, "equipment", None) and mr.get("equipment"):
 					self.equipment = mr.equipment
+				if not getattr(self, "maintenance_type", None) and mr.get("maintenance_type"):
+					valid_wo_types = [
+						"Corrective", "Preventive", "Predictive", "Emergency",
+						"Routine", "Breakdown", "Inspection", "Calibration", "Servicing"
+					]
+					if mr.maintenance_type in valid_wo_types:
+						self.maintenance_type = mr.maintenance_type
+					else:
+						self.maintenance_type = "Corrective"
+				if not getattr(self, "priority", None) and mr.get("priority"):
+					self.priority = mr.priority
+				if not getattr(self, "problem_description", None) and mr.get("description"):
+					self.problem_description = mr.description
 
 	def validate_equipment(self):
 		"""Auto-fetch equipment details if available"""

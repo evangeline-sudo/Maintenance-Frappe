@@ -7,14 +7,14 @@
  "hidden": 0,
  "icon": "tool",
  "icon_image": "",
- "icon_type": "App",
+ "icon_type": "Link",
  "idx": 0,
  "label": "Maintenance",
- "link": "/app/maintenance",
+ "link": "/desk/maintenance",
  "link_to": "Maintenance",
  "link_type": "Workspace Sidebar",
  "logo_url": "",
- "modified": "2026-11-03 10:25:00.000000",
+ "modified": "2026-11-03 20:45:00.000000",
  "modified_by": "Administrator",
  "name": "Maintenance",
  "owner": "Administrator",
@@ -39,6 +39,6 @@
    "role": "All"
   }
  ],
- "sidebar": "Maintenance",
+ "sidebar": null,
  "standard": 1
 }

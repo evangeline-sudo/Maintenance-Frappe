@@ -26,8 +26,8 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/maintenance_frappe/css/maintenance_frappe.css"
-# app_include_js = "/assets/maintenance_frappe/js/maintenance_frappe.js"
+app_include_css = "/assets/maintenance_frappe/css/maintenance_workspace.css"
+app_include_js = "/assets/maintenance_frappe/js/maintenance_workspace.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/maintenance_frappe/css/maintenance_frappe.css"
@@ -159,8 +159,7 @@ has_permission = {
 scheduler_events = {
 	"daily": [
 		"maintenance_frappe.api.maintenance.process_preventive_maintenance_due",
-		"maintenance_frappe.api.maintenance.check_contract_expiries_and_stock",
-		"maintenance_frappe.maintenance_management.doctype.preventive_maintenance_plan.preventive_maintenance_plan.process_due_plans"
+		"maintenance_frappe.api.maintenance.check_contract_expiries_and_stock"
 	]
 }
 
@@ -283,11 +282,11 @@ fixtures = [
 		]
 	},
 	{"dt": "Role", "filters": [["name", "in", ["Maintenance User", "Maintenance Manager", "Maintenance Technician", "Unit Head"]]]},
-	{"dt": "Workspace"},
-	{"dt": "Workspace Sidebar"},
-	{"dt": "Desktop Icon"},
-	{"dt": "Dashboard Chart"},
-	{"dt": "Number Card"}
+	{"dt": "Workspace", "filters": [["name", "in", ["Maintenance", "Maintenance Dashboard"]]]},
+	{"dt": "Workspace Sidebar", "filters": [["name", "=", "Maintenance"]]},
+	{"dt": "Desktop Icon", "filters": [["name", "=", "Maintenance"]]},
+	{"dt": "Dashboard Chart", "filters": [["module", "=", "Maintenance Management"]]},
+	{"dt": "Number Card", "filters": [["module", "=", "Maintenance Management"]]}
 ]
 
 

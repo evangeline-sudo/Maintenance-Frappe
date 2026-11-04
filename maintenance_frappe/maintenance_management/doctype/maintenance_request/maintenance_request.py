@@ -415,8 +415,6 @@ class MaintenanceRequest(Document):
 
 	def validate(self):
 		"""Validate the document"""
-		self.normalize_category()
-		self.resolve_assigned_to_user()
 		self.validate_employee()
 		self.validate_approval_status_permissions()
 		self.validate_equipment_category_match()
@@ -487,10 +485,12 @@ class MaintenanceRequest(Document):
 				self.equipment_name = eq_doc.equipment_name
 			if eq_doc.serial_number or eq_doc.equipment_id:
 				pass
-			if getattr(eq_doc, "location", None):
-				self.equipment_location = eq_doc.location
-				if not getattr(self, "location", None):
-					self.location = eq_doc.location
+			loc = getattr(eq_doc, "used_in_location", None) or getattr(eq_doc, "location", None)
+			if loc:
+				if hasattr(self, "equipment_location"):
+					self.equipment_location = loc
+				if hasattr(self, "location") and not getattr(self, "location", None):
+					self.location = loc
 			if getattr(eq_doc, "department", None):
 				self.department = eq_doc.department
 			if getattr(eq_doc, "equipment_category", None):
@@ -1152,6 +1152,7 @@ def get_logged_in_employee(user_id=None):
 		manager_info = get_employee_manager_user(emp.name)
 		if manager_info and manager_info.get("user_id"):
 			emp["manager"] = manager_info.get("user_id")
+			emp["unit_head"] = manager_info.get("user_id")
 		return emp
 
 	return {}
@@ -1160,26 +1161,16 @@ def get_logged_in_employee(user_id=None):
 @frappe.whitelist()
 def get_logged_in_employee_details():
 	"""Fetch Employee details for the logged-in user to autofill Maintenance Request form safely"""
-	user_id = frappe.session.user
-	if not user_id or user_id == "Guest":
+	emp = get_logged_in_employee()
+	if not emp:
 		return {}
-
-	emp_data = frappe.db.get_value(
-		"Employee",
-		{"user_id": user_id},
-		["name", "employee_name", "department"],
-		as_dict=True
-	)
-	if not emp_data:
-		return {}
-
-	manager_info = get_employee_manager_user(emp_data.name) or {}
 
 	return {
-		"employee": emp_data.name,
-		"employee_name": emp_data.employee_name,
-		"department": emp_data.department,
-		"unit_head": manager_info.get("user_id")
+		"employee": emp.get("name"),
+		"employee_name": emp.get("employee_name"),
+		"department": emp.get("department"),
+		"manager": emp.get("manager"),
+		"unit_head": emp.get("unit_head")
 	}
 
 
@@ -1323,9 +1314,18 @@ def get_equipment_for_category(doctype, txt, searchfield, start, page_len, filte
 		conditions.append("(name LIKE %(txt)s OR equipment_name LIKE %(txt)s OR serial_number LIKE %(txt)s)")
 		params["txt"] = f"%{txt}%"
 
+	loc_col = "used_in_location"
+	try:
+		if frappe.db.has_column("Equipment", "location"):
+			loc_col = "location"
+		elif not frappe.db.has_column("Equipment", "used_in_location"):
+			loc_col = "NULL"
+	except Exception:
+		loc_col = "used_in_location"
+
 	where_clause = " AND ".join(conditions)
 	query = f"""
-		SELECT name, equipment_name, serial_number, location, equipment_category
+		SELECT name, equipment_name, serial_number, {loc_col} AS location, equipment_category
 		FROM `tabEquipment`
 		WHERE {where_clause}
 		ORDER BY name ASC
