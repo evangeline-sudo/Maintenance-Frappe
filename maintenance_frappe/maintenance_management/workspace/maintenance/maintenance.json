@@ -2,7 +2,7 @@
  "app": "maintenance_frappe",
  "charts": [],
  "content": "[{\"type\": \"header\", \"data\": {\"text\": \"Key Metrics\", \"level\": 4}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Requests\"}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Requests\"}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Pending Approvals\"}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Equipment\"}}, {\"type\": \"number_card\", \"data\": {\"number_card_name\": \"Maintenance Teams\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Quick Actions\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"+ New Maintenance Request\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"View My Requests\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Pending Approvals\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Approved Requests\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Assigned Requests\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Equipment Master\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Maintenance Teams\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Modules & Masters\", \"level\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Transactions\"}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Equipment & Masters\"}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Teams & Rules\"}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Reports\"}}]",
- "creation": "2026-09-22 11:25:00.000000",
+ "creation": "2026-09-22 11:25:00",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
@@ -162,7 +162,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-09-22 11:25:00.000000",
+ "modified": "2026-11-04 13:00:13.090250",
  "modified_by": "Administrator",
  "module": "Maintenance Management",
  "name": "Maintenance",
@@ -191,49 +191,80 @@
  "owner": "Administrator",
  "public": 1,
  "quick_lists": [],
- "roles": [],
+ "roles": [
+  {
+   "role": "Employee"
+  },
+  {
+   "role": "Maintenance User"
+  },
+  {
+   "role": "Maintenance Manager"
+  },
+  {
+   "role": "Maintenance Technician"
+  },
+  {
+   "role": "Technician"
+  },
+  {
+   "role": "Manager"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "All"
+  }
+ ],
  "sequence_id": 0.0,
  "shortcuts": [
   {
-   "doc_view": "",
+   "doc_view": "New",
    "label": "+ New Maintenance Request",
    "link_to": "Maintenance Request",
    "type": "DocType"
   },
   {
-   "doc_view": "",
+   "doc_view": "List",
    "label": "View My Requests",
    "link_to": "Maintenance Request",
+   "stats_filter": "[[\"Maintenance Request\", \"owner\", \"=\", frappe.session.user]]",
    "type": "DocType"
   },
   {
-   "doc_view": "",
+   "doc_view": "List",
    "label": "Pending Approvals",
    "link_to": "Maintenance Request",
+   "stats_filter": "[[\"Maintenance Request\", \"approval_status\", \"=\", \"Pending\"]]",
    "type": "DocType"
   },
   {
-   "doc_view": "",
+   "doc_view": "List",
    "label": "Approved Requests",
    "link_to": "Maintenance Request",
+   "stats_filter": "[[\"Maintenance Request\", \"approval_status\", \"=\", \"Approved\"]]",
    "type": "DocType"
   },
   {
-   "doc_view": "",
+   "doc_view": "List",
    "label": "Assigned Requests",
    "link_to": "Maintenance Request",
+   "stats_filter": "[[\"Maintenance Request\", \"status\", \"in\", [\"Assigned\", \"In Progress\"]]]",
    "type": "DocType"
   },
   {
-   "doc_view": "",
+   "doc_view": "List",
    "label": "Equipment Master",
    "link_to": "Equipment",
+   "stats_filter": "[[\"Equipment\", \"status\", \"=\", \"Active\"]]",
    "type": "DocType"
   },
   {
-   "doc_view": "",
+   "doc_view": "List",
    "label": "Maintenance Teams",
    "link_to": "Maintenance Team",
+   "stats_filter": "[[\"Maintenance Team\", \"is_active\", \"=\", 1]]",
    "type": "DocType"
   }
  ],

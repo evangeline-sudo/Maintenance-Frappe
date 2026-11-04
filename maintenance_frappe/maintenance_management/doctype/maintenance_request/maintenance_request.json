@@ -520,7 +520,7 @@
  ],
  "quick_entry": 1,
  "row_format": "Dynamic",
- "search_fields": "employee,title,maintenance_type,ownership_type,equipment_category,priority",
+ "search_fields": "employee,employee_name,title,maintenance_type,ownership_type,equipment_category,priority",
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [

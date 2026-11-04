@@ -56,6 +56,9 @@ frappe.ui.form.on('Maintenance Request', {
 		frm.trigger('setup_workflow_buttons');
 		frm.trigger('set_field_states');
 		frm.trigger('set_section_visibilities');
+		if (frm.doc.name && !frm.is_new() && frm.doc.employee_name) {
+			frm.page.set_title_sub(frm.doc.employee_name);
+		}
 	},
 
 	onload: function(frm) {

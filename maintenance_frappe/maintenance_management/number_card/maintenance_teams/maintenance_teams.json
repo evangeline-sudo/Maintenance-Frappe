@@ -4,7 +4,7 @@
  "docstatus": 0,
  "doctype": "Number Card",
  "document_type": "Maintenance Team",
- "filters_json": "[]",
+ "filters_json": "[[\"Maintenance Team\", \"is_active\", \"=\", 1]]",
  "function": "Count",
  "idx": 0,
  "is_public": 1,

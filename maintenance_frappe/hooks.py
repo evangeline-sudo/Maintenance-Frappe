@@ -26,8 +26,10 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_css = "/assets/maintenance_frappe/css/maintenance_workspace.css"
-app_include_js = "/assets/maintenance_frappe/js/maintenance_workspace.js"
+app_include_css = "/assets/maintenance_frappe/css/maintenance_workspace.css?v=1.0.2"
+app_include_js = "/assets/maintenance_frappe/js/maintenance_workspace.js?v=1.0.2"
+
+boot_session = "maintenance_frappe.boot.boot_session"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/maintenance_frappe/css/maintenance_frappe.css"
@@ -282,9 +284,6 @@ fixtures = [
 		]
 	},
 	{"dt": "Role", "filters": [["name", "in", ["Maintenance User", "Maintenance Manager", "Maintenance Technician", "Unit Head"]]]},
-	{"dt": "Workspace", "filters": [["name", "in", ["Maintenance", "Maintenance Dashboard"]]]},
-	{"dt": "Workspace Sidebar", "filters": [["name", "=", "Maintenance"]]},
-	{"dt": "Desktop Icon", "filters": [["name", "=", "Maintenance"]]},
 	{"dt": "Dashboard Chart", "filters": [["module", "=", "Maintenance Management"]]},
 	{"dt": "Number Card", "filters": [["module", "=", "Maintenance Management"]]}
 ]

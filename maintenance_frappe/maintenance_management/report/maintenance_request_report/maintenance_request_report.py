@@ -12,6 +12,7 @@ def execute(filters=None):
 		{"label": _("Equipment"), "fieldname": "equipment", "fieldtype": "Link", "options": "Equipment", "width": 140},
 		{"label": _("Equipment Name"), "fieldname": "equipment_name", "fieldtype": "Data", "width": 160},
 		{"label": _("Employee"), "fieldname": "employee", "fieldtype": "Link", "options": "Employee", "width": 130},
+		{"label": _("Employee Name"), "fieldname": "employee_name", "fieldtype": "Data", "width": 160},
 		{"label": _("Department"), "fieldname": "department", "fieldtype": "Link", "options": "Department", "width": 130},
 		{"label": _("Assigned To"), "fieldname": "assigned_to", "fieldtype": "Link", "options": "User", "width": 140},
 		{"label": _("Total Cost"), "fieldname": "total_maintenance_cost", "fieldtype": "Currency", "width": 130},
@@ -38,7 +39,7 @@ def execute(filters=None):
 		filters=conditions,
 		fields=[
 			"name", "title", "status", "priority", "maintenance_type",
-			"ownership_type", "equipment", "equipment_name", "employee",
+			"ownership_type", "equipment", "equipment_name", "employee", "employee_name",
 			"department", "assigned_to", "total_maintenance_cost", "creation"
 		],
 		order_by="creation desc"

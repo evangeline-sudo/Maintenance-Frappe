@@ -9,17 +9,76 @@
 	let isFetching = false;
 
 	function is_maintenance_workspace() {
+		// 1. Strictly check body[data-route] from Frappe's container
+		const bodyRoute = ($('body').attr('data-route') || '').toLowerCase();
+		if (bodyRoute.startsWith('list/') || bodyRoute.startsWith('form/') || bodyRoute.startsWith('report/') || bodyRoute.includes('maintenance-request')) {
+			return false;
+		}
+
+		// 2. Strictly reject if current page is not Workspaces
+		const $activePage = $('.page-container:visible');
+		if ($activePage.length && $activePage.attr('data-page-route') !== 'Workspaces') {
+			return false;
+		}
+
+		// 3. If list view, form view, or report view is active or present, strictly reject
+		if (window.cur_list || $('.frappe-list, .list-view-container, .form-page, .report-view').is(':visible')) {
+			return false;
+		}
+
+		// 4. Check current page route from frappe.container if available
+		if (window.frappe && frappe.container && frappe.container.current_page) {
+			const pageName = (frappe.container.current_page.page_name || '').toLowerCase();
+			if (pageName.startsWith('list/') || pageName.startsWith('form/') || pageName.startsWith('report/') || pageName.includes('maintenance-request')) {
+				return false;
+			}
+		}
+
+		// 5. Check frappe.get_route_str() if available
+		const routeStr = frappe.get_route_str ? frappe.get_route_str().toLowerCase() : '';
+		if (routeStr.startsWith('list/') || routeStr.startsWith('form/') || routeStr.startsWith('report/') || routeStr.includes('maintenance-request')) {
+			return false;
+		}
+
+		// 6. Inspect standard Frappe router route
 		const route = frappe.get_route ? frappe.get_route() : [];
-		if (!route || !route.length) return false;
+		if (!route || !route.length) {
+			const hash = (window.location.hash || '').toLowerCase();
+			const path = (window.location.pathname || '').toLowerCase();
+			if (hash === '#workspaces/maintenance' || hash === '#workspace/maintenance' || path === '/desk/maintenance') {
+				return true;
+			}
+			return false;
+		}
 
 		const first = (route[0] || '').toLowerCase();
 		const second = (route[1] || '').toLowerCase();
 
-		if (first === 'desk' && second === 'maintenance') return true;
-		if ((first === 'workspaces' || first === 'workspace') && second === 'maintenance') return true;
+		// Strictly reject any list, form, report, tree, dashboard views
+		if (['list', 'form', 'report', 'query-report', 'print', 'dashboard-view', 'view', 'tree'].includes(first)) {
+			return false;
+		}
 
-		// Fallback check on active document title or route path
-		if (window.location.hash.includes('maintenance') || window.location.pathname.includes('/desk/maintenance')) {
+		// Explicitly reject any route pointing to Maintenance Request or any other DocType
+		if (first.includes('maintenance-request') || second.includes('maintenance-request')) {
+			return false;
+		}
+
+		// Any sub-path or 3+ route segments is NOT the maintenance workspace
+		if (route.length > 2) {
+			return false;
+		}
+
+		// Route with 2 segments: must be ['workspaces', 'maintenance'], ['workspace', 'maintenance'], or ['desk', 'maintenance']
+		if (route.length === 2) {
+			if ((first === 'workspaces' || first === 'workspace' || first === 'desk') && second === 'maintenance') {
+				return true;
+			}
+			return false;
+		}
+
+		// Route with 1 segment: must be ['maintenance']
+		if (route.length === 1 && first === 'maintenance') {
 			return true;
 		}
 
@@ -27,24 +86,160 @@
 	}
 
 	function get_workspace_mount_point() {
-		// Try finding the workspace page content container
-		let $container = $('.workspace-page:visible .layout-main-section, [data-page-route="Workspaces"]:visible .layout-main-section, .layout-main-section:visible, .page-content:visible').first();
-		if ($container.length) return $container;
+		// Under NO circumstance mount inside list, form, or report containers
+		if (!is_maintenance_workspace()) {
+			return null;
+		}
 
-		// Fallback to body container
-		return $('#body').first();
+		// Strictly mount ONLY inside the Workspaces page main section
+		const $ws = $('[data-page-route="Workspaces"]:visible, .workspace-page:visible');
+		if (!$ws.length) {
+			return null;
+		}
+
+		// Ensure the active workspace being displayed in frappe.workspace is indeed Maintenance
+		if (window.frappe && frappe.workspace && frappe.workspace._page) {
+			const wsName = (frappe.workspace._page.name || '').toLowerCase();
+			if (wsName !== 'maintenance') {
+				return null;
+			}
+		}
+
+		const $main = $ws.find('.layout-main-section').first();
+		if ($main.length) {
+			return $main;
+		}
+
+		return null;
+	}
+
+	function ensure_workspace_page_loaded() {
+		if (!window.frappe) return;
+
+		// Ensure Maintenance is in frappe.workspaces for Desk router
+		if (frappe.workspaces && !frappe.workspaces['maintenance']) {
+			frappe.workspaces['maintenance'] = {
+				name: 'Maintenance',
+				public: true
+			};
+		}
+
+		if (frappe.workspace) {
+			if (frappe.workspace.workspaces && !frappe.workspace.workspaces.some(p => p.name === 'Maintenance')) {
+				const pageDef = {
+					name: 'Maintenance',
+					title: 'Maintenance',
+					public: true,
+					app: 'maintenance_frappe',
+					module: 'Maintenance Management',
+					is_editable: false
+				};
+				frappe.workspace.workspaces.push(pageDef);
+				if (frappe.boot && frappe.boot.workspaces && frappe.boot.workspaces.pages) {
+					frappe.boot.workspaces.pages.push(pageDef);
+				}
+			}
+		}
+	}
+
+	function cleanup_stuck_skeleton() {
+		const $mount = get_workspace_mount_point();
+		if ($mount && $mount.length) {
+			// Ensure all standard workspace components are displayed
+			$mount.children().not('.workspace-skeleton').show();
+			$('.editor-js-container').show();
+			$('.codex-editor').removeClass('hidden').show();
+		}
+
+		// Clean up stuck skeleton placeholders
+		const $skeleton = $('.workspace-page:visible .workspace-skeleton, [data-page-route="Workspaces"]:visible .workspace-skeleton, .workspace-skeleton:visible');
+		const $editor = $('.workspace-page:visible .codex-editor, [data-page-route="Workspaces"]:visible .codex-editor, .editor-js-container .codex-editor');
+
+		const hasBlocks = $editor.find('.ce-block, .widget, .widget-group').length > 0;
+		const pageDataLoaded = window.frappe && frappe.workspace && frappe.workspace.page_data;
+
+		if ($skeleton.length && (hasBlocks || pageDataLoaded)) {
+			$skeleton.remove();
+			$editor.removeClass('hidden').show();
+			$('.editor-js-container').show();
+		}
+	}
+
+	function apply_role_based_workspace_view() {
+		const $mount = get_workspace_mount_point();
+		if ($mount && $mount.length) {
+			$mount.children().not('.workspace-skeleton').show();
+			$('.editor-js-container').show();
+			$('.codex-editor').removeClass('hidden').show();
+		}
+
+		cleanup_stuck_skeleton();
+
+		// Role-based visibility: hide Reports card for ordinary employees
+		const roles = frappe.user_roles || [];
+		const isManagerOrTech = roles.includes('Maintenance Manager') ||
+			roles.includes('Manager') ||
+			roles.includes('Technician') ||
+			roles.includes('Maintenance Technician') ||
+			roles.includes('System Manager') ||
+			(frappe.session && frappe.session.user === 'Administrator');
+
+		if (!isManagerOrTech) {
+			$('.links-widget-box, .widget').each(function() {
+				const headerText = $(this).find('.widget-title, .header-title').text().trim();
+				if (headerText === 'Reports') {
+					$(this).hide();
+				}
+			});
+		}
+	}
+
+	function ensure_sidebar_icons() {
+		$('.standard-sidebar-item').each(function() {
+			const $item = $(this);
+			const $link = $item.find('a.item-anchor');
+			const href = ($link.attr('href') || '').toLowerCase();
+			const label = $item.find('.sidebar-item-label').text().trim();
+
+			if (label === 'Maintenance Request Report' || href.includes('maintenance-request-report') || href.includes('maintenance%20request%20report')) {
+				const $icon = $item.find('.sidebar-item-icon');
+				if ($icon.length && (!$icon.find('svg').length || $icon.find('svg use').attr('href') === '#icon-bar-chart' || $icon.find('svg use').attr('href') === '#icon-clipboard-list')) {
+					$icon.attr('item-icon', 'file-text');
+					$icon.html(`
+						<svg class="icon text-ink-gray-7 current-color icon-sm" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+							<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+							<path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+							<path d="M10 9H8"></path>
+							<path d="M16 13H8"></path>
+							<path d="M16 17H8"></path>
+						</svg>
+					`);
+				}
+			}
+		});
 	}
 
 	function init_employee_approvals_workspace() {
+		ensure_sidebar_icons();
+
 		if (!is_maintenance_workspace()) {
 			$('#maintenance-approvals-section').remove();
 			return;
 		}
 
+		ensure_workspace_page_loaded();
+
 		const $mount = get_workspace_mount_point();
 		if (!$mount || !$mount.length) {
-			setTimeout(init_employee_approvals_workspace, 300);
+			if (is_maintenance_workspace()) {
+				setTimeout(init_employee_approvals_workspace, 250);
+			}
 			return;
+		}
+
+		// Clean up any detached or misplaced approvals section from other pages
+		if ($('#maintenance-approvals-section').length && !$.contains($mount[0], $('#maintenance-approvals-section')[0])) {
+			$('#maintenance-approvals-section').remove();
 		}
 
 		if (!$('#maintenance-approvals-section').length) {
@@ -95,7 +290,13 @@
 			bind_header_events();
 		}
 
-		fetch_and_render_approvals();
+		apply_role_based_workspace_view();
+		fetch_and_render_approvals(() => {
+			apply_role_based_workspace_view();
+		});
+		setTimeout(apply_role_based_workspace_view, 300);
+		setTimeout(apply_role_based_workspace_view, 800);
+		setTimeout(apply_role_based_workspace_view, 1500);
 	}
 
 	function bind_header_events() {
@@ -139,6 +340,8 @@
 		$section.on('click', '.btn-quick-approve', function(e) {
 			e.stopPropagation();
 			const docname = $(this).data('name');
+			const empName = $(this).data('employee-name');
+			const promptTitle = __('Approve Request: ') + docname + (empName ? ' (' + empName + ')' : '');
 			frappe.prompt({
 				fieldname: 'notes',
 				fieldtype: 'Small Text',
@@ -157,12 +360,14 @@
 						}
 					}
 				});
-			}, __('Approve Request: ') + docname, __('Approve'));
+			}, promptTitle, __('Approve'));
 		});
 
 		$section.on('click', '.btn-quick-reject', function(e) {
 			e.stopPropagation();
 			const docname = $(this).data('name');
+			const empName = $(this).data('employee-name');
+			const promptTitle = __('Reject Request: ') + docname + (empName ? ' (' + empName + ')' : '');
 			frappe.prompt({
 				fieldname: 'notes',
 				fieldtype: 'Small Text',
@@ -182,7 +387,7 @@
 						}
 					}
 				});
-			}, __('Reject Request: ') + docname, __('Reject'));
+			}, promptTitle, __('Reject'));
 		});
 	}
 
@@ -248,8 +453,8 @@
 			if (item.can_approve) {
 				actionButtons = `
 					<div style="display:flex;gap:6px;">
-						<button class="btn btn-primary btn-xs btn-quick-approve" data-name="${item.name}">Approve</button>
-						<button class="btn btn-danger btn-xs btn-quick-reject" data-name="${item.name}">Reject</button>
+						<button class="btn btn-primary btn-xs btn-quick-approve" data-name="${item.name}" data-employee-name="${frappe.utils.escape_html(item.employee_name || '')}">Approve</button>
+						<button class="btn btn-danger btn-xs btn-quick-reject" data-name="${item.name}" data-employee-name="${frappe.utils.escape_html(item.employee_name || '')}">Reject</button>
 					</div>
 					<button class="btn btn-default btn-xs card-link-trigger" data-name="${item.name}" style="font-weight:600;">
 						Details &rarr;
@@ -261,8 +466,8 @@
 				<div class="maintenance-approval-card">
 					<div>
 						<div class="maintenance-card-top">
-							<a href="#Form/Maintenance Request/${item.name}" class="maintenance-card-id card-link-trigger" data-name="${item.name}">
-								${item.name}
+							<a href="#Form/Maintenance Request/${item.name}" class="maintenance-card-id card-link-trigger" data-name="${item.name}" title="${item.name}${item.employee_name ? ` · ${frappe.utils.escape_html(item.employee_name)}` : ''}">
+								${item.name}${item.employee_name ? ` &middot; ${frappe.utils.escape_html(item.employee_name)}` : ''}
 							</a>
 							<div class="maintenance-card-badges">
 								<span class="priority-tag ${priorityClass}">${item.priority}</span>
@@ -274,6 +479,13 @@
 						<p class="maintenance-card-desc">${frappe.utils.escape_html(item.description)}</p>
 
 						<div class="maintenance-card-meta">
+							<div class="meta-row">
+								<span class="meta-label">
+									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+									Employee:
+								</span>
+								<span class="meta-value" title="${frappe.utils.escape_html(item.employee_name || '')}">${frappe.utils.escape_html(item.employee_name || '-')}</span>
+							</div>
 							<div class="meta-row">
 								<span class="meta-label">
 									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
@@ -352,20 +564,36 @@
 	}
 
 	// Hook into Frappe page router & Desk events
-	$(document).on('app_ready', function() {
-		setTimeout(init_employee_approvals_workspace, 200);
-	});
+	function on_route_change() {
+		ensure_sidebar_icons();
+		setTimeout(ensure_sidebar_icons, 150);
+		setTimeout(ensure_sidebar_icons, 500);
 
-	if (window.frappe && frappe.router) {
-		frappe.router.on('change', function() {
-			setTimeout(init_employee_approvals_workspace, 150);
-		});
+		if (!is_maintenance_workspace()) {
+			$('#maintenance-approvals-section').remove();
+			$('.frappe-list, .list-view-container, .form-page, .report-view').find('#maintenance-approvals-section').remove();
+			return;
+		}
+		setTimeout(init_employee_approvals_workspace, 100);
 	}
 
-	// Also monitor document title & hash changes
-	window.addEventListener('hashchange', function() {
-		setTimeout(init_employee_approvals_workspace, 150);
-	});
+	$(document).on('app_ready', on_route_change);
+	$(document).on('page-change', on_route_change);
+
+	if (window.frappe && frappe.router) {
+		frappe.router.on('change', on_route_change);
+	}
+
+	window.addEventListener('hashchange', on_route_change);
+	window.addEventListener('popstate', on_route_change);
+
+	// Periodic check for sidebar icons and rogue approvals section cleanup
+	setInterval(function() {
+		ensure_sidebar_icons();
+		if (!is_maintenance_workspace() && $('#maintenance-approvals-section').length) {
+			$('#maintenance-approvals-section').remove();
+		}
+	}, 1000);
 
 })();
 

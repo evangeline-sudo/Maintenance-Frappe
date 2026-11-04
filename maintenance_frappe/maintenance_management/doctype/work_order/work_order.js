@@ -1,5 +1,7 @@
 frappe.ui.form.on('Work Order', {
 	refresh: function(frm) {
+		frm.trigger('show_linked_request_employee');
+
 		if (frm.is_new()) return;
 
 		// 1. Scheduled / Open -> Start Work
@@ -75,6 +77,31 @@ frappe.ui.form.on('Work Order', {
 					}
 				}
 			});
+		}
+	},
+
+	maintenance_request: function(frm) {
+		frm.trigger('show_linked_request_employee');
+	},
+
+	show_linked_request_employee: function(frm) {
+		if (frm.doc.maintenance_request) {
+			frappe.db.get_value('Maintenance Request', frm.doc.maintenance_request, ['employee', 'employee_name']).then(r => {
+				if (r && r.message) {
+					const emp = r.message.employee || '';
+					const emp_name = r.message.employee_name || '';
+					const display = emp_name ? (emp ? `${emp_name} (${emp})` : emp_name) : emp;
+					if (display) {
+						frm.set_df_property('maintenance_request', 'description', __('Employee: <b>{0}</b>', [display]));
+					} else {
+						frm.set_df_property('maintenance_request', 'description', '');
+					}
+				} else {
+					frm.set_df_property('maintenance_request', 'description', '');
+				}
+			});
+		} else {
+			frm.set_df_property('maintenance_request', 'description', '');
 		}
 	}
 });

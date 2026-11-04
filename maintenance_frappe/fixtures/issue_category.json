@@ -1,5 +1,45 @@
 [
  {
+  "description": "Faulty SMPS / Redundant PSU failure",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "IT Equipment",
+  "is_active": 1,
+  "issue_category_name": "Power Supply Fault",
+  "modified": "2026-11-04 09:29:02.519215",
+  "name": "Power Supply Fault"
+ },
+ {
+  "description": "AMF controller or sensor readout fault",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Electrical Equipment",
+  "is_active": 1,
+  "issue_category_name": "Sensor / Controller Fault",
+  "modified": "2026-11-04 09:29:02.525884",
+  "name": "Sensor / Controller Fault"
+ },
+ {
+  "description": "Excessive motor vibration, misalignment or bearing wear",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Machine",
+  "is_active": 1,
+  "issue_category_name": "Motor Vibration / Bearing Fault",
+  "modified": "2026-11-04 09:29:02.529238",
+  "name": "Motor Vibration / Bearing Fault"
+ },
+ {
+  "description": "Duplex jam or paper feeder roller slipping",
+  "docstatus": 0,
+  "doctype": "Issue Category",
+  "equipment_category": "Office Equipment",
+  "is_active": 1,
+  "issue_category_name": "Paper Jam & Feeder Roller Wear",
+  "modified": "2026-11-04 09:29:02.532502",
+  "name": "Paper Jam & Feeder Roller Wear"
+ },
+ {
   "description": null,
   "docstatus": 0,
   "doctype": "Issue Category",

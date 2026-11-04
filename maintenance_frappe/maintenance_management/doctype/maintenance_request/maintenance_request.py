@@ -662,17 +662,32 @@ class MaintenanceRequest(Document):
 			return True
 
 		user_roles = frappe.get_roles(current_user)
-		is_authorized = (
-			any(role in user_roles for role in ["System Manager", "Maintenance Manager", "Manager"]) or
-			bool(self.manager and current_user == self.manager)
-		)
-		if not is_authorized:
-			frappe.throw(
-				_("Only Maintenance Manager or the assigned Manager ({0}) can approve or reject this request.").format(
-					self.manager or _("Manager")
-				)
+		if any(role in user_roles for role in ["System Manager", "Maintenance Manager"]):
+			return True
+
+		if "Manager" in user_roles:
+			from maintenance_frappe.permissions.maintenance_request import (
+				get_reporting_employee_ids,
+				get_reporting_user_ids,
 			)
-		return True
+			reporting_emps = get_reporting_employee_ids(current_user)
+			reporting_users = get_reporting_user_ids(reporting_emps)
+			is_reporting_employee = (
+				(self.employee and self.employee in reporting_emps)
+				or (self.owner and self.owner in reporting_users)
+				or (getattr(self, "manager", None) == current_user)
+				or (getattr(self, "unit_head", None) == current_user)
+			)
+			if is_reporting_employee:
+				return True
+
+			frappe.throw(
+				_("You can only approve or reject Maintenance Requests submitted by your own reporting employees.")
+			)
+
+		frappe.throw(
+			_("Only Maintenance Manager or the assigned Manager can approve or reject this request.")
+		)
 
 	def validate_equipment_category_match(self):
 		"""Ensure equipment matches equipment_category if both are selected"""
