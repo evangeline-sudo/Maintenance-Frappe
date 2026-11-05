@@ -215,9 +215,48 @@ def sync_maintenance_dashboard_metrics():
 	frappe.db.commit()
 
 
+def ensure_standard_roles():
+	"""Ensure standard maintenance roles exist with correct desk_access on any fresh site."""
+	roles = [
+		{"role_name": "Maintenance User", "desk_access": 1},
+		{"role_name": "Maintenance Manager", "desk_access": 1},
+		{"role_name": "Maintenance Technician", "desk_access": 1},
+		{"role_name": "Unit Head", "desk_access": 0},
+	]
+	for r in roles:
+		if not frappe.db.exists("Role", r["role_name"]):
+			try:
+				doc = frappe.get_doc({
+					"doctype": "Role",
+					"role_name": r["role_name"],
+					"desk_access": r["desk_access"],
+				})
+				doc.insert(ignore_permissions=True)
+			except Exception:
+				pass
+
+
+def ensure_default_maintenance_settings():
+	"""Ensure default Maintenance Settings single doc is initialized on a clean site."""
+	try:
+		if frappe.db.table_exists("Singles"):
+			sla = frappe.db.get_single_value("Maintenance Settings", "default_sla_hours")
+			if not sla:
+				doc = frappe.get_single("Maintenance Settings")
+				doc.default_sla_hours = 24
+				doc.enable_email_notifications = 1
+				doc.auto_assign_technician = 1
+				doc.flags.ignore_permissions = True
+				doc.save()
+	except Exception:
+		pass
+
+
 def after_migrate_setup():
 	"""Run DB setup tasks safely during migrate post-sync."""
 	try:
+		ensure_standard_roles()
+		ensure_default_maintenance_settings()
 		ensure_page_permissions()
 		sync_maintenance_dashboard_metrics()
 		fix_work_order_tools_and_checklists()
