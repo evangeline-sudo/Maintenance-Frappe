@@ -26,8 +26,8 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_css = "/assets/maintenance_frappe/css/maintenance_workspace.css?v=1.0.2"
-app_include_js = "/assets/maintenance_frappe/js/maintenance_workspace.js?v=1.0.2"
+app_include_css = "/assets/maintenance_frappe/css/maintenance_workspace.css?v=1.0.4"
+app_include_js = "/assets/maintenance_frappe/js/maintenance_workspace.js?v=1.0.4"
 
 boot_session = "maintenance_frappe.boot.boot_session"
 
@@ -47,7 +47,9 @@ boot_session = "maintenance_frappe.boot.boot_session"
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+doctype_list_js = {
+	"Maintenance Request": "maintenance_management/doctype/maintenance_request/maintenance_request_list.js",
+}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -287,5 +289,4 @@ fixtures = [
 	{"dt": "Dashboard Chart", "filters": [["module", "=", "Maintenance Management"]]},
 	{"dt": "Number Card", "filters": [["module", "=", "Maintenance Management"]]}
 ]
-
 

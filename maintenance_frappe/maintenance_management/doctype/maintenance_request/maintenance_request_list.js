@@ -1,16 +1,16 @@
 frappe.listview_settings['Maintenance Request'] = {
 	add_fields: ["employee_name", "employee", "title", "approval_status", "department"],
 	onload: function(listview) {
-		$('#maintenance-approvals-section').remove();
 		if (listview && listview.page && listview.page.wrapper) {
 			listview.page.wrapper.find('#maintenance-approvals-section').remove();
 		}
+		$('.frappe-list #maintenance-approvals-section, [data-page-route*="List"] #maintenance-approvals-section').remove();
 	},
 	refresh: function(listview) {
-		$('#maintenance-approvals-section').remove();
 		if (listview && listview.page && listview.page.wrapper) {
 			listview.page.wrapper.find('#maintenance-approvals-section').remove();
 		}
+		$('.frappe-list #maintenance-approvals-section, [data-page-route*="List"] #maintenance-approvals-section').remove();
 	},
 	get_indicator: function(doc) {
 		if (doc.status === "Submitted") {

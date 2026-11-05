@@ -9,76 +9,46 @@
 	let isFetching = false;
 
 	function is_maintenance_workspace() {
-		// 1. Strictly check body[data-route] from Frappe's container
-		const bodyRoute = ($('body').attr('data-route') || '').toLowerCase();
-		if (bodyRoute.startsWith('list/') || bodyRoute.startsWith('form/') || bodyRoute.startsWith('report/') || bodyRoute.includes('maintenance-request')) {
-			return false;
-		}
+		// 1. Inspect standard Frappe router route
+		const route = frappe.get_route ? frappe.get_route() : [];
+		if (route && route.length) {
+			const first = (route[0] || '').toLowerCase();
+			const second = (route[1] || '').toLowerCase();
+			const third = (route[2] || '').toLowerCase();
 
-		// 2. Strictly reject if current page is not Workspaces
-		const $activePage = $('.page-container:visible');
-		if ($activePage.length && $activePage.attr('data-page-route') !== 'Workspaces') {
-			return false;
-		}
-
-		// 3. If list view, form view, or report view is active or present, strictly reject
-		if (window.cur_list || $('.frappe-list, .list-view-container, .form-page, .report-view').is(':visible')) {
-			return false;
-		}
-
-		// 4. Check current page route from frappe.container if available
-		if (window.frappe && frappe.container && frappe.container.current_page) {
-			const pageName = (frappe.container.current_page.page_name || '').toLowerCase();
-			if (pageName.startsWith('list/') || pageName.startsWith('form/') || pageName.startsWith('report/') || pageName.includes('maintenance-request')) {
+			// Any list, form, report, query-report, print, dashboard-view, view, tree
+			if (['list', 'form', 'report', 'query-report', 'print', 'dashboard-view', 'view', 'tree'].includes(first)) {
 				return false;
 			}
-		}
 
-		// 5. Check frappe.get_route_str() if available
-		const routeStr = frappe.get_route_str ? frappe.get_route_str().toLowerCase() : '';
-		if (routeStr.startsWith('list/') || routeStr.startsWith('form/') || routeStr.startsWith('report/') || routeStr.includes('maintenance-request')) {
-			return false;
-		}
+			// Reject any route segment pointing to Maintenance Request or any other DocType
+			if (first.includes('maintenance-request') || second.includes('maintenance-request') || third.includes('maintenance-request')) {
+				return false;
+			}
 
-		// 6. Inspect standard Frappe router route
-		const route = frappe.get_route ? frappe.get_route() : [];
-		if (!route || !route.length) {
-			const hash = (window.location.hash || '').toLowerCase();
-			const path = (window.location.pathname || '').toLowerCase();
-			if (hash === '#workspaces/maintenance' || hash === '#workspace/maintenance' || path === '/desk/maintenance') {
+			// Single segment: ['maintenance']
+			if (route.length === 1 && first === 'maintenance') {
 				return true;
 			}
-			return false;
-		}
 
-		const first = (route[0] || '').toLowerCase();
-		const second = (route[1] || '').toLowerCase();
-
-		// Strictly reject any list, form, report, tree, dashboard views
-		if (['list', 'form', 'report', 'query-report', 'print', 'dashboard-view', 'view', 'tree'].includes(first)) {
-			return false;
-		}
-
-		// Explicitly reject any route pointing to Maintenance Request or any other DocType
-		if (first.includes('maintenance-request') || second.includes('maintenance-request')) {
-			return false;
-		}
-
-		// Any sub-path or 3+ route segments is NOT the maintenance workspace
-		if (route.length > 2) {
-			return false;
-		}
-
-		// Route with 2 segments: must be ['workspaces', 'maintenance'], ['workspace', 'maintenance'], or ['desk', 'maintenance']
-		if (route.length === 2) {
-			if ((first === 'workspaces' || first === 'workspace' || first === 'desk') && second === 'maintenance') {
+			// Two segments: ['workspaces', 'maintenance'], ['workspace', 'maintenance'], ['desk', 'maintenance'], or ['app', 'maintenance']
+			if ((first === 'workspaces' || first === 'workspace' || first === 'desk' || first === 'app') && second === 'maintenance') {
 				return true;
 			}
+
+			// Three segments: ['workspaces', 'private', 'maintenance'], ['desk', 'private', 'maintenance'], etc.
+			if ((first === 'workspaces' || first === 'workspace' || first === 'desk' || first === 'app') && second === 'private' && third === 'maintenance') {
+				return true;
+			}
+
 			return false;
 		}
 
-		// Route with 1 segment: must be ['maintenance']
-		if (route.length === 1 && first === 'maintenance') {
+		// Fallback when route is empty (initial cold load or hash/pathname routing)
+		const hash = (window.location.hash || '').toLowerCase();
+		const path = (window.location.pathname || '').toLowerCase();
+		if (hash === '#workspaces/maintenance' || hash === '#workspace/maintenance' || hash === '#app/maintenance' ||
+			path === '/desk/maintenance' || path === '/app/maintenance' || path === '/app/workspaces/maintenance') {
 			return true;
 		}
 
@@ -86,23 +56,18 @@
 	}
 
 	function get_workspace_mount_point() {
-		// Under NO circumstance mount inside list, form, or report containers
+		// Under NO circumstance mount if not the maintenance workspace
 		if (!is_maintenance_workspace()) {
 			return null;
 		}
 
-		// Strictly mount ONLY inside the Workspaces page main section
-		const $ws = $('[data-page-route="Workspaces"]:visible, .workspace-page:visible');
+		// Strictly mount inside the Workspaces page main section
+		let $ws = $('[data-page-route="Workspaces"]');
+		if (!$ws.length) {
+			$ws = $('.workspace-page');
+		}
 		if (!$ws.length) {
 			return null;
-		}
-
-		// Ensure the active workspace being displayed in frappe.workspace is indeed Maintenance
-		if (window.frappe && frappe.workspace && frappe.workspace._page) {
-			const wsName = (frappe.workspace._page.name || '').toLowerCase();
-			if (wsName !== 'maintenance') {
-				return null;
-			}
 		}
 
 		const $main = $ws.find('.layout-main-section').first();
@@ -288,6 +253,17 @@
 			// Prepend before metrics or existing workspace cards
 			$mount.prepend(skeletonHtml);
 			bind_header_events();
+		} else {
+			// Section already exists in mount: ensure it is visible and positioned before editorjs blocks
+			const $section = $('#maintenance-approvals-section');
+			$section.show();
+			const $editor = $mount.find('.editor-js-container, #editorjs').first();
+			if ($editor.length && $section.index() > $editor.index()) {
+				$mount.prepend($section);
+			}
+			if (cachedData) {
+				render_cards();
+			}
 		}
 
 		apply_role_based_workspace_view();
@@ -570,11 +546,14 @@
 		setTimeout(ensure_sidebar_icons, 500);
 
 		if (!is_maintenance_workspace()) {
-			$('#maintenance-approvals-section').remove();
-			$('.frappe-list, .list-view-container, .form-page, .report-view').find('#maintenance-approvals-section').remove();
+			$('#maintenance-approvals-section').hide();
+			$('.frappe-list, .list-view-container, .form-page, .report-view, [data-page-route*="List"], [data-page-route*="Form"]').find('#maintenance-approvals-section').remove();
 			return;
 		}
+
+		init_employee_approvals_workspace();
 		setTimeout(init_employee_approvals_workspace, 100);
+		setTimeout(init_employee_approvals_workspace, 300);
 	}
 
 	$(document).on('app_ready', on_route_change);
@@ -587,13 +566,22 @@
 	window.addEventListener('hashchange', on_route_change);
 	window.addEventListener('popstate', on_route_change);
 
-	// Periodic check for sidebar icons and rogue approvals section cleanup
+	// Watchdog to guarantee approvals section is always present when on Maintenance Workspace
+	// and never visible or present on other views
 	setInterval(function() {
 		ensure_sidebar_icons();
-		if (!is_maintenance_workspace() && $('#maintenance-approvals-section').length) {
-			$('#maintenance-approvals-section').remove();
+		if (is_maintenance_workspace()) {
+			const $section = $('#maintenance-approvals-section');
+			if (!$section.length || !$section.is(':visible')) {
+				init_employee_approvals_workspace();
+			}
+		} else {
+			if ($('#maintenance-approvals-section').is(':visible')) {
+				$('#maintenance-approvals-section').hide();
+			}
+			$('.frappe-list, .list-view-container, .form-page, .report-view, [data-page-route*="List"], [data-page-route*="Form"]').find('#maintenance-approvals-section').remove();
 		}
-	}, 1000);
+	}, 800);
 
 })();
 

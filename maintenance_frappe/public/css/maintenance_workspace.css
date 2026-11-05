@@ -8,8 +8,7 @@
 .frappe-list #maintenance-approvals-section,
 .list-view-container #maintenance-approvals-section,
 .form-page #maintenance-approvals-section,
-.report-view #maintenance-approvals-section,
-body:not([data-route*="Maintenance"]):not([data-route*="maintenance"]) #maintenance-approvals-section {
+.report-view #maintenance-approvals-section {
 	display: none !important;
 	visibility: hidden !important;
 	height: 0 !important;
